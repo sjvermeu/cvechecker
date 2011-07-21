@@ -262,8 +262,8 @@ int initialize_configfile(struct workstate * ws) {
 	config_init(ws->cfg);
 
 	if (homeloc != NULL) {
-		strncpy(configfile, homeloc, FILENAMESIZE);
-		strncat(configfile, "/.cvechecker.rc", FILENAMESIZE-1);
+		strncpy(configfile, homeloc, FILENAMESIZE-16);
+		strcat(configfile, "/.cvechecker.rc");
 	};
 
 	if ((homeloc == NULL) || (config_read_file(ws->cfg, configfile) == CONFIG_FALSE)) {
@@ -276,7 +276,7 @@ int initialize_configfile(struct workstate * ws) {
 		};
 
 		zero_string(configfile, FILENAMESIZE);
-		strncpy(configfile, "/usr/local/etc/cvechecker.conf", FILENAMESIZE);
+		strcpy(configfile, "/usr/local/etc/cvechecker.conf");
 
 		if (config_read_file(ws->cfg, configfile) == CONFIG_FALSE) {
 			int rc2 = 0;
@@ -287,7 +287,7 @@ int initialize_configfile(struct workstate * ws) {
 			};
 
 			zero_string(configfile, FILENAMESIZE);
-			strncpy(configfile, "/etc/cvechecker.conf", FILENAMESIZE);
+			strcpy(configfile, "/etc/cvechecker.conf");
 
 			if (config_read_file(ws->cfg, configfile) == CONFIG_FALSE) {
 				fprintf(stderr, "%s\n", buffer);
@@ -328,8 +328,8 @@ int initialize_dbtarget(struct workstate * ws) {
     return 1;
   };
   rc = strlen(config_setting_get_string(dbtype));
-  if (rc > 500) {
-    fprintf(stderr, "Configuration files 'dbtype' directive cannot exceed 500 characters\n");
+  if (rc > 32) {
+    fprintf(stderr, "Configuration files 'dbtype' directive cannot exceed 32 characters\n");
     return 1;
   };
 
