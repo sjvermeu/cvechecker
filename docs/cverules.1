@@ -1,0 +1,63 @@
+'\" -*- coding: us-ascii -*-
+.if \n(.g .ds T< \\FC
+.if \n(.g .ds T> \\F[\n[.fam]]
+.de URL
+\\$2 \(la\\$1\(ra\\$3
+..
+.if \n(.g .mso www.tmac
+.TH cverules 1 "1 December 2010" "November 25, 2010" "cverules Manual"
+.SH NAME
+cverules \- Generate version matching rules for installed software on a Linux / Unix distribution
+.SH SYNOPSIS
+'nh
+.fi
+.ad l
+\fBcverules -r\fR \kx
+.if (\nx>(\n(.l/2)) .nr x (\n(.l/5)
+'in \n(.iu+\nxu
+'in \n(.iu-\nxu
+.ad b
+'hy
+.SH DESCRIPTION
+The cverules script will scan the installed distribution packages
+on your system and attempt to generate version matching rules that can be
+used by cvechecker.
+.PP
+The script should be used by people interested in contributing to
+the cvechecker' success.
+.SH USAGE
+.SS "COMMAND USAGE"
+The command requires a single option, -r. An example usage pattern
+is like so:
+.PP
+.nf
+\*(T<~$ cverules \-r > output.txt\*(T>
+.fi
+.PP
+The generated \*(T<\fIoutput.txt\fR\*(T> file can then be
+submitted to the cvechecker project, allowing it to improve the
+versions.dat.
+.SS USABILITY
+The user should understand that this script attempts to generate
+matches, but doesn't guarantee that each and every installed software is
+detected.
+.PP
+First of all, if a package is already matched by existing rules,
+the rest of the package' content isn't scanned anymore. This is because
+the tool wants to identify software and versions - once one has been
+detected, further detection is less useful and very resource
+consuming.
+.PP
+Second, if a package isn't detected properly, the script will see
+if the version based on the distributions' package version can be found.
+If it can't, then it cannot identify the version properly and ignores
+the package.
+.PP
+Third, if the script does find a match for the version, it tries
+out a few regular expressions (which have a high probability rate to
+match the version) but has no intelligence to optimize the expressions.
+If the tried expressions fail, the script will ignore the
+package.
+.SH AUTHOR
+cverules is part of the cvechecker tool. cverules was
+written by Sven Vermeulen <sven.vermeulen@siphos.be>.

@@ -1,0 +1,62 @@
+#!/bin/sh
+
+if [ $# -ne 1 ] || [ ! -f $1 ];
+then
+  echo "Usage: $0 <inputfile>";
+  echo "";
+  echo "<inputfile> should be the comma-separated output of the cvechecker tool.";
+  echo "For instance, cvechecker -rC > cvelisting.csv";
+  exit 1;
+fi
+
+typeset INPUT=$1;
+
+##
+## Simple algorithm
+##
+## For each CVE, get list of files
+## For each set of files (with CVE), find package(s)
+## For each package + CVE, search GLSA
+##  If package not vulnerable, output resolution (CVE-pkg) and file
+
+typeset L_CVES=$(awk -F',' '{print $4}' ${INPUT} | grep -v "CVE$" | sort | uniq);
+for CVE in ${L_CVES};
+do
+  typeset L_PKGS=",";
+  typeset L_FILES=$(grep ",${CVE}," ${INPUT} | awk -F',' '{print $2}' | sort | uniq);
+  for FILE in ${L_FILES};
+  do
+    PKG=$(qfile -qCe ${FILE});
+    echo ${L_PKGS} | grep ",${PKG}," > /dev/null 2>&1;
+    if [ $? -ne 0 ];
+    then
+      # Package not in list yet
+      L_PKGS="${L_PKGS}${PKG},";
+    fi
+  done
+  CDIR=$(pwd);
+  for PKG in $(echo ${L_PKGS} | sed -e 's:,: :g');
+  do
+    PKGNV=$(echo ${PKG} | sed -e 's:-[0-9rabop\.\-]*$::g');
+    PKGV=$(echo ${PKG} | sed -e "s:^${PKGNV}-::g");
+    cd $(portageq portdir);
+    typeset LISTCVE=$(grep -H ${CVE} *.xml | awk -F':' '{print $1}' | sort | uniq);
+    typeset LISTPKG=$(grep -H ${PKGNV} *.xml | grep "<product type=\"ebuild\">" | awk -F':' '{print $1}' | sort | uniq);
+    typeset LIST=$(echo ${LISTCVE} ${LISTPKG} | sort | uniq -d);
+    for GLSA in ${LIST};
+    do
+      # OK, GLSA is about ${PKG} and ${CVE}.
+      # So, we assume that if Gentoo (glsa-check) does not feel
+      # that it should take action on this GLSA, then the ${CVE}
+      # is not applicable to this system (anymore).
+      GLSANUM=$(echo ${GLSA} | sed -e 's:glsa-::g' -e 's:\.xml::g');
+      GLSAOUT=$(glsa-check -lnq ${GLSANUM});
+      echo ${GLSAOUT} | grep -v '[N]' > /dev/null 2>&1;
+      if [ $? -eq 0 ];
+      then
+        echo "${CVE} for package ${PKG} is resolved by GLSA ${GLSANUM}.";
+      fi
+    done
+  done
+  cd ${CDIR};
+done

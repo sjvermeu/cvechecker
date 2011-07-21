@@ -1,0 +1,172 @@
+** (2011-04-13) Release 3.1
+
+** (2011-04-11) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Sanitize hostname/userdefkey in MySQL implementation
+	- Fix weird bug when both sqlite and mysql support is requested
+
+** (2011-04-11) Release 3.0
+
+** (2011-04-11) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Fix reporting on existing entries in the database
+	- Fix reporting on software installation (header mismatch)
+	- Fix cpepart error in reporting (MySQL)
+	- Update documentation and manual pages
+	- Update MySQL to InnoDB and use foreign keys for referential
+	  integrity
+
+** (2011-04-10) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Improve CVE loadtime
+	- Enhance pullcves to deduce dates rather than hardcode them
+	- Updates on documentation and manual pages
+
+** (2011-04-01) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- More MySQL support
+
+** (2011-04-01) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Pull up fieldsize from 64 to 128 characters
+	- Make sizes a bit more manageable
+	- Drop some dead code
+
+** (2011-03-24) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Start framework to support MySQL
+
+** (2011-02-24) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Allow pullcves to pull information of 2011 too
+
+** (2011-02-21) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Support watchlist (provide software titles not detected by
+	  cvechecker)
+
+** (2010-12-01) Release 2.0
+
+** (2010-12-01) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Make scripts more generic (not Gentoo specific)
+
+** (2010-11-27) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Add manpages for scripts
+
+** (2010-11-26) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Do not allow unquoted " characters in contentmatch
+	- Add scripts to provide easier versions.dat rules 
+
+** (2010-11-02) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Add index on tb_cve for CPE data
+	- Cleanup of code
+
+** (2010-11-01) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Add support for 'higher version' reporting (but still
+	  has a lot of quirks to resolve).
+
+** (2010-10-30) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Adding delta processing of binary files
+
+** (2010-10-01) Release 1.0
+
+** (2010-09-10) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Add link to CVE details in report
+	- More error handling / buffer overflow fixes
+
+** (2010-09-08) Release 0.6
+
+** (2010-09-08) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Add indexes on sqlite3 databases (performance impact)
+	- Add support to view detected software
+
+** (2010-09-04) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Fix bug in pullcves when it is an initial pull (which failed)
+
+** (2010-09-04) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Use posix sh for distributed scripts
+	- Do not distribute previous sample files (part of cvereport now)
+
+** (2010-09-03) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Use '...' around files in strings command
+	- Fix buffer overrun in search_and_substitute_group
+	- Disallow files with "," in their name
+	- CVEs whose CPE shows less information than those stored in the
+	  database should be shown as vulnerabilities (say "foo version 1.2" is
+	  vulnerable, then "foo version 1.2, edition 3" should be marked as
+	  vulnerable as well).
+	- Create tables for tb_cpe_(aho)_64 (after all, we created the
+	  database as well)
+	- Fix bug in regular expression group substitution
+	- Automatically update database (fix process)
+
+** (2010-09-02) Release 0.5
+
+** (2010-09-01) Nigel Horne <njh@bandsman.co.uk>
+	- Update configure.ac for FreeBSD builds
+	- Update configure.ac for NetBSD builds
+	- Lower libconfig requirement to 1.3
+
+** (2010-09-01) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Add /usr/local/include for FreeBSD builds
+	- Lower autoconf/automake required versions
+	- Add cvereport script for reporting purposes
+
+** (2010-08-29) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Update pullcves to only import differences with last pull (for CVEs)
+	- Add "cleancache" in pullcves
+
+** (2010-08-26) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Random code cleanups, also build with -Wall now
+
+** (2010-08-25) Release 0.4
+
+** (2010-08-25) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Remove unneeded error message (cosmetic)
+	- XSL transformation scripts are not distributed properly
+	- Add pullcves manual page
+	- Support different returncodes for pullcves + only download/import
+	  when needed (feature request of Nigel Horne <njh@bandsman.co.uk>)
+
+** (2010-08-04) Nigel Horne <njh@bandsman.co.uk>
+	- Add cvedebian script as integrator between cvechecker and Debian's
+	  security information
+
+** (2010-08-24) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Reorganize project repository (src, docs,data, conf, scripts)
+	- Fix bug where file->cpe matches keep on being added instead of
+	  overwritten
+	- Add better description on error messages (reported by Nigel Horne
+	<njh@bandsman.co.uk>)
+	- Add check for argp.h (reported by Nigel Horne <njh@bandsman.co.uk>)
+	- Add feature requests documentation
+	- Add gentoo scripts to help add new version matching data
+
+** (2010-08-20) Release 0.3
+
+** (2010-08-20) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Remove debug/verbose stuff, gdb is far too powerful to ignore
+	- Make CSV output version-specific in case future versions deviate
+	  from the current CSV output format
+	- Add example files for reporting
+
+** (2010-08-18) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Add "--no-check-certificate" to wget calls to allow for sourceforge
+	  pulls even when the sourceforge site's certificates are not known
+	  (reported by Nigel Horne <njh@bandsman.co.uk>)
+
+** (2010-08-17) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Fix filename matching (bug was that only full names matched)
+	- Add some debugging support in the application (show SQL commands)
+
+** (2010-08-16) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Support for reading /proc/version (not executable, we shouldn't only
+	  focus on executables, some libraries are interesting as well) to get
+	  the Linux kernel version
+
+** (2010-08-16) Release 0.2
+
+** (2010-08-16) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Fix configure.ac and Makefile.am to better conform with
+	  autotools/automake rules and guidelines (for instance, now supports
+	  "make install" command)
+	- Fix compiler warnings about int versus size_t (%d should be %uz)
+	- Update pullcves, now support pulling versions.dat file as well
+	- Update cvechecker, now checks /usr/local/etc/cvechecker.conf as well
+
+** (2010-08-14) Release 0.1
+
+** (2010-08-14) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Initial release

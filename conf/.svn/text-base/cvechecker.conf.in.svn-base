@@ -1,0 +1,30 @@
+#
+# Generic settings
+# 
+
+dbtype = "sqlite"; 
+#dbtype="mysql";
+cvecache = "@localstatedir@/cvechecker/cache";
+datadir = "@pkgdatadir@";
+stringcmd = "/usr/bin/strings -n 3 '@file@'";
+version_url = "http://cvechecker.svn.sourceforge.net/viewvc/cvechecker/versions.dat";
+#userkey = "servertag";
+
+#
+# For Sqlite3
+#
+sqlite3: {
+  localdb = "@localstatedir@/cvechecker/local";
+  globaldb = "@localstatedir@/cvechecker/global.db";
+};
+
+# 
+# For MySQL
+# 
+mysql: {
+  dbname = "cvechecker";
+  dbuser = "cvechecker_rw";
+  dbpass = "password4cvechecker_rw";
+  dbhost = "mysql.company.com";
+};
+

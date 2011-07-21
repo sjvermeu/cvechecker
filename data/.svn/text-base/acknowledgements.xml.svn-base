@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<acknowledgements>
+<!-- Examples
+  <file name="/usr/bin/kbxutil" cve="CVE-2010-2547" state="acknowledged" />
+  <file name="/usr/bin/vim" cve="CVE-2008-4101" state="irrelevant" />
+
+  Use "acknowledged" immediately when you have read the report. It allows
+  you to keep track of previous CVEs and new ones.
+
+  Use "irrelevant" if the CVE is not relevant for your system.
+-->
+  <resolution id="CVE-2009-3560-1">
+    Resolved by dev-libs/expat-2.0.1-r3
+  </resolution>
+  <comment id="CVE-2010-1205-1">
+    Acknowledged vulnerability, report Gentoo bug #335508
+  </comment>
+  <file name="/usr/lib64/libexpat.so.1.5.2" cve="CVE-2009-3560" state="irrelevant" resolution="CVE-2009-3560-1"/>
+  <file name="/usr/lib32/libexpat.so.1.5.2" cve="CVE-2009-3560" state="irrelevant" resolution="CVE-2009-3560-1"/>
+  <file name="/usr/lib64/libexpat.so.1.5.2" cve="CVE-2009-3720" state="irrelevant" resolution="CVE-2009-3560-1"/>
+  <file name="/usr/lib32/libexpat.so.1.5.2" cve="CVE-2009-3720" state="irrelevant" resolution="CVE-2009-3560-1"/>
+  <file name="/usr/lib32/libpng14.so.14.2.0" cve="CVE-2010-1205" state="acknowledged" comment="CVE-2010-1205-1"/>
+  <file name="/usr/lib32/libpng12.so.0" cve="CVE-2010-1205" state="acknowledged" comment="CVE-2010-1205-1"/>
+</acknowledgements>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry id="refentry-refdb-bug">
+  <refmeta>
+    <refentrytitle>cvegenversdat</refentrytitle>
+
+    <manvolnum>1</manvolnum>
+
+    <refmiscinfo class="source">November 25, 2010</refmiscinfo>
+
+    <refmiscinfo class="manual">cvegenversdat Manual</refmiscinfo>
+  </refmeta>
+
+  <refnamediv id="refdb-bug-name">
+    <refname>cvegenversdat</refname>
+
+    <refpurpose>Generate version matching rules for passed on
+    files</refpurpose>
+  </refnamediv>
+
+  <!-- body begins here -->
+
+  <refsynopsisdiv id="refdb-bug-synopsis">
+    <cmdsynopsis>
+      <command>&lt;filelist&gt; | cvegenversdat &lt;packagename&gt;
+      &lt;packageversion&gt; &lt;conffile&gt; [breakon]</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="refdb-bug-description">
+    <title>Description</title>
+
+    <para>The cvegenversdat script is a distribution-agnostic script that
+    attempts to generate version matching rules for the files fed to it
+    through standard input. It is commonly called from a distribution-specific
+    script (like cverules_gentoo).</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Usage</title>
+
+    <refsect2>
+      <title>Command Usage</title>
+
+      <para>The command requires the following arguments to be set:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>packagename is the name of the package (like "gzip")</para>
+        </listitem>
+
+        <listitem>
+          <para>packageversion is the (upstream) version of the tool, not of
+          the distribution (so "1.4" rather than "1.4-r1" or
+          "1.4-yourdistro-1")</para>
+        </listitem>
+
+        <listitem>
+          <para>conffile is the cvechecker configuration file (like
+          "/etc/cvechecker.conf")</para>
+        </listitem>
+
+        <listitem>
+          <para>breakon (literally) tells the script to stop the moment a
+          match is already found within the existing cvechecker database.
+          Without the "breakon" string, the script will scan all passed files,
+          even if a few of them are already known to cvechecker.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The script should not be called by end users but is rather a
+      script to be called by the distribution-specific scripts like
+      cverules_gentoo.</para>
+    </refsect2>
+  </refsect1>
+
+  <refsect1 id="refdb-bug-author">
+    <title>Author</title>
+
+    <para>cvegenversdat is part of the cvechecker tool. cvegenversdat was
+    written by Sven Vermeulen &lt;sven.vermeulen@siphos.be&gt;.</para>
+  </refsect1>
+</refentry>

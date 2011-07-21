@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry id="refentry-refdb-bug">
+  <refmeta>
+    <refentrytitle>cverules</refentrytitle>
+
+    <manvolnum>1</manvolnum>
+
+    <refmiscinfo class="source">November 25, 2010</refmiscinfo>
+
+    <refmiscinfo class="manual">cverules Manual</refmiscinfo>
+  </refmeta>
+
+  <refnamediv id="refdb-bug-name">
+    <refname>cverules</refname>
+
+    <refpurpose>Generate version matching rules for installed software on a
+    Linux / Unix distribution</refpurpose>
+  </refnamediv>
+
+  <!-- body begins here -->
+
+  <refsynopsisdiv id="refdb-bug-synopsis">
+    <cmdsynopsis>
+      <command>cverules -r</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="refdb-bug-description">
+    <title>Description</title>
+
+    <para>The cverules script will scan the installed distribution packages
+    on your system and attempt to generate version matching rules that can be
+    used by cvechecker.</para>
+
+    <para>The script should be used by people interested in contributing to
+    the cvechecker' success.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Usage</title>
+
+    <refsect2>
+      <title>Command Usage</title>
+
+      <para>The command requires a single option, -r. An example usage pattern
+      is like so:</para>
+
+      <programlisting>~$ cverules -r &gt; output.txt</programlisting>
+
+      <para>The generated <filename>output.txt</filename> file can then be
+      submitted to the cvechecker project, allowing it to improve the
+      versions.dat.</para>
+    </refsect2>
+
+    <refsect2>
+      <title>Usability</title>
+
+      <para>The user should understand that this script attempts to generate
+      matches, but doesn't guarantee that each and every installed software is
+      detected.</para>
+
+      <para>First of all, if a package is already matched by existing rules,
+      the rest of the package' content isn't scanned anymore. This is because
+      the tool wants to identify software and versions - once one has been
+      detected, further detection is less useful and very resource
+      consuming.</para>
+
+      <para>Second, if a package isn't detected properly, the script will see
+      if the version based on the distributions' package version can be found.
+      If it can't, then it cannot identify the version properly and ignores
+      the package.</para>
+
+      <para>Third, if the script does find a match for the version, it tries
+      out a few regular expressions (which have a high probability rate to
+      match the version) but has no intelligence to optimize the expressions.
+      If the tried expressions fail, the script will ignore the
+      package.</para>
+    </refsect2>
+  </refsect1>
+
+  <refsect1 id="refdb-bug-author">
+    <title>Author</title>
+
+    <para>cverules is part of the cvechecker tool. cverules was
+    written by Sven Vermeulen &lt;sven.vermeulen@siphos.be&gt;.</para>
+  </refsect1>
+</refentry>

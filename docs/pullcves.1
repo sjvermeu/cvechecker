@@ -1,0 +1,68 @@
+'\" -*- coding: us-ascii -*-
+.if \n(.g .ds T< \\FC
+.if \n(.g .ds T> \\F[\n[.fam]]
+.de URL
+\\$2 \(la\\$1\(ra\\$3
+..
+.if \n(.g .mso www.tmac
+.TH pullcves 1 "29 August 2010" "August 29, 2010" "pullcves Manual"
+.SH NAME
+pullcves \- Update the local cvechecker CVE database and version matching rules
+.SH SYNOPSIS
+'nh
+.fi
+.ad l
+\fBpullcves pull\fR \kx
+.if (\nx>(\n(.l/2)) .nr x (\n(.l/5)
+'in \n(.iu+\nxu
+'in \n(.iu-\nxu
+.ad b
+'hy
+or
+'nh
+.fi
+.ad l
+\fBpullcves cleancache\fR \kx
+.if (\nx>(\n(.l/2)) .nr x (\n(.l/5)
+'in \n(.iu+\nxu
+'in \n(.iu-\nxu
+.ad b
+'hy
+.SH DESCRIPTION
+The pullcves script will download the CVE entries from the Internet
+and store them in the local cvechecker databases. It will also download
+the latest version matching rules from the Internet and load them up in
+the cvechecker database. It uses the \fBwget\fR tool for the
+downloads and \fBxsltproc\fR for the XML conversions.
+.PP
+If \fBcleancache\fR is used, it will clean its internal
+cache. This will effectively remove the downloaded XML (and generated CSV)
+files, causing the next \fBpull\fR to redownload and reimport
+everything.
+.SH USAGE
+The command is simply \fBpullcves pull\fR or
+\fBpullcves cleancache\fR.
+.SS "RETURN CODES"
+The returncode of pullcves depends on the actions it
+performed.
+.PP
+In case of \fBpull\fR:
+.TP 0.2i
+\(bu
+A returncode of 0 means that the CVE database and version
+matching rules were already up to date
+.TP 0.2i
+\(bu
+A returncode of 1 means that the CVE database is
+updated
+.TP 0.2i
+\(bu
+A returncode of 2 means that the version matching rules are
+updated
+.TP 0.2i
+\(bu
+A returncode of 3 means that both the CVE database and version
+matching rules are updated
+.SH AUTHOR
+pullcves is part of the cvechecker tool. pullcves was written by
+Sven Vermeulen <sven.vermeulen@siphos.be>.

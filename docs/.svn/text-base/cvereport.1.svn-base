@@ -1,0 +1,67 @@
+'\" -*- coding: us-ascii -*-
+.if \n(.g .ds T< \\FC
+.if \n(.g .ds T> \\F[\n[.fam]]
+.de URL
+\\$2 \(la\\$1\(ra\\$3
+..
+.if \n(.g .mso www.tmac
+.TH cvereport 1 "27 November 2010" "September 1, 2010" "cvereport Manual"
+.SH NAME
+cvereport \- Generate an HTML report for the cvechecker output
+.SH SYNOPSIS
+'nh
+.fi
+.ad l
+\fBcvereport [-d | -D] <targetdir>
+<acknowledgementfile>\fR \kx
+.if (\nx>(\n(.l/2)) .nr x (\n(.l/5)
+'in \n(.iu+\nxu
+'in \n(.iu-\nxu
+.ad b
+'hy
+.SH DESCRIPTION
+The cvereport tool will generate an HTML report based on the
+cvechecker output. The report is generated based on some simple XML/XSLT
+transformations and uses an acknowledgement file to keep track of the
+state of the CVE entries matching your system.
+.SH USAGE
+.SS "COMMAND USAGE"
+The command requires two user-specified options:
+.TP 0.2i
+\(bu
+The \*(T<\fItargetdir\fR\*(T> is an existing, writeable
+directory where cvereport can store its report.html output.
+.TP 0.2i
+\(bu
+The acknowledgementfile is an existing, readable XML file that
+contains the analysis of the CVE entries for your system
+.PP
+The difference between -d and -D is that
+.TP 0.2i
+\(bu
+-d runs the standard cvechecker report, whereas
+.TP 0.2i
+\(bu
+-D runs the cvechecker report including matches for higher
+versions of the installed software
+.SS "ACKNOWLEDGEMENT FILE FORMAT"
+The XML file for the acknowledgements uses the following
+syntax:
+.PP
+.nf
+\*(T<<?xml version="1.0"?>
+<acknowledgements>
+  <resolution id="resolution_id_1">Comment about why a CVE entry is irrelevant for your system</resolution>
+  <resolution id="resolution_id_2">Another comment</resolution>
+  <comment id="comment_id_1">Comment why the CVE is acknowledged, but not resolved</comment>
+  <file name="/path/to/filename1" cve="CVE\-2000\-1234" state="irrelevant" resolution="resolution_id_1" />
+  <file name="/path/to/filename2" cve="CVE\-2000\-5678" state="irrelevant" resolution="resolution_id_2" />
+  <file name="/path/to/filename3" cve="CVE\-2001\-9012" state="acknowledged" comment="comment_id_1" />
+</acknowledgements>\*(T>
+.fi
+.PP
+The use of comments or resolutions within the file entity is not
+mandatory, but recommended.
+.SH AUTHOR
+cvereport is part of the cvechecker tool. cvereport was written by
+Sven Vermeulen <sven.vermeulen@siphos.be>.

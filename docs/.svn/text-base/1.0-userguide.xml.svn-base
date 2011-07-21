@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article version="5.0" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <info>
+    <title>CVE Checker User Guide</title>
+
+    <author>
+      <personname><firstname>Sven</firstname><surname>Vermeulen</surname></personname>
+
+      <email>sven.vermeulen@siphos.be</email>
+    </author>
+
+    <pubdate>2010/09/08</pubdate>
+  </info>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Welcome to the CVE checker user guide. The purpose of this document
+    is to guide you through the installation and usage of CVE checker. But
+    before we start with that, a little warning is in place...</para>
+
+    <para>CVE checker does not provide security for your system. It is nothing
+    more than a tool that attempts to identify installed software on your
+    system and match those against the online database of CVE entries. As the
+    identification of installed software depends on simple rules that are
+    added by the community, it is very likely that it only detects a small
+    portion of the installed software on your system (especially if you are
+    running software that isn't all that popular). And even if the tool
+    detects the software appropriately, it still requires that the CVE entry
+    mentions this software with the same vendor and product name as this tool
+    detects - if not, CVE checker will not be able to match the installed
+    software against the online CVE database.</para>
+
+    <para>Okay, now that that is out of the way, let's start with the CVE
+    checker installation.</para>
+  </section>
+
+  <section>
+    <title>Installation</title>
+
+    <section>
+      <title>Requirements</title>
+
+      <para>The cvechecker tool requires the following packages to be
+      installed:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>libxslt - needed for the XSLT transformations (the online CVE
+          database exists of XML files and we need to convert those to CSV so
+          that we can easily import it into our own, local database)</para>
+        </listitem>
+
+        <listitem>
+          <para>libconfig - a C library that offers a simple way for
+          applications to read and handle configuration files</para>
+        </listitem>
+
+        <listitem>
+          <para>sqlite3 - a local, embedded yet powerful database (for the
+          time being, cvechecker only supports sqlite3, but in the future
+          additional databases will be supported)</para>
+        </listitem>
+
+        <listitem>
+          <para>wget - a command-line tool to fetch online resources</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Installation</title>
+
+      <para>If your distribution already offers cvechecker through its package
+      management system, I strongly advise that you use that. The installation
+      instructions in this section assume that you do the installation
+      manually (and should reflect the steps that the distribution package
+      management system does for you).</para>
+
+      <para>First, download the latest cvechecker package from <uri
+      xlink:href="http://cvechecker.sourceforge.net">http://cvechecker.sourceforge.net</uri>
+      (or <uri
+      xlink:href="http://sourceforge.net/projects/cvechecker/files/">http://sourceforge.net/projects/cvechecker/files/</uri>),
+      then extract it into a temporary directory:</para>
+
+      <programlisting>~$ <command>tar xvzf cvechecker-1.0.tar.gz</command></programlisting>
+
+      <para>Inside the extracted folder, first run
+      <command>./configure</command>, followed by <command>make</command> and
+      <command>make install</command>. If you use the default settings, it
+      will install the files inside <filename>/usr/local</filename>, so you
+      might need root privileges to perform the <command>make
+      install</command> step.</para>
+
+      <programlisting>~$ <command>cd cvechecker-1.0</command>
+~$ <command>./configure</command>
+...
+~$ <command>make</command>
+...
+~$ <command>sudo -i</command>
+~# <command>make install</command></programlisting>
+
+      <para>Finally, create a group called cvechecker and change the
+      permissions of the installed folders so that this group has write
+      privileges inside the directory. These steps are performed when
+      executing <command>make postinstall</command> (you almost definitely
+      need root privileges now):</para>
+
+      <programlisting>~# <command>make postinstall</command></programlisting>
+    </section>
+
+    <section>
+      <title>Initial Configuration</title>
+
+      <para>With the software now installed, you need to perform an initial
+      configuration. This includes the setup of the databases, creation of the
+      user you are going to use to run cvechecker and initial pull of the CVE
+      entries from the Internet.</para>
+
+      <para>First, create a user that you will use to run cvechecker. The tool
+      does not require root privileges, so I recommend not to use root. I
+      personally use a dedicated user whose sole purpose is to, on a daily
+      basis, pull the latest updates from the Internet, generate a report and
+      mail that report to me. Make sure that this user is inside the
+      cvechecker group:</para>
+
+      <programlisting>~# <command>gpasswd -a <replaceable>youruser</replaceable> cvechecker</command></programlisting>
+
+      <para>Log on as that user, make sure his primary group is cvechecker and
+      set the umask to 002 or higher (such as 007).</para>
+
+      <programlisting>~# <command>su <replaceable>youruser</replaceable> -</command>
+~$ <command>newgrp cvechecker</command>
+~$ <command>umask 007</command></programlisting>
+
+      <para>Now, initialize the databases by running <command>cvechecker
+      -i</command>.</para>
+
+      <programlisting>~$ <command>cvechecker -i</command></programlisting>
+
+      <para>Finally, perform an initial pull to get the CVE entries inside the
+      database. This will take a long time, so please be patient. Future pulls
+      will not take this much time as they will not redownload the CVE entries
+      from all previous years.</para>
+
+      <programlisting>~$ <command>pullcves pull</command></programlisting>
+    </section>
+  </section>
+
+  <section>
+    <title>Regular Runs</title>
+
+    <para>Whenever you want to perform a regular cvechecker run, you should
+    schedule five steps:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>pull in the latest CVE entries as well as software/version
+        detection rules</para>
+      </listitem>
+
+      <listitem>
+        <para>generate a list of files to scan</para>
+      </listitem>
+
+      <listitem>
+        <para>gather installed software/version information</para>
+      </listitem>
+
+      <listitem>
+        <para>output which CVE entries might affect your system</para>
+      </listitem>
+
+      <listitem>
+        <para>generate a report informing you about the CVE entries</para>
+      </listitem>
+    </orderedlist>
+
+    <para>All these steps should be performed by the user you use to run
+    cvechecker, so don't forget:</para>
+
+    <programlisting>~$ <command>newgrp cvechecker</command>
+~$ <command>umask 007</command></programlisting>
+
+    <section>
+      <title>Pull Data</title>
+
+      <para>To pull the necessary data from the Internet, run
+      <command>pullcves pull</command>:</para>
+
+      <programlisting>~$ <command>pullcves pull</command></programlisting>
+    </section>
+
+    <section>
+      <title>Generate List of Files</title>
+
+      <para>cvechecker uses a text file which sums up the files to scan. I
+      recommend that you provide it with a list of all executables files plus
+      /proc/version (on Linux). The latter allows cvechecker to verify if
+      there are kernel-related CVE entries for your Linux kernel.</para>
+
+      <programlisting>~$ <command>find / -type f -perm -o+x &gt; scanlist.txt</command>
+~$ <command>echo "/proc/version" &gt;&gt; scanlist.txt</command></programlisting>
+
+      <para>It is strongly advised to either umount or exclude file systems on
+      which no useful files are located (or that belong to different operating
+      systems, like a mounted Windows partition). You can use the
+      <parameter>-mount</parameter> (or <parameter>-xdev</parameter>) option
+      of <command>find</command> to stay within the selected device
+      (partition), or exclude directories (and their subdirectories), like
+      so:</para>
+
+      <programlisting>~$ <command>find / -path /mnt -prune -o -path /media -prune -o -type f -perm -o+x &gt; scanlist.txt</command> </programlisting>
+    </section>
+
+    <section>
+      <title>Gather List of Installed Software/Versions</title>
+
+      <para>Import the generated scanlist.txt file in cvechecker. During the
+      import, cvechecker will output the software/versions it detected:</para>
+
+      <programlisting>~$ <command>cvechecker -b scanlist.txt</command></programlisting>
+    </section>
+
+    <section>
+      <title>Output Matching CVE Entries</title>
+
+      <para>Make cvechecker output the matching CVE entries. A standard output
+      might look like this:</para>
+
+      <programlisting>~$ <command>cvechecker -r</command>
+File "/usr/bin/kbxutil" (CPE = cpe:/a:gnupg:gnupg:2.0.15:::)
+  Potential vulnerability found (CVE-2010-2547)
+  Full vulnerability match (incl. edition/language)
+File "/usr/bin/gpgsm" (CPE = cpe:/a:gnupg:gnupg:2.0.15:::)
+  Potential vulnerability found (CVE-2010-2547)
+  Full vulnerability match (incl. edition/language)
+File "/usr/bin/watchgnupg" (CPE = cpe:/a:gnupg:gnupg:2.0.15:::)
+  Potential vulnerability found (CVE-2010-2547)
+  Full vulnerability match (incl. edition/language)</programlisting>
+
+      <para>However, if you would like to parse the output so that you can
+      generate a better-looking report, ask cvechecker to use CSV
+      output:</para>
+
+      <programlisting>~$ <command>cvechecker -r -C</command>
+Outputversion,File,CPE,CVE,Matchtype
+1,/usr/bin/kbxutil,cpe:/a:gnupg:gnupg:2.0.15:::,CVE-2010-2547,1
+1,/usr/bin/gpgsm,cpe:/a:gnupg:gnupg:2.0.15:::,CVE-2010-2547,1
+1,/usr/bin/watchgnupg,cpe:/a:gnupg:gnupg:2.0.15:::,CVE-2010-2547,1</programlisting>
+    </section>
+
+    <section>
+      <title>(Optional) Generate A Report</title>
+
+      <para>You can use the cvechecker output to generate a report. Within the
+      cvechecker distribution, sample reporting files are available that show
+      you a simple method. Of course, reporting is not part of this tools'
+      goals; the primary purpose of this step is to show you that the output
+      can indeed be used for reporting purposes. To facilitate (simple)
+      reporting, a cvereport script has been provided which uses the sample
+      reports currently. In the future, this will be enhanced with
+      distribution-specific checks.</para>
+
+      <programlisting>~$ <command>cvereport -d /home/john/cvereport-20100902/ /home/john/cvechecker/acknowledgements.xml</command></programlisting>
+
+      <para>Below is a sample acknowledgements XML file. Its use should be
+      self-explanatory:</para>
+
+      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;acknowledgements&gt;
+  &lt;!-- I chose to use the CVE number as id for the resolution/comment text, but this is not mandatory --&gt;
+  &lt;resolution id="CVE-2008-4101"&gt;Has been solved by security update #17 (vim-1.7-b3)&lt;/resolution&gt;
+  &lt;comment id="CVE-2010-2547"&gt;Under investigation, bug opened on distributions bug site (#332329)&lt;/comment&gt;
+  &lt;!-- The @comment or @resolution should refer to one of the above descriptions. 
+         Its use however is optional (you don't need to give comments) --&gt;
+  &lt;file name="/usr/bin/kbxutil" cve="CVE-2010-2547" state="acknowledged" comment="CVE-2010-2547" /&gt;
+  &lt;file name="/usr/bin/vim" cve="CVE-2008-4101" state="irrelevant" resolution="CVE-2008-4101" /&gt;
+&lt;/acknowledgements&gt;</programlisting>
+
+      <para>The final document (report.html) can then be mailed, published or
+      in any other way sent to you.</para>
+
+      <para>If the report shows new CVE entries matching your system,
+      investigate those CVE entries by first acknowledging and, if necessary,
+      either update the software on your system or mark the entry as
+      irrelevant.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Detected Software</title>
+
+    <para>The tool also supports listing the detected software/version on your
+    system. This allows you to verify if the tool can detect the software you
+    want to track CVE reports of.</para>
+
+    <programlisting>~$ <command>cvechecker -s</command>
+Detected vendor = "wpa_supplicant", product = "wpa_supplicant", version = "0.6.10", update = "", edition = "", language = ""
+...</programlisting>
+
+    <para>You can also request the list of files that were used by cvechecker
+    to identify the software:</para>
+
+    <programlisting>~$ <command>cvechecker -S</command>
+Detected vendor = "wpa_supplicant", product = "wpa_supplicant", version = "0.6.10", update = "", edition = "", language = ""
+Files that contributed to this detection:
+  - /usr/sbin/wpa_supplicant
+  - /usr/bin/wpa_cli</programlisting>
+
+    <para>These options also support the -C switch (to enable CSV-like output
+    for easier parsing);</para>
+
+    <programlisting>~$ <command>cvechecker -S -C</command>
+Outputversion,Vendor,Product,Version,Update,Edition,Language,Files
+1,wpa_supplicant,wpa_supplicant,0.6.10,,,/usr/sbin/wpa_supplicant /usr/bin/wpa_cli </programlisting>
+  </section>
+
+  <section>
+    <title>Configuration File</title>
+
+    <para>The cvechecker tool uses a configuration file to find out where to
+    store its intermediate and final data (such as downloaded XML files, CSV
+    files, database files).</para>
+
+    <para>The tool first looks for .cvechecker.rc inside the users' home
+    directory. If it can't find it, it will look for
+    /usr/local/etc/cvechecker.conf and, if that file doesn't exist either,
+    /etc/cvechecker.conf.</para>
+
+    <section>
+      <title>Format</title>
+
+      <para>The cvechecker configuration file currently requires 6
+      configuration items:</para>
+
+      <programlisting>localdb = "/usr/local/var/cvechecker/local";
+globaldb = "/usr/local/var/cvechecker/global.db";
+cvecache = "/usr/local/var/cvechecker/cache";
+datadir = "/usr/local/share/cvechecker";
+stringcmd = "/usr/bin/strings -n 3 '@file@'";
+version_url = "http://cvechecker.svn.sourceforge.net/viewvc/cvechecker/versions.dat";</programlisting>
+
+      <para>These items describe the following resources:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>localdb is a (cvechecker writeable) directory where cvechecker
+          will store its sqlite3 databases containing the CPE data
+          (identification information of software/versions) as well as the
+          local systems' matching file/software pairs and all downloaded CVE
+          entries</para>
+        </listitem>
+
+        <listitem>
+          <para>globaldb is a (cvechecker writeable) sqlite3 database
+          containing the software/version matching rules and CPEs associated
+          with these rules</para>
+        </listitem>
+
+        <listitem>
+          <para>cvecache is a (cvechecker writeable) directory where pullcves
+          will download all XML files and store the transformed XML2CSV files
+          (containing the CVE entry data). Although it is not used anymore
+          after being imported into the local databases, pullcves relies on
+          the availability of the XML files to find out if it needs to
+          (re)download and import CVE entries. So if you want to clean out the
+          directory, make (empty) files named after the XML files so that
+          pullcves does not redownload and reimport the CVE entry data (not
+          that this will render the application unusable, but it takes a
+          while)</para>
+        </listitem>
+
+        <listitem>
+          <para>datadir is a directory where cvechecker-related files are
+          stored, including the XSLT transformation files used to convert CVE
+          XML files in CSV files as well as the sample reporting files as used
+          in this document</para>
+        </listitem>
+
+        <listitem>
+          <para>stringcmd is the command that cvechecker launches against a
+          file to get the files' content. Currently, this is the only
+          supported method for cvechecker to identify the
+          software/version.</para>
+        </listitem>
+
+        <listitem>
+          <para>version_url is the location where pullcves can find the latest
+          software/version matching rules to identify installed software on
+          the system.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Changing Parameters</title>
+
+      <para>If you need to change parameters, make sure that the file
+      containing the changes values contains all configuration items.
+      cvechecker does not "fall back" to other configuration files if a
+      parameter is missing. In other words, you cannot have a ~/.cvechecker.rc
+      with one setting and relie on cvechecker to use /etc/cvechecker.conf for
+      the other settings.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Software Matching Rules</title>
+
+    <para>The software matching rules, as identified inside the versions.dat
+    file, is pulled in and imported in the cvechecker database by
+    pullcves.</para>
+
+    <section>
+      <title>Syntax</title>
+
+      <para>The syntax of the versions.dat file is as follows:</para>
+
+      <programlisting>,[filestart],1,[fileexpression],[contentexpression],[ao],[vendor],[product],[version],[update],[edition],[language]</programlisting>
+
+      <para>The first comma is also used to inform cvechecker about the used
+      column separator. If by any chance a field requires a comma as content,
+      another separator can be chosen - just start the line with the chosen
+      separator character.</para>
+
+      <para>The other fields have the following description:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>filestart is a substring used by cvechecker to quickly find
+          possible matches. A filename that starts with filestart will be
+          considered for further evaluation.</para>
+        </listitem>
+
+        <listitem>
+          <para>1 is used to inform cvechecker about the used version matching
+          methodology. Currently only 1 is supported and means that it uses
+          the strings command output.</para>
+        </listitem>
+
+        <listitem>
+          <para>fileexpression is a regular expression used by cvechecker to
+          find out if the file really needs to be scanned. Usually, the
+          expression is just the filename, but for some binaries (like
+          perl5.8.8) or libraries (like libconfig.so.1.2.8) having a matching
+          regular expression allows cvechecker to identify these files as
+          being part of a supported match-rule</para>
+        </listitem>
+
+        <listitem>
+          <para>contentexpression is a regular expression used against the
+          strings command output to find (and obtain) the version, update,
+          edition and language of the software. It uses regular expression
+          groups to obtain the necessary information</para>
+        </listitem>
+
+        <listitem>
+          <para>'a' or 'o' tells cvechecker if the detected software is an
+          application (a) or operating system (o)</para>
+        </listitem>
+
+        <listitem>
+          <para>vendor tells cvechecker what the vendor is of the file</para>
+        </listitem>
+
+        <listitem>
+          <para>product tells cvechecker what the product is to which the file
+          belongs</para>
+        </listitem>
+
+        <listitem>
+          <para>version tells cvechecker what the detected version is of the
+          product</para>
+        </listitem>
+
+        <listitem>
+          <para>update, if applicable, tells cvechecker the specific update of
+          the software</para>
+        </listitem>
+
+        <listitem>
+          <para>edition, if applicable, tells cvechecker the specific edition
+          of the software</para>
+        </listitem>
+
+        <listitem>
+          <para>language, if applicable, tells cvechecker the specific
+          language of the software</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The parts starting from the [ao] field are also known as the CPE
+      or Common Platform Enumeration. See <uri
+      xlink:href="http://cpe.mitre.org">http://cpe.mitre.org</uri> for more
+      information.</para>
+
+      <para>Some example lines are:</para>
+
+      <programlisting>,gzip,1,gzip,^([0-9]\.[0-9][0-9]*),a,gnu,gzip,\1,,,
+,vim,1,vim,VIM - Vi IMproved ([0-9\.]+) ,a,vim,vim,\1,,,
+,ncftp,1,ncftp,^.*NcFTP ([0-9\.]+)/([0-9]+) .*,a,ncftp_software,ncftp,\1,\2,,</programlisting>
+    </section>
+
+    <section>
+      <title>Validating 'versions.dat'</title>
+
+      <para>To validate the matching rules, you can ask cvechecker to tell you
+      if, and what CPE data it detects from a specific file:</para>
+
+      <programlisting>~$ <command>cvechecker -f /usr/bin/vim</command>
+  - Found match for /urs/bin/vim:    cpe:/a:vim:vim:7.2:::</programlisting>
+
+      <para>In the above case, it detected for the /usr/bin/vim file vim
+      (product) from vim (vendor) versino 7.2. It was not able to deduce any
+      specific releases/edition/language (but that is not mandatory
+      anyway).</para>
+
+      <para>If you want to add additional rules, make sure that the dat-file
+      you will be importing contains the previous rules as well - cvechecker
+      will drop all previous rules while importing new ones.</para>
+
+      <programlisting>~$ <command>cvechecker -l /usr/local/var/cvechecker/cache/versions.dat</command>
+Loading in new version data file...</programlisting>
+    </section>
+  </section>
+</article>

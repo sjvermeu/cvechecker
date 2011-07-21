@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry id="refentry-refdb-bug">
+  <refmeta>
+    <refentrytitle>pullcves</refentrytitle>
+
+    <manvolnum>1</manvolnum>
+
+    <refmiscinfo class="source">August 29, 2010</refmiscinfo>
+
+    <refmiscinfo class="manual">pullcves Manual</refmiscinfo>
+  </refmeta>
+
+  <refnamediv id="refdb-bug-name">
+    <refname>pullcves</refname>
+
+    <refpurpose>Update the local cvechecker CVE database and version matching
+    rules</refpurpose>
+  </refnamediv>
+
+  <!-- body begins here -->
+
+  <refsynopsisdiv id="refdb-bug-synopsis">
+    <cmdsynopsis>
+      <command>pullcves pull</command>
+    </cmdsynopsis>
+
+    <para>or</para>
+
+    <cmdsynopsis>
+      <command>pullcves cleancache</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="refdb-bug-description">
+    <title>Description</title>
+
+    <para>The pullcves script will download the CVE entries from the Internet
+    and store them in the local cvechecker databases. It will also download
+    the latest version matching rules from the Internet and load them up in
+    the cvechecker database. It uses the <command>wget</command> tool for the
+    downloads and <command>xsltproc</command> for the XML conversions.</para>
+
+    <para>If <command>cleancache</command> is used, it will clean its internal
+    cache. This will effectively remove the downloaded XML (and generated CSV)
+    files, causing the next <command>pull</command> to redownload and reimport
+    everything.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Usage</title>
+
+    <subtitle>Command Usage</subtitle>
+
+    <para>The command is simply <command>pullcves pull</command> or
+    <command>pullcves cleancache</command>.</para>
+
+    <refsect2>
+      <title>Return Codes</title>
+
+      <para>The returncode of pullcves depends on the actions it
+      performed.</para>
+
+      <para>In case of <command>pull</command>:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>A returncode of 0 means that the CVE database and version
+          matching rules were already up to date</para>
+        </listitem>
+
+        <listitem>
+          <para>A returncode of 1 means that the CVE database is
+          updated</para>
+        </listitem>
+
+        <listitem>
+          <para>A returncode of 2 means that the version matching rules are
+          updated</para>
+        </listitem>
+
+        <listitem>
+          <para>A returncode of 3 means that both the CVE database and version
+          matching rules are updated</para>
+        </listitem>
+      </itemizedlist>
+    </refsect2>
+  </refsect1>
+
+  <refsect1 id="refdb-bug-author">
+    <title>Author</title>
+
+    <para>pullcves is part of the cvechecker tool. pullcves was written by
+    Sven Vermeulen &lt;sven.vermeulen@siphos.be&gt;.</para>
+  </refsect1>
+</refentry>

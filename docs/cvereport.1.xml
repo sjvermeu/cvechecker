@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<refentry id="refentry-refdb-bug">
+  <refmeta>
+    <refentrytitle>cvereport</refentrytitle>
+
+    <manvolnum>1</manvolnum>
+
+    <refmiscinfo class="source">September 1, 2010</refmiscinfo>
+
+    <refmiscinfo class="manual">cvereport Manual</refmiscinfo>
+  </refmeta>
+
+  <refnamediv id="refdb-bug-name">
+    <refname>cvereport</refname>
+
+    <refpurpose>Generate an HTML report for the cvechecker output</refpurpose>
+  </refnamediv>
+
+  <!-- body begins here -->
+
+  <refsynopsisdiv id="refdb-bug-synopsis">
+    <cmdsynopsis>
+      <command>cvereport [-d | -D] &lt;targetdir&gt;
+      &lt;acknowledgementfile&gt;</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="refdb-bug-description">
+    <title>Description</title>
+
+    <para>The cvereport tool will generate an HTML report based on the
+    cvechecker output. The report is generated based on some simple XML/XSLT
+    transformations and uses an acknowledgement file to keep track of the
+    state of the CVE entries matching your system.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Usage</title>
+
+    <refsect2>
+      <title>Command Usage</title>
+
+      <para>The command requires two user-specified options:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The <filename>targetdir</filename> is an existing, writeable
+          directory where cvereport can store its report.html output.</para>
+        </listitem>
+
+        <listitem>
+          <para>The acknowledgementfile is an existing, readable XML file that
+          contains the analysis of the CVE entries for your system</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The difference between -d and -D is that</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>-d runs the standard cvechecker report, whereas</para>
+        </listitem>
+
+        <listitem>
+          <para>-D runs the cvechecker report including matches for higher
+          versions of the installed software</para>
+        </listitem>
+      </itemizedlist>
+    </refsect2>
+
+    <refsect2>
+      <title>Acknowledgement File Format</title>
+
+      <para>The XML file for the acknowledgements uses the following
+      syntax:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;acknowledgements&gt;
+  &lt;resolution id="resolution_id_1"&gt;Comment about why a CVE entry is irrelevant for your system&lt;/resolution&gt;
+  &lt;resolution id="resolution_id_2"&gt;Another comment&lt;/resolution&gt;
+  &lt;comment id="comment_id_1"&gt;Comment why the CVE is acknowledged, but not resolved&lt;/comment&gt;
+  &lt;file name="/path/to/filename1" cve="CVE-2000-1234" state="irrelevant" resolution="resolution_id_1" /&gt;
+  &lt;file name="/path/to/filename2" cve="CVE-2000-5678" state="irrelevant" resolution="resolution_id_2" /&gt;
+  &lt;file name="/path/to/filename3" cve="CVE-2001-9012" state="acknowledged" comment="comment_id_1" /&gt;
+&lt;/acknowledgements&gt;</programlisting>
+
+      <para>The use of comments or resolutions within the file entity is not
+      mandatory, but recommended.</para>
+    </refsect2>
+  </refsect1>
+
+  <refsect1 id="refdb-bug-author">
+    <title>Author</title>
+
+    <para>cvereport is part of the cvechecker tool. cvereport was written by
+    Sven Vermeulen &lt;sven.vermeulen@siphos.be&gt;.</para>
+  </refsect1>
+</refentry>

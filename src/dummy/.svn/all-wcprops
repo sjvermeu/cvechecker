@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svnroot/cvechecker/!svn/ver/191/src/dummy
+END
+dummy_sqlite3.c
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/cvechecker/!svn/ver/191/src/dummy/dummy_sqlite3.c
+END
+dummy_mysql.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/cvechecker/!svn/ver/191/src/dummy/dummy_mysql.c
+END
+dummy_sqlite3.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svnroot/cvechecker/!svn/ver/191/src/dummy/dummy_sqlite3.h
+END
+dummy_mysql.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/cvechecker/!svn/ver/191/src/dummy/dummy_mysql.h
+END

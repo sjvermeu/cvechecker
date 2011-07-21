@@ -1,0 +1,54 @@
+'\" -*- coding: us-ascii -*-
+.if \n(.g .ds T< \\FC
+.if \n(.g .ds T> \\F[\n[.fam]]
+.de URL
+\\$2 \(la\\$1\(ra\\$3
+..
+.if \n(.g .mso www.tmac
+.TH cvegenversdat 1 "27 November 2010" "November 25, 2010" "cvegenversdat Manual"
+.SH NAME
+cvegenversdat \- Generate version matching rules for passed on files
+.SH SYNOPSIS
+'nh
+.fi
+.ad l
+\fB<filelist> | cvegenversdat <packagename>
+<packageversion> <conffile> [breakon]\fR \kx
+.if (\nx>(\n(.l/2)) .nr x (\n(.l/5)
+'in \n(.iu+\nxu
+'in \n(.iu-\nxu
+.ad b
+'hy
+.SH DESCRIPTION
+The cvegenversdat script is a distribution-agnostic script that
+attempts to generate version matching rules for the files fed to it
+through standard input. It is commonly called from a distribution-specific
+script (like cverules_gentoo).
+.SH USAGE
+.SS "COMMAND USAGE"
+The command requires the following arguments to be set:
+.TP 0.2i
+\(bu
+packagename is the name of the package (like "gzip")
+.TP 0.2i
+\(bu
+packageversion is the (upstream) version of the tool, not of
+the distribution (so "1.4" rather than "1.4-r1" or
+"1.4-yourdistro-1")
+.TP 0.2i
+\(bu
+conffile is the cvechecker configuration file (like
+"/etc/cvechecker.conf")
+.TP 0.2i
+\(bu
+breakon (literally) tells the script to stop the moment a
+match is already found within the existing cvechecker database.
+Without the "breakon" string, the script will scan all passed files,
+even if a few of them are already known to cvechecker.
+.PP
+The script should not be called by end users but is rather a
+script to be called by the distribution-specific scripts like
+cverules_gentoo.
+.SH AUTHOR
+cvegenversdat is part of the cvechecker tool. cvegenversdat was
+written by Sven Vermeulen <sven.vermeulen@siphos.be>.

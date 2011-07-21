@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article version="5.0" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <info>
+    <title>Feature Requests</title>
+
+    <author>
+      <personname><firstname>Sven</firstname><surname>Vermeulen</surname></personname>
+    </author>
+
+    <pubdate>2011-04-12</pubdate>
+  </info>
+
+  <section>
+    <title>Requested Features</title>
+
+    <para>The following table lists the feature requests that are currently
+    received but not part of a stable released version.</para>
+
+    <table>
+      <title>List of requested features</title>
+
+      <tgroup cols="5">
+        <thead>
+          <row>
+            <entry>Title</entry>
+
+            <entry>Who Requested</entry>
+
+            <entry>When requested</entry>
+
+            <entry>Priority</entry>
+
+            <entry>State</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>Distribution specific checks</entry>
+
+            <entry>Nigel Horne, Sven Vermeulen</entry>
+
+            <entry>2010-08-24</entry>
+
+            <entry>Medium</entry>
+
+            <entry>Draft</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <section>
+      <title>Distribution-specific checks</title>
+
+      <note>
+        <para>This request is still in draft (meaning it has not been
+        started). Feedback (or perhaps even patches) are greatly
+        appreciated.</para>
+      </note>
+
+      <para>Support a distribution specific check script (most likely using
+      the cvechecker output) that investigates if a vulnerability hasn't been
+      solved by the distribution itself through an applied patch (rather than
+      a version upgrade). The check script itself should be a wrapper that
+      detects on which distribution the script is being ran (/etc/*release)
+      and then calls the script particularly made for that distribution (on a
+      predefined location, say lib/cvechecker/scripts).</para>
+
+      <para>The distribution-specific scripts must adhere to a predefined
+      input/output scheme, returncodes and such.</para>
+
+      <para>They should support a human-friendly and computer-parsable
+      output.</para>
+
+      <para>A sample script is available in the cvechecker distribution,
+      <filename>scripts/cvedebian</filename>, courtesy of Nigel Horne.</para>
+    </section>
+  </section>
+</article>

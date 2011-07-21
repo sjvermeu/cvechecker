@@ -1,0 +1,80 @@
+#!/bin/sh
+
+if [[ $# -lt 3 ]] || [[ $# -gt 4 ]];
+then
+  echo "Usage: <pkgcontent> | $0 <packagename> <packageversion> <conffile> [breakon]";
+  echo "";
+  echo "  <packagename>    = package name (used to find potential CPE names)";
+  echo "  <packageversion> = package version (without distribution specific extension)";
+  echo "  <conffile>       = cvechecker configuration file";
+  echo "  breakon          = stop checking once at least one file is found that provides a match";
+  echo "";
+  echo "  With breakon, you will only receive new potential versions.dat rules if the package content";
+  echo "  has not found a match currently. Once a match is found, we discontinue the search.";
+  echo "";
+  echo "  You can provide filelist with the platform-specific commands, like 'qlist' for Gentoo.";
+  exit 1;
+fi
+
+typeset PKGNAME=$1;
+typeset PKGVERSION=$2;
+typeset CONFFILE=$3;
+typeset CACHEDIR=$(awk -F'=' '/^cvecache/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}');
+typeset VERSIONFILE=${CACHEDIR}/versions.dat;
+typeset BREAKON=$5;
+typeset TEMPFILE=$(mktemp);
+typeset FILTERCMD="";
+
+if [ "x${IGNORESTRINGS}" != "x" ];
+then
+  FILTERSTR="${IGNORESTRINGS}"; 
+else
+  FILTERSTR="azAZ09_-33551288123364jjSDHdfzPnbdbvsdfjHGHan";
+fi
+
+while read FILE;
+do
+  strings -n 3 ${FILE} | grep -v ${FILTERSTR} | grep -q ${PKGVERSION};
+  if [[ $? -eq 0 ]];
+  then
+    cvechecker -f ${FILE} | grep -q ${PKGVERSION};
+    if [[ $? -ne 0 ]];
+    then
+      typeset CPEIDS=$(grep ":${PKGNAME}:" ${CACHEDIR}/*.csv | awk -F':' '{printf ",a,%s,%s,\\1,,,\n", $5, $6}' | sort | uniq);
+      if [[ $? -eq 0 ]];
+      then
+        for CPEID in ${CPEIDS};
+	do
+          printf ",%s,1,%s," `basename ${FILE}` `basename ${FILE}` > ${TEMPFILE};
+	  typeset LINEMATCH=$(strings -n 3 ${FILE} | grep -v ${FILTERSTR} | grep ${PKGVERSION} | sed -e "s:${PKGVERSION}:([0-9][0-9]*(\\\\.[0-9]+)+):g" | tail -1);
+	  printf "%s%s\n" "${LINEMATCH}" ${CPEID} >> ${TEMPFILE};
+	  cvechecker -l ${TEMPFILE} > /dev/null;
+	  cvechecker -f ${FILE} | grep -q ${PKGVERSION};
+	  if [[ $? -eq 0 ]];
+	  then
+	    # Valid match
+            cat ${TEMPFILE};
+	  else
+            printf ",%s,1,%s," `basename ${FILE}` `basename ${FILE}` > ${TEMPFILE}; 
+	    typeset LINEMATCH=$(strings -n 3 ${FILE} | grep -v ${FILTERSTR} | grep ${PKGVERSION} | sed -e "s:${PKGVERSION}:^([0-9][0-9]*(\\\\.[0-9]+)+):g" | tail -1);
+	    printf "%s%s\n" "${LINEMATCH}" ${CPEID} >> ${TEMPFILE};
+	    cvechecker -l ${TEMPFILE} > /dev/null;
+	    cvechecker -f ${FILE} | grep -q ${PKGVERSION};
+            if [[ $? -eq 0 ]];
+	    then
+              # Valid match
+	      cat ${TEMPFILE};
+	    fi
+	  fi
+	done
+      fi
+    elif [[ "${BREAKON}" = "breakon" ]];
+    then
+      cvechecker -l ${VERSIONFILE} > /dev/null;
+      break;
+    fi
+    cvechecker -l ${VERSIONFILE} > /dev/null;
+  fi
+done
+
+rm ${TEMPFILE};

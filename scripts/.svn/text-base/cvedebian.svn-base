@@ -1,0 +1,133 @@
+#!/usr/bin/perl -w
+
+#  cvedebian: Check if your Debian system is vulnerable
+#
+#  Copyright (C) 2010 Nigel Horne, njh@bandsman.co.uk
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2 as
+#  published by the Free Software Foundation.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+
+# Version 0.01 24/8/10
+
+use strict;
+use warnings;
+use diagnostics;
+use Text::CSV;	# Fixme - test for Text::CSV::XS and use that if it's there
+use File::Fetch;
+use File::HomeDir;
+use HTTP::Cache::Transparent;	# FIXME: https://rt.cpan.org/Ticket/Display.html?id=60681
+use Perl::Version;	# NB uses _ not - for releases/patches, why can't
+			#	authors standardise?
+
+HTTP::Cache::Transparent::init( {
+	BasePath => '/usr/local/var/cvechecker/cache/http',
+	# Verbose => 1,
+	NoUpdate => 60 * 60,
+	MaxAge => 15 * 24} ) || die "/usr/local/var/cvechecker/cache/http: $!";
+
+my $debug = 0;
+my %vulnerabilities;	# Maps packages to potential vulnerabilities
+my %versions;	# Maps potentially vulnerable packages to installed version
+my $csv = Text::CSV->new();
+my %printed;	# Avoid duplicate lookups when more than one file in a package
+		# is vulnerable to the same CVE
+
+# Determine the version of Debian that we are running
+open my $io, '<', '/etc/issue' || die "/etc/issue: $!\n";
+my $issue = <$io>;
+close $io;
+chomp $issue;
+my @fields = split / /, $issue;
+$issue = $fields[2];
+# Inconsistenly and therefore rather annoyingly /etc/issue has a stroke thus
+# "squeeze/sid", whereas security-tracker.debian.org has a comma and space thus
+# "squeeze, sid"
+if($issue =~ /(.+)\/(.+)/) {
+	$issue = $1;
+}
+if($debug) {
+	print "Issue $issue\n";
+}
+
+# Find a list of potential vulnerabilities
+open $io, '-|', 'cvechecker -rC' || die "cvechecker: $!\n";
+
+$csv->column_names($csv->getline($io));
+
+while(my $cve = $csv->getline_hr($io)) {
+	my $cmd = $cve->{File};
+	open my $fin, '-|', "dpkg -S $cmd";
+	my $pkg = <$fin>;
+	close $fin;
+	chomp $pkg;
+	my @fields = split /: /, $pkg;
+	push @{$vulnerabilities{$fields[0]}}, $cve->{CVE};
+}
+
+$csv->eof or $csv->error_diag();
+
+close $io;
+
+# For each file that is potentially vulnerable, find which package its in
+foreach my $package (sort keys %vulnerabilities) {
+	open my $fin, '-|', "dpkg -s $package";
+	while(<$fin>) {
+		if(/^Version/) {
+			chomp;
+			my @fields = split /: /;
+			if($debug) {
+				print "$package ($fields[1]) could be vulnerable to @{$vulnerabilities{$package}}\n";
+			}
+			$fields[1] =~ tr/-/_/;
+			$versions{$package} = Perl::Version->new($fields[1]);
+			last;
+		}
+	}
+	close $fin;
+}
+
+# Look up the packages on Debian's website and see if its been fixed
+foreach my $package (sort keys %vulnerabilities) {
+	# print "$package: @{$vulnerabilities{$package}}\n";
+	V: foreach my $vulnerability (@{$vulnerabilities{$package}}) {
+		next V if $printed{"$package/$vulnerability"};
+		if($debug) {
+			print "Get $vulnerability for $package\n";
+		}
+		my $ff = File::Fetch->new(uri => "http://security-tracker.debian.org/tracker/$vulnerability") || die "http://security-tracker.debian.org/tracker/$vulnerability: $@\n";
+		my $info;
+		$ff->fetch(to => \$info) || die "http://security-tracker.debian.org/tracker/$vulnerability: $@\n";
+		# TODO: check this regex is correct
+		# This format relies on Debian not changing their website. It
+		# would be preferable if they allowed a database lookup
+		if($info =~ /Status.+$package.*?<\/td><td>$issue.*?<\/td><td>(.+?)<\/td><td>(.+?)<\/td>.+/) {
+			if($2 eq 'vulnerable') {
+				print "Your version of $package is vulnerable to $vulnerability, and Debian have not yet released a patch\n";
+			} elsif($2 eq 'fixed') {
+				my $fixed_release = $1;
+				$fixed_release =~ tr/-/_/;
+				if($versions{$package}->vcmp($fixed_release) < 0) {
+					print "Your version of $package is vulnerable to $vulnerability, Debian have fixed it\n";
+				} elsif($debug) {
+					print "You are running $package $versions{$package} which includes a fix for $vulnerability that was published in release $2\n";
+				}
+			} else {
+				die "Unknown status $2 for $vulnerability\n";
+			}
+		} else {
+			print "Debian are yet to announce a status for $package $versions{$package}, which is vulnerable to $vulnerability\n";
+		}
+		$printed{"$package/$vulnerability"} = 1;
+	}
+}

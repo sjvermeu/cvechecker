@@ -1,0 +1,33 @@
+/* css for: reset */
+a, img {outline: 0px; border: 0px}
+.layout {margin: 0px; padding: 0px}
+.content {padding: 15px}
+.debug {border: 1px dotted red}
+.clear {clear: both}
+body {text-align: left; font-family: sans-serif; font-size: 75%; line-height: 1.75}
+#xpage {width: 804px; margin: 0px auto; text-align: left; margin-top: 10px}
+#xmeniu{height: 50px}
+#xmain {float: right; width: 550px; padding-right: 20px}
+#xpanel {float: left; width: 220px}
+#xtop {height: 18px; overflow: hidden}
+#xtopheader {height: 127px;}
+#xfooter {text-align: left; height: 70px; padding-top: 25px}
+#xfooter div{float: right}
+body {color: #333; font-size: 10pt; word-spacing: 2px; font-family: "trebuchet ms", verdana, futura, sans-serif ;}
+h1, h2, h3, a, .blue, #xpanel ul li {color: #0064CC}
+h1, h2, h3 {font-weight: normal; font-family: impact, "trebuchet ms", verdana, futura, sans-serif;margin-bottom: 10px;}
+#xfooter {font-size: .8em; padding: 30px; cursor: default;}
+#xfooter div{text-align: right; }
+#xfooter a {text-decoration: none; color: #333;}
+#xfooter a:hover {color: #0064CC;}
+#xfooter a:hover.design {color: #333;}
+#xtopheader div {float: left;   overflow: hidden; width: 150px; padding-left: 30px}
+#xtopheader ul {float: right; width: 530px; height: 48px; overflow: hidden; margin: 0px; padding: 0px; padding-left: 30px; list-style-type: none; margin-right: 15px;}
+#xtopheader ul li {float: left; margin: 0px; padding: 0px; height: 100%; padding-top: 10px; padding-right: 10px}
+#xtopheader ul li a{color: #eaeaea; text-decoration: none; font-size: 10pt; border: 0px solid red; padding-left: 15px;}
+#xtopheader ul li a:hover, a.active {color: #fff; }
+#xpanel ul {margin-left: 15px; padding: 0px; }
+#xpanel ul li  {font-size: .95em; clear: both}
+#xpanel ul li span {color: #333; float: left; font-size: .9em; display: block}
+#xmain {text-align: justify; cursor: default;}
+pre {font-size: .70em; clear: both}

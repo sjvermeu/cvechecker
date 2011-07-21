@@ -1,0 +1,75 @@
+#!/bin/sh
+
+
+if [ $# -ne 3 ] || ([ "$1" != "-d" ] && [ "$1" != "-D" ])  || [ ! -d "${2}" ] || [ ! -f "${3}" ];
+then
+  echo "Usage: $0 -d <reportdirectory> <acknowledgements>";
+  echo "       $0 -D <reportdirectory> <acknowledgements>";
+  echo "";
+  echo "       $0 -d   : Report hits where version matches";
+  echo "       $0 -D   : Report hits where version is lower than CVE reported version";
+  echo "";
+  echo "       Warning: -D will give you *lots* of false positives !!";
+  exit 1;
+fi
+
+ACKFILE=$3;
+REPDIR=$2;
+HIGHER=0;
+if [ "$1" = "-D" ];
+then
+  HIGHER=1;
+fi
+CONFFILE="";
+
+if [ -f ~/.cvechecker.rc ];
+then
+  CONFFILE=~/.cvechecker.rc;
+elif [ -f /usr/local/etc/cvechecker.conf ];
+then
+  CONFFILE=/usr/local/etc/cvechecker.conf;
+elif [ -f /etc/cvechecker.conf ];
+then
+  CONFFILE=/etc/cvechecker.conf;
+fi
+
+die() {
+  echo $*;
+  exit 2;
+}
+
+DATADIR=$(awk -F'=' '/^datadir/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}');
+CDIR=$(pwd);
+
+TEMPWORKDIR=$(mktemp -d || mktemp);
+if [ ! -d ${TEMPWORKDIR} ];
+then
+  rm ${TEMPWORKDIR} && mkdir ${TEMPWORKDIR} || die "Failed to create temporary directory";
+fi
+
+cd ${TEMPWORKDIR};
+if [ "${HIGHER}" = "1" ];
+then
+  printf "Running 'cvechecker -rCH'... ";
+  cvechecker -rCH > cvechecker.csv;
+  printf "done\n";
+else
+  printf "Running 'cvechecker -rC'... ";
+  cvechecker -rC > cvechecker.csv;
+  printf "done\n";
+fi
+printf "Generating HTML report... ";
+awk -F, -f ${DATADIR}/csv2xml.awk cvechecker.csv > cvechecker.xml;
+cp ${ACKFILE} acknowledgements.xml;
+cp ${DATADIR}/cvereport.xsl .;
+xsltproc cvereport.xsl cvechecker.xml > ${REPDIR}/report.html;
+cp ${DATADIR}/report.css ${REPDIR}/report.css;
+printf "done\n";
+cd ${CDIR};
+
+for FILE in cvechecker.csv cvechecker.xml acknowledgements.xml cvereport.xsl;
+do
+  rm ${TEMPWORKDIR}/${FILE};
+done
+rmdir ${TEMPWORKDIR};
+

@@ -1,0 +1,10 @@
+K 10
+svn:ignore
+V 43
+Makefile.in
+cvechecker
+Makefile
+tags
+.deps
+
+END
