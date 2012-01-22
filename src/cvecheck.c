@@ -1193,7 +1193,7 @@ int validate_cve_data(char * buffer) {
 	fprintf(stderr, "DEBUG bufptr = \"%s\"", bufferptr);
 	if ((bufferptr[0] > '9') || (bufferptr[0] < '0'))
 		return 8;
-	bufferptr = strstr(bufferptr, ':')+1;
+	bufferptr = strchr(bufferptr, ':')+1;
 	fprintf(stderr, "DEBUG bufptr = \"%s\"", bufferptr);
 	if (strstr(bufferptr, "cpe:/") != bufferptr)
 		return 5;
@@ -1269,7 +1269,6 @@ int load_cve(struct workstate * ws) {
 	cvelist = fopen(arg->cvedata, "r");
 	while (fgets(buffer, sizeof(buffer), cvelist) != 0) {
 		int cvelength = 0;
-		fprintf(stderr, "DEBUG B\n");
 
 		// Overflow?
 		if (buffer[BUFFERSIZE-1] != '\0') {
