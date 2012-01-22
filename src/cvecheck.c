@@ -1189,7 +1189,8 @@ int validate_cve_data(char * buffer) {
 		return 3;
 	if (buffer[13] != ':')
 		return 4;
-	bufferptr = buffer+14;
+	bufferptr = buffer+15;
+	fprintf(stderr, "DEBUG bufptr = \"%s\"", bufferptr);
 	if ((bufferptr[0] > '9') || (bufferptr[0] < '0'))
 		return 8;
 	bufferptr = strstr(bufferptr, ':')+1;
@@ -1264,9 +1265,7 @@ int load_cve(struct workstate * ws) {
 		mysql_dbimpl_store_cve_in_db_init(ws);
 	}
 
-	fprintf(stderr, "DEBUG A\n");
 	cvelist = fopen(arg->cvedata, "r");
-	fprintf(stderr, "DEBUG A\n");
 	while (fgets(buffer, sizeof(buffer), cvelist) != 0) {
 		int cvelength = 0;
 		fprintf(stderr, "DEBUG B\n");
