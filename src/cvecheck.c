@@ -34,7 +34,7 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 
 	int fieldwidth = 0;
 
-	cpos = strchr(buffer, ':')+2;
+	cpos = strstr(buffer, "cpe:/")+5;
 	nextpos = strchr(cpos, ':');
 
 	if (nextpos == 0)
