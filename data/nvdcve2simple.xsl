@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
                 xmlns:nvd="http://scap.nist.gov/schema/feed/vulnerability/2.0"
-		xmlns:vuln="http://scap.nist.gov/schema/vulnerability/0.4" version="1.0">
+		xmlns:vuln="http://scap.nist.gov/schema/vulnerability/0.4" 
+		xmlns:cvss="http://scap.nist.gov/schema/cvss-v2/0.2" version="1.0">
 
 <xsl:output encoding="UTF-8" method="text" />
 
