@@ -1189,11 +1189,12 @@ int validate_cve_data(char * buffer) {
 		return 3;
 	if (buffer[13] != ':')
 		return 4;
-	bufferptr = buffer+15;
+	bufferptr = buffer+14;
 	fprintf(stderr, "DEBUG bufptr = \"%s\"", bufferptr);
 	if ((bufferptr[0] > '9') || (bufferptr[0] < '0'))
 		return 8;
 	bufferptr = strstr(bufferptr, ':')+1;
+	fprintf(stderr, "DEBUG bufptr = \"%s\"", bufferptr);
 	if (strstr(bufferptr, "cpe:/") != bufferptr)
 		return 5;
 	if ((bufferptr[5] != 'a') && (bufferptr[5] != 'o') && (bufferptr[5] != 'h'))
