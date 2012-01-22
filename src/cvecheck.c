@@ -34,6 +34,8 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 
 	int fieldwidth = 0;
 
+	fprintf(stderr, "DEBUG Buffer is \"%s\"\n", buffer);
+
 	cpos = strstr(buffer, "cpe:/")+5;
 	nextpos = strchr(cpos, ':');
 
@@ -1296,6 +1298,7 @@ int load_cve(struct workstate * ws) {
 		// Read in CVSS data
 		bufferptr = strchr(buffer, ':')+1;
 		cvelength = strlen(bufferptr);
+		zero_string(cvssNum, 5);
 		strncpy(cvssNum, bufferptr, strlen(bufferptr)-strlen(strchr(bufferptr, ':')));
 		cvssNum[4] = '\0';
 		bufferptr = strchr(bufferptr, ':')+1;
