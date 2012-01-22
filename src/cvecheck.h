@@ -35,7 +35,7 @@ static error_t parse_opt (int key, char * arg, struct argp_state *state);
 #include "dummy/dummy_mysql.h"
 #endif
 
-const char * argp_program_version     = "cvechecker 3.1";
+const char * argp_program_version     = "cvechecker 4.0";
 const char * argp_program_bug_address = "<sven.vermeulen@siphos.be>";
 
 static char doc[]      = "cvechecker -- Verify the state of the system against a CVE database";

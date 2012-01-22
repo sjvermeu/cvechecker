@@ -34,7 +34,7 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 
 	int fieldwidth = 0;
 
-	cpos = strchr(buffer, ':')+2;
+	cpos = strstr(buffer, "cpe:/")+5;
 	nextpos = strchr(cpos, ':');
 
 	if (nextpos == 0)
@@ -478,7 +478,7 @@ int init_binlist(struct workstate * ws) {
  */
 void verify_installed_versus_cve(struct workstate * ws) {
 	if (ws->arg->docsvoutput)
-		fprintf(stdout, "Outputversion,File,CPE,CVE,Matchtype,Hostname,Userkey\n");
+		fprintf(stdout, "Outputversion,File,CPE,CVE,CVSS,Matchtype,Hostname,Userkey\n");
 	if (ws->dbtype == sqlite)
 		sqlite_dbimpl_verify_installed_versus_cve(ws);
 	else if (ws->dbtype == mysql) 
@@ -538,7 +538,7 @@ int match_binary(char * file, struct workstate * ws) {
 /**
  * Show the potential vulnerability matches
  */
-void show_potential_vulnerabilities(struct workstate * ws, int cveyear, int cvenum, const char * filename, struct cpe_data cpe, int versiononly) {
+void show_potential_vulnerabilities(struct workstate * ws, int cveyear, int cvenum, int cvssScore, const char * filename, struct cpe_data cpe, int versiononly) {
 	char buffer[BUFFERSIZE];
 	struct arguments * arg = ws->arg;
 	int matchtype = -1;
@@ -553,16 +553,16 @@ void show_potential_vulnerabilities(struct workstate * ws, int cveyear, int cven
 	zero_string(buffer, BUFFERSIZE);
 	cpe_to_string(buffer, BUFFERSIZE, cpe);
 	if (arg->docsvoutput) {
-		fprintf(stdout, "2,%s,%s,CVE-%.4d-%.4d,%d,%s,%s\n", filename, buffer, cveyear, cvenum, matchtype, ws->hostname, ws->userdefkey);
+		fprintf(stdout, "3,%s,%s,CVE-%.4d-%.4d,%.1f,%d,%s,%s\n", filename, buffer, cveyear, cvenum, (cvssScore * 1.0 / 10), matchtype, ws->hostname, ws->userdefkey);
 	} else {
 		if (matchtype == 0) {
-			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  Vulnerability match is version only\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum);
+			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  Vulnerability match is version only\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore * 1.0 / 10));
 		} else if (matchtype == 1) {
-			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  Full vulnerability match (incl. edition/language)\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum);
+			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  Full vulnerability match (incl. edition/language)\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore * 1.0/ 10));
 		} else if (matchtype == 2) {
-			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  Match with potential higher version\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum);
+			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  Match with potential higher version\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore * 1.0 / 10));
 		} else {
-			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  UNIDENTIFIED MATCH RULE\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum);
+			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  UNIDENTIFIED MATCH RULE\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore * 1.0 / 10));
 		};
 	};
 };
@@ -1174,9 +1174,11 @@ int get_installed_software(struct workstate * ws) {
 /**
  * Validates if the buffer contains a valid CVE entry
  *
- * Entry should be "CVE-####-####:cpe:/a:.*:.*:.*[:.*[:.*]]
+ * Entry should be "CVE-####-####:[0-9.]*:cpe:/a:.*:.*:.*[:.*[:.*]]
  */
 int validate_cve_data(char * buffer) {
+	char * bufferptr;
+
 	if (strstr(buffer, "CVE-") != buffer)
 		return 1;
 	if (buffer[3] != '-')
@@ -1185,11 +1187,15 @@ int validate_cve_data(char * buffer) {
 		return 3;
 	if (buffer[13] != ':')
 		return 4;
-	if (strstr(buffer+14, "cpe:/") != buffer+14)
+	bufferptr = buffer+14;
+	if ((bufferptr[0] > '9') || (bufferptr[0] < '0'))
+		return 8;
+	bufferptr = strchr(bufferptr, ':')+1;
+	if (strstr(bufferptr, "cpe:/") != bufferptr)
 		return 5;
-	if ((buffer[19] != 'a') && (buffer[19] != 'o') && (buffer[19] != 'h'))
+	if ((bufferptr[5] != 'a') && (bufferptr[5] != 'o') && (bufferptr[5] != 'h'))
 		return 6;
-	if (buffer[20] != ':')
+	if (bufferptr[6] != ':')
 		return 7;
 
 	return 0;
@@ -1241,6 +1247,8 @@ int load_cve(struct workstate * ws) {
 	char buffer[BUFFERSIZE];
 	char cveId[CVELINESIZE];
 	char cpeId[CPELINESIZE];
+	char cvssNum[5];
+	char * bufferptr;
 	long int ctr = 0;
 	long int dup = 0;
 	int linenum  = 1;
@@ -1260,7 +1268,7 @@ int load_cve(struct workstate * ws) {
 
 		// Overflow?
 		if (buffer[BUFFERSIZE-1] != '\0') {
-			fprintf(stderr, " ! Error while reading in CVE entries.  Skipping line %d\n", linenum);
+			fprintf(stderr, " ! Error while reading in CVE entries.  Skipping line %d (too long)\n", linenum);
 			while (fgets(buffer, BUFFERSIZE, cvelist) != 0) {
 				if (buffer[BUFFERSIZE-1] == '\0')
 					break;
@@ -1270,7 +1278,7 @@ int load_cve(struct workstate * ws) {
 		};
 
 		if (validate_cve_data(buffer) != 0) {
-			fprintf(stderr, " ! Error while reading in CVE entries.  Skipping line %d\n", linenum);
+			fprintf(stderr, " ! Error while reading in CVE entries.  Skipping line %d (invalid)\n", linenum);
 			zero_string(buffer, BUFFERSIZE);
 			linenum++;
 		};
@@ -1285,14 +1293,21 @@ int load_cve(struct workstate * ws) {
 		// Read in CVE data
 		strncpy(cveId, buffer, cvelength);
 		cveId[cvelength] = '\0';
+		// Read in CVSS data
+		bufferptr = strchr(buffer, ':')+1;
+		cvelength = strlen(bufferptr);
+		zero_string(cvssNum, 5);
+		strncpy(cvssNum, bufferptr, strlen(bufferptr)-strlen(strchr(bufferptr, ':')));
+		cvssNum[4] = '\0';
+		bufferptr = strchr(bufferptr, ':')+1;
 		// Read in CPE data
-		cvelength = strlen(strchr(buffer, ':')+1);
-		strncpy(cpeId, strchr(buffer, ':')+1, cvelength);
+		cvelength = strlen(bufferptr);
+		strncpy(cpeId, bufferptr, cvelength);
 		cpeId[cvelength] = '\0';
 		if (ws->dbtype == sqlite)
-			dup += sqlite_dbimpl_store_cve_in_db(ws, cveId, cpeId);
+			dup += sqlite_dbimpl_store_cve_in_db(ws, cveId, cpeId, cvssNum);
 		else if (ws->dbtype == mysql)
-			dup += mysql_dbimpl_store_cve_in_db(ws, cveId, cpeId);
+			dup += mysql_dbimpl_store_cve_in_db(ws, cveId, cpeId, cvssNum);
 		ctr++;
 		if ((ctr % 100) == 0) {
 			fprintf(stdout, " %ld records processed (%ld already in db)...\n", ctr, dup);

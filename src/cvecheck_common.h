@@ -109,7 +109,7 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer);
 int cve_to_vars(int * year, int * sequence, char * cveId);
 
 // show_potential_vulnerabilities - Show the potential vulnerability matches
-void show_potential_vulnerabilities(struct workstate * ws, int cveyear, int cvenum, const char * filename, struct cpe_data cpe, int versiononly);
+void show_potential_vulnerabilities(struct workstate * ws, int cveyear, int cvenum, int cvssScore, const char * filename, struct cpe_data cpe, int versiononly);
 
 // show_installed_software - Show the installed software
 void show_installed_software(struct workstate * ws, const char * vendor, const char * product, const char * version, const char * update, const char * edition, const char * language, int numfiles, const char ** files);

@@ -54,7 +54,7 @@ int mysql_dbimpl_store_cve_in_db_exit(struct workstate * ws);
 int mysql_dbimpl_store_cve_in_db_checkpoint(struct workstate * ws);
 
 // mysql_dbimpl_store_cve_in_db - Add the selected CVE into the database
-int mysql_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpeId);
+int mysql_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpeId, char * cvssNum);
 
 // mysql_dbimpl_add_versiongather - Add a versiongather entry into the database
 int mysql_dbimpl_add_versiongather(struct workstate * ws, struct versiongather_data vg, struct cpe_data cpe);
