@@ -1119,13 +1119,15 @@ int sqlite_dbimpl_initialize_databases(struct workstate * ws) {
 
   // Setup of locals
   zero_string(stmt, SQLLINESIZE);
-  sprintf(stmt, "PRAGMA foreign_keys=OFF; BEGIN TRANSACTION; DROP TABLE IF EXISTS tb_binmatch; DROP TABLE IF EXISTS tb_cve; CREATE TABLE tb_binmatch ( basedir varchar(%d), filename varchar(%d), cpepart char(1), cpevendorlength int, cpe int, fullmatch int); CREATE TABLE tb_cve ( year smallint, sequence int, cpepart char(1), cpevendorlength int, cpe int, cvss int); CREATE INDEX cveidx ON tb_cve (year, sequence); CREATE INDEX binmatchidx on tb_binmatch (cpe, cpepart, cpevendorlength); COMMIT;", FILENAMESIZE, FILENAMESIZE);
+  sprintf(stmt, "PRAGMA foreign_keys=OFF; BEGIN TRANSACTION; DROP TABLE IF EXISTS tb_binmatch; DROP TABLE IF EXISTS tb_cve; CREATE TABLE tb_binmatch ( basedir varchar(%d), filename varchar(%d), cpepart char(1), cpevendorlength int, cpe int, fullmatch int); CREATE TABLE tb_cve ( year smallint, sequence int, cpepart char(1), cpevendorlength int, cpe int, cvss int); CREATE INDEX cveidx ON tb_cve (year, sequence); CREATE INDEX cveidx2 on tb_cve (cpe, cpepart, cpevendorlength); CREATE INDEX binmatchidx on tb_binmatch (cpe, cpepart, cpevendorlength); COMMIT;", FILENAMESIZE, FILENAMESIZE);
   run_statement(ws, ws->localdb[0], stmt);
 
   for (size = 1; size <= FIELDSIZE; size++) {
     for (c = 0; c < 3; c++) {
       zero_string(stmt, SQLLINESIZE);
       sprintf(stmt, "DROP TABLE IF EXISTS tb_cpe_%c_%d; CREATE TABLE tb_cpe_%c_%d (cpeid integer primary key, cpepart char(1), cpevendor char(%d), cpeproduct char(%d), cpeversion char(%d), cpeupdate char(%d), cpeedition char(%d), cpelanguage char(%d)); CREATE INDEX cpe_%c_%d_idx on tb_cpe_%c_%d (cpevendor, cpeproduct, cpeversion, cpeid, cpeedition, cpeupdate, cpelanguage);", partchar[c], size, partchar[c], size, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, partchar[c], size, partchar[c], size);
+      run_statement(ws, get_local_db(ws, partchar[c], size), stmt);
+      sprintf(stmt, "DROP TABLE IF EXISTS tb_cpe_versions; CREATE TABLE tb_cpe_versions (cpeversion char(%d) primary key, f1 integer, f2 integer, f3 integer, f4 integer, f5 integer, f6 integer, f7 integer, f8 integer, f9 integer, f10 integer, f11 integer, f12 integer, f13 integer, f14 integer, f15 integer); CREATE INDEX cpe_versions_idx on tb_cpe_versions (cpeversion); CREATE INDEX cpe_versions_2_idx on tb_cpe_versions (f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15);", FIELDSIZE);
       run_statement(ws, get_local_db(ws, partchar[c], size), stmt);
     };
   };
