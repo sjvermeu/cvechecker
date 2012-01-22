@@ -407,7 +407,7 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
   mysql_free_result(result);
 
   if (ws->arg->reporthigher != 0) {
-    sprintf(stmt, "SELECT DISTINCT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, c2.cpepart AS cpepart, c2.cpevendor AS cpevendor, c2.cpeproduct AS cpeproduct, c2.cpeversion AS cpeversion, c2.cpeupdate AS cpeupdate, c2.cpeedition AS cpeedition, c2.cpelanguage AS cpelanguage FROM tb_binmatch a, tb_cve b, tb_cpe c, tb_cpe c2, tb_cpe_versions e, tb_cpe_versions e2 WHERE (a.cpe = c2.cpeid) AND (c2.cpeversion = e2.cpeversion) AND (b.cpe = c.cpeid) AND (c.cpeversion = e.cpeversion) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\") AND "
+    sprintf(stmt, "SELECT DISTINCT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, b.cvss AS cvss, c2.cpepart AS cpepart, c2.cpevendor AS cpevendor, c2.cpeproduct AS cpeproduct, c2.cpeversion AS cpeversion, c2.cpeupdate AS cpeupdate, c2.cpeedition AS cpeedition, c2.cpelanguage AS cpelanguage FROM tb_binmatch a, tb_cve b, tb_cpe c, tb_cpe c2, tb_cpe_versions e, tb_cpe_versions e2 WHERE (a.cpe = c2.cpeid) AND (c2.cpeversion = e2.cpeversion) AND (b.cpe = c.cpeid) AND (c.cpeversion = e.cpeversion) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\") AND "
     "(c.cpevendor = c2.cpevendor) and "
     "(c.cpeproduct = c2.cpeproduct) and "
     "("
@@ -612,19 +612,21 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
       char filename[FILENAMESIZE*2+1];
       int year = 0;
       int sequence = 0;
+      int cvssScore = 0;
 
       sprintf(filename, "%s/%s", row[0], row[1]);
       year = atoi(row[2]);
       sequence = atoi(row[3]);
-      cpedata.part = row[4][0];
-      strncpy(cpedata.vendor, row[5], FIELDSIZE);
-      strncpy(cpedata.product, row[6], FIELDSIZE);
-      strncpy(cpedata.version, row[7], FIELDSIZE);
-      strncpy(cpedata.update, row[8], FIELDSIZE);
-      strncpy(cpedata.edition, row[9], FIELDSIZE);
-      strncpy(cpedata.language, row[10], FIELDSIZE);
+      cvssScore = atoi(row[4]);
+      cpedata.part = row[5][0];
+      strncpy(cpedata.vendor, row[6], FIELDSIZE);
+      strncpy(cpedata.product, row[7], FIELDSIZE);
+      strncpy(cpedata.version, row[8], FIELDSIZE);
+      strncpy(cpedata.update, row[9], FIELDSIZE);
+      strncpy(cpedata.edition, row[10], FIELDSIZE);
+      strncpy(cpedata.language, row[11], FIELDSIZE);
    
-      show_potential_vulnerabilities(ws, year, sequence, filename, cpedata, 2);
+      show_potential_vulnerabilities(ws, year, sequence, cvssScore, filename, cpedata, 2);
     }
     mysql_free_result(result);
   }
