@@ -34,8 +34,6 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 
 	int fieldwidth = 0;
 
-	fprintf(stderr, "DEBUG Buffer is \"%s\"\n", buffer);
-
 	cpos = strstr(buffer, "cpe:/")+5;
 	nextpos = strchr(cpos, ':');
 
@@ -1190,11 +1188,9 @@ int validate_cve_data(char * buffer) {
 	if (buffer[13] != ':')
 		return 4;
 	bufferptr = buffer+14;
-	fprintf(stderr, "DEBUG bufptr = \"%s\"", bufferptr);
 	if ((bufferptr[0] > '9') || (bufferptr[0] < '0'))
 		return 8;
 	bufferptr = strchr(bufferptr, ':')+1;
-	fprintf(stderr, "DEBUG bufptr = \"%s\"", bufferptr);
 	if (strstr(bufferptr, "cpe:/") != bufferptr)
 		return 5;
 	if ((bufferptr[5] != 'a') && (bufferptr[5] != 'o') && (bufferptr[5] != 'h'))
@@ -1293,14 +1289,12 @@ int load_cve(struct workstate * ws) {
 		if (buffer[strlen(buffer)-1] == '\n')
 		  buffer[strlen(buffer)-1] = '\0';
 
-		fprintf(stderr, "DEBUG : buffer is \"%s\"", buffer);
 		cvelength = strlen(buffer)-strlen(strchr(buffer, ':'));
 		// Read in CVE data
 		strncpy(cveId, buffer, cvelength);
 		cveId[cvelength] = '\0';
 		// Read in CVSS data
 		bufferptr = strchr(buffer, ':')+1;
-		fprintf(stderr, "DEBUG : bufferptr is \"%s\"", bufferptr);
 		cvelength = strlen(bufferptr);
 		zero_string(cvssNum, 5);
 		strncpy(cvssNum, bufferptr, strlen(bufferptr)-strlen(strchr(bufferptr, ':')));
