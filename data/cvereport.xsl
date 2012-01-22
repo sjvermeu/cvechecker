@@ -39,13 +39,16 @@ CVE entries have been previously found on your system (or you failed to acknowle
 <table>
 <tr>
   <th>CVE number</th>
+  <th>CVSS Score</th>
   <th>Application (CPE code)</th>
 </tr>
 <xsl:for-each select="//record[not(CVE=document('acknowledgements.xml')/acknowledgements/file/@cve)][not(CVE=preceding-sibling::record/CVE)]">
   <xsl:variable name="cveid" select="CVE" />
   <xsl:variable name="cpeid" select="CPE" />
+  <xsl:variable name="cvss" select="CVSS" />
   <tr>
     <td><a href="http://www.cvedetails.com/cve-details.php?cve_id={$cveid}"><xsl:value-of select="$cveid" /></a></td>
+    <td><xsl:value-of select="$cvss" /></td>
     <td><xsl:value-of select="$cpeid" /></td>
   </tr>
 </xsl:for-each>
@@ -65,16 +68,19 @@ yet to be acknowledged by you.
     <th>File</th>
     <th>Parent Application(s)</th>
     <th>Affected, unacknowledged CVE entries</th>
+    <th>CVSS Score</th>
   </tr>
   <xsl:for-each select="//record[not(File=document('acknowledgements.xml')/acknowledgements/file/@name)][not(File=preceding-sibling::record/File)]">
     <xsl:variable name="fileid" select="File" />
     <xsl:variable name="cpeid" select="CPE" />
+    <xsl:variable name="cvss" select="CVSS" />
     <xsl:for-each select="//record[File=$fileid][not(CVE=document('acknowledgements.xml')/acknowledgements/file[@name=$fileid]/@cve)][not(CVE=preceding-sibling::record/CVE)]/CVE">
       <xsl:variable name="cveid" select="." />
       <tr>
         <td><xsl:value-of select="$fileid" /></td>
 	<td><xsl:value-of select="$cpeid" /></td>
 	<td><a href="http://www.cvedetails.com/cve-details.php?cve_id={$cveid}"><xsl:value-of select="$cveid" /></a></td>
+	<td><xsl:value-of select="$cvss" /></td>
       </tr>
     </xsl:for-each>
   </xsl:for-each>
@@ -92,12 +98,14 @@ pending resolution.
     <th>File</th>
     <th>Parent Application</th>
     <th>CVE</th>
+    <th>CVSS</th>
     <th>Comment</th>
   </tr>
   <xsl:for-each select="//record[not(CPE=preceding-sibling::record/CPE)]/CPE">
     <xsl:variable name="cpeid" select="." />
     <xsl:for-each select="//record[CPE=$cpeid][not(File=preceding-sibling::record[CPE=$cpeid]/File)]/File">
       <xsl:variable name="fileid" select="." />
+      <xsl:variable name="cvss" select="ancestor::record/CVSS" />
       <xsl:for-each select="document('acknowledgements.xml')/acknowledgements/file[@name=$fileid][@state='acknowledged']">
         <xsl:variable name="commentid" select="@comment" />
 	<xsl:variable name="cveid" select="@cve" />
@@ -105,6 +113,7 @@ pending resolution.
 	  <td><xsl:value-of select="$fileid" /></td>
 	  <td><xsl:value-of select="$cpeid" /></td>
 	  <td><a href="http://www.cvedetails.com/cve-details.php?cve_id={$cveid}"><xsl:value-of select="@cve" /></a></td>
+	  <td><xsl:value-of select="$cvss" /></td>
 	  <xsl:choose>
 	    <xsl:when test="$commentid">
               <td><xsl:value-of select="//comment[@id=$commentid]" /></td>
@@ -129,12 +138,14 @@ a patch is deployed or a workaround is implemented that removes the exploitation
     <th>File</th>
     <th>Parent Application</th>
     <th>CVE</th>
+    <th>CVSS</th>
     <th>Comment</th>
   </tr>
   <xsl:for-each select="//record[not(CPE=preceding-sibling::record/CPE)]/CPE">
     <xsl:variable name="cpeid" select="." />
     <xsl:for-each select="//record[CPE=$cpeid][not(File=preceding-sibling::record[CPE=$cpeid]/File)]/File">
       <xsl:variable name="fileid" select="." />
+      <xsl:variable name="cvss" select="ancestor::record/CVSS" />
       <xsl:for-each select="document('acknowledgements.xml')/acknowledgements/file[@name=$fileid][@state='irrelevant']">
         <xsl:variable name="resolutionid" select="@resolution" />
 	<xsl:variable name="cveid" select="@cve" />
@@ -142,6 +153,7 @@ a patch is deployed or a workaround is implemented that removes the exploitation
 	  <td><xsl:value-of select="$fileid" /></td>
 	  <td><xsl:value-of select="$cpeid" /></td>
 	  <td><a href="http://www.cvedetails.com/cve-details.php?cve_id={$cveid}"><xsl:value-of select="@cve" /></a></td>
+	  <td><xsl:value-of select="$cvss" /></td>
 	  <xsl:choose>
 	    <xsl:when test="$resolutionid">
               <td><xsl:value-of select="//resolution[@id=$resolutionid]" /></td>
