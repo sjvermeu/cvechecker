@@ -30,6 +30,15 @@ int mysql_dbimpl_clear_versiondata(struct workstate * ws) {
 };
 
 /**
+ * Run updates on the database (due to cvechecker upgrades or 
+ * fixes)
+ */
+int run_upgrade_fixes(struct workstate * ws) {
+  // TODO include add column to cve table
+  return 1;  
+};
+
+/**
  * Load the databases into the workstate
  */
 int mysql_dbimpl_load_databases(struct workstate * ws) {
@@ -99,8 +108,17 @@ int mysql_dbimpl_load_databases(struct workstate * ws) {
   if (connection == NULL) {
     fprintf(stderr, "Error %u: %s\n", mysql_errno(ws->conn), mysql_error(ws->conn));
     return 1;
-  } else
+  } else {
+    if (! ws->arg->initdatabases) {
+      rc += run_upgrade_fixes(ws);
+      if (rc) {
+        fprintf(stderr, "Some updates have occurred which might affect the database initialization.\n");
+        fprintf(stderr, "Please restart the command.\n");
+	return 1;
+      };
+    };
     return 0;
+  };
 };
 
 /**
@@ -336,7 +354,7 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
   MYSQL_ROW row;
 
   // First run a full-match test
-  sprintf(stmt, "SELECT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, c.cpepart AS cpepart, c.cpevendor AS cpevendor, c.cpeproduct AS cpeproduct, c.cpeversion AS cpeversion, c.cpeupdate AS cpeupdate, c.cpeedition AS cpeedition, c.cpelanguage AS cpelanguage FROM tb_binmatch a, tb_cve b, tb_cpe c WHERE (a.cpe = b.cpe) AND (a.cpe = c.cpeid) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\")", ws->hostname, ws->userdefkey);
+  sprintf(stmt, "SELECT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, b.cvss AS cvss, c.cpepart AS cpepart, c.cpevendor AS cpevendor, c.cpeproduct AS cpeproduct, c.cpeversion AS cpeversion, c.cpeupdate AS cpeupdate, c.cpeedition AS cpeedition, c.cpelanguage AS cpelanguage FROM tb_binmatch a, tb_cve b, tb_cpe c WHERE (a.cpe = b.cpe) AND (a.cpe = c.cpeid) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\")", ws->hostname, ws->userdefkey);
   MYSQL_QUERY(ws->conn, stmt)
   result = mysql_store_result(ws->conn);
   while (row = mysql_fetch_row(result)) {
@@ -344,19 +362,21 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
     char filename[FILENAMESIZE*2+1];
     int year = 0;
     int sequence = 0;
+    int cvssScore = 0;
 
     sprintf(filename, "%s/%s", row[0], row[1]);
     year = atoi(row[2]);
     sequence = atoi(row[3]);
-    cpedata.part = row[4][0];
-    strncpy(cpedata.vendor, row[5], FIELDSIZE);
-    strncpy(cpedata.product, row[6], FIELDSIZE);
-    strncpy(cpedata.version, row[7], FIELDSIZE);
-    strncpy(cpedata.update, row[8], FIELDSIZE);
-    strncpy(cpedata.edition, row[9], FIELDSIZE);
-    strncpy(cpedata.language, row[10], FIELDSIZE);
+    cvssScore = atoi(row[4]);
+    cpedata.part = row[5][0];
+    strncpy(cpedata.vendor, row[6], FIELDSIZE);
+    strncpy(cpedata.product, row[7], FIELDSIZE);
+    strncpy(cpedata.version, row[8], FIELDSIZE);
+    strncpy(cpedata.update, row[9], FIELDSIZE);
+    strncpy(cpedata.edition, row[10], FIELDSIZE);
+    strncpy(cpedata.language, row[11], FIELDSIZE);
   
-    show_potential_vulnerabilities(ws, year, sequence, filename, cpedata, 0);
+    show_potential_vulnerabilities(ws, year, sequence, cvssScore, filename, cpedata, 0);
   }
   mysql_free_result(result);
   // Now, we do the same test, but for those hits where update/edition/language isn't set/detected
@@ -804,10 +824,10 @@ int mysql_dbimpl_store_cve_in_db_init(struct workstate * ws) {
 /**
  * Store the passed CVE entry in the database
  */
-int mysql_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpeId) {
+int mysql_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpeId, char * cvssNum) {
   int rc = 0;
   char stmt[SQLLINESIZE];
-  int year, sequence;
+  int year, sequence, cvssScore;
   struct cpe_data cpe;
   MYSQL_RES * result;
   MYSQL_ROW row;
@@ -825,6 +845,9 @@ int mysql_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpe
     return 1;
   };
 
+  cvssScore = atoi(cvssNum);
+  cvssScore = cvssScore * 10 + atoi(strchr(cvssNum, '.')+1);
+
   sprintf(stmt, "select cpeid from tb_cpe where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";",  cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
   MYSQL_QUERY(ws->conn, stmt)
   result = mysql_store_result(ws->conn);
@@ -832,7 +855,7 @@ int mysql_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpe
   rc = atoi(row[0]);
   mysql_free_result(result);
 
-  sprintf(stmt, "insert into tb_cve values (%d, %d, %d);", year, sequence, rc);
+  sprintf(stmt, "insert into tb_cve values (%d, %d, %d, %d);", year, sequence, rc, cvssScore);
   MYSQL_QUERY(ws->conn, stmt)
   return 0;
 }

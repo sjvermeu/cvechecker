@@ -231,6 +231,7 @@ int run_upgrade_fixes(struct workstate * ws) {
   int c;
   int numChange = 0;
   char stmt[SQLLINESIZE];
+  sqlite3_stmt * sql_stmt;
 
 
   /**
@@ -327,8 +328,27 @@ int run_upgrade_fixes(struct workstate * ws) {
   };
 
   /**
-   * For SQLite, we don't need to increate VARCHAR sizes - it automatically allows growing of sizes.
+   * 4 - For SQLite, we don't need to increate VARCHAR sizes - it automatically allows growing of sizes.
    */
+
+  /**
+   * 5 - Add CVSS scoring in CVE detail
+   */
+  sprintft(stmt, "SELECT sql FROM sqlite_master WHERE tbl_name = 'tb_cve' AND type = 'table';");
+  PREPARE_SQLITE(rc, ws->localdb[0], stmt, sql_stmt)
+  while ((rc = sqlite3_step(sql_stmt)) == SQLITE_ROW) {
+    const unsigned char * sqltext;
+
+    sqltext = sqlite3_column_text(stmt, 0);
+    if (strstr(sqltext, "cvss int") == -1) {
+      fprintf(stderr, "I am missing the cvss column in the tb_cve table. This is to be expected if you upgraded cvechecker from 3.1 or lower.\n");
+      sprintf(stmt, "ALTER TABLE tb_cve ADD COLUMN cvss int DEFAULT -1;");
+      run_statement(ws, ws->localdb[0], stmt);
+      numChange++;
+    };
+  };
+  ASSERT_FINALIZE(rc, stmt, sql_stmt)
+
 
   return numChange;
 };
@@ -654,7 +674,7 @@ void find_cve_for_cpe(struct workstate * ws, char part, int length, int cpeid, c
   sqlite3_stmt * cve_stmt;
   char stmt[SQLLINESIZE];
 
-  sprintf(stmt, "select distinct a.basedir as basedir, a.filename as filename, b.year as year, b.sequence as sequence, b.cpe as cpeid from tb_binmatch a, tb_cve b where b.cpe in %s and a.cpe = %d and a.cpepart = b.cpepart and a.cpevendorlength = b.cpevendorlength;", inset, cpeid);
+  sprintf(stmt, "select distinct a.basedir as basedir, a.filename as filename, b.year as year, b.sequence as sequence, b.cpe as cpeid, b.cvss as cvss from tb_binmatch a, tb_cve b where b.cpe in %s and a.cpe = %d and a.cpepart = b.cpepart and a.cpevendorlength = b.cpevendorlength;", inset, cpeid);
   PREPARE_SQLITE(rc, ws->localdb[0], stmt, cve_stmt)
 
   while ((rc = sqlite3_step(cve_stmt)) == SQLITE_ROW) {
@@ -663,6 +683,7 @@ void find_cve_for_cpe(struct workstate * ws, char part, int length, int cpeid, c
     char fullfilename[FILENAMESIZE];
     int year;
     int sequence;
+    int cvssScore;
     int i;
     int realcpeid;
     struct cpe_data cpedata;
@@ -673,6 +694,7 @@ void find_cve_for_cpe(struct workstate * ws, char part, int length, int cpeid, c
     year = sqlite3_column_int(cve_stmt, 2);
     sequence = sqlite3_column_int(cve_stmt, 3);
     realcpeid = sqlite3_column_int(cve_stmt, 4);
+    cvssScore = sqlite3_column_int(cve_stmt, 5);
 
     sprintf(fullfilename, "%s/%s", basedir, filename);
 
@@ -695,7 +717,7 @@ void find_cve_for_cpe(struct workstate * ws, char part, int length, int cpeid, c
       i = 1;
     };
 
-    show_potential_vulnerabilities(ws, year, sequence, fullfilename, cpedata, i);
+    show_potential_vulnerabilities(ws, year, sequence, cvssScore, fullfilename, cpedata, i);
   };
   ASSERT_FINALIZE(rc, stmt, cve_stmt)
 };
@@ -1020,10 +1042,10 @@ int check_cvecpe_in_sqlite_db(struct workstate * ws, int year, int sequence, str
 /**
  * Store the passed CVE entry in the database
  */
-int sqlite_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpeId) {
+int sqlite_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpeId, char * cvssNum) {
         int rc = 0;
         char stmt[SQLLINESIZE];
-        int year, sequence;
+        int year, sequence, cvssScore;
         struct cpe_data cpe;
 
         rc = cve_to_vars(&year, &sequence, cveId);
@@ -1031,6 +1053,9 @@ int sqlite_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cp
                 return 1;
         };
         string_to_cpe(&cpe, cpeId);
+
+	cvssScore = atoi(cvssNum);
+	cvssScore = cvssScore * 10 + atoi(strchr(cvssNum, '.')+1);
 
         ws->rc = 0;
         rc = check_cvecpe_in_sqlite_db(ws, year, sequence, cpe);
@@ -1041,7 +1066,7 @@ int sqlite_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cp
         sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";",  cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
         rc = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
 
-        sprintf(stmt, "insert into tb_cve values (%d, %d, '%c', %zu, %d);", year, sequence, cpe.part, strlen(cpe.vendor), rc);
+        sprintf(stmt, "insert into tb_cve values (%d, %d, '%c', %zu, %d, %d);", year, sequence, cpe.part, strlen(cpe.vendor), rc, cvssScore);
         run_statement(ws, ws->localdb[0], stmt);
 
         return 0;
