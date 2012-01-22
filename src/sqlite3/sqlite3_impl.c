@@ -1119,7 +1119,7 @@ int sqlite_dbimpl_initialize_databases(struct workstate * ws) {
 
   // Setup of locals
   zero_string(stmt, SQLLINESIZE);
-  sprintf(stmt, "PRAGMA foreign_keys=OFF; BEGIN TRANSACTION; DROP TABLE IF EXISTS tb_binmatch; DROP TABLE IF EXISTS tb_cve; CREATE TABLE tb_binmatch ( basedir varchar(%d), filename varchar(%d), cpepart char(1), cpevendorlength int, cpe int, fullmatch int); CREATE TABLE tb_cve ( year smallint, sequence int, cpepart char(1), cpevendorlength int, cpe int); CREATE INDEX cveidx ON tb_cve (year, sequence); CREATE INDEX binmatchidx on tb_binmatch (cpe, cpepart, cpevendorlength); COMMIT;", FILENAMESIZE, FILENAMESIZE);
+  sprintf(stmt, "PRAGMA foreign_keys=OFF; BEGIN TRANSACTION; DROP TABLE IF EXISTS tb_binmatch; DROP TABLE IF EXISTS tb_cve; CREATE TABLE tb_binmatch ( basedir varchar(%d), filename varchar(%d), cpepart char(1), cpevendorlength int, cpe int, fullmatch int); CREATE TABLE tb_cve ( year smallint, sequence int, cpepart char(1), cpevendorlength int, cpe int, cvss int); CREATE INDEX cveidx ON tb_cve (year, sequence); CREATE INDEX binmatchidx on tb_binmatch (cpe, cpepart, cpevendorlength); COMMIT;", FILENAMESIZE, FILENAMESIZE);
   run_statement(ws, ws->localdb[0], stmt);
 
   for (size = 1; size <= FIELDSIZE; size++) {
