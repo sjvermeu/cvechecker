@@ -14,7 +14,7 @@
 <xsl:variable name="entrycvss" select="vuln:cvss/cvss:base_metrics/cvss:score" />
 <xsl:apply-templates select="vuln:vulnerable-software-list">
   <xsl:with-param name="entryid" select="@id" />
-  <xsl:with-param name="entrycvss" select="entrycvss" />
+  <xsl:with-param name="entrycvss" select="$entrycvss" />
 </xsl:apply-templates>
 </xsl:template>
 
@@ -22,7 +22,7 @@
 <xsl:param name="entryid" />
 <xsl:param name="entrycvss" />
 <xsl:for-each select="vuln:product">
-<xsl:value-of select="$entryid" />:<xsl:value-of select="text()" /><xsl:text>
+<xsl:value-of select="$entryid" />:<xsl:value-of select="$entrycvss" />:<xsl:value-of select="text()" /><xsl:text>
 </xsl:text>
 </xsl:for-each>
 </xsl:template>
