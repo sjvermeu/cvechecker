@@ -553,16 +553,16 @@ void show_potential_vulnerabilities(struct workstate * ws, int cveyear, int cven
 	zero_string(buffer, BUFFERSIZE);
 	cpe_to_string(buffer, BUFFERSIZE, cpe);
 	if (arg->docsvoutput) {
-		fprintf(stdout, "3,%s,%s,CVE-%.4d-%.4d,%.1f,%d,%s,%s\n", filename, buffer, cveyear, cvenum, (cvssScore / 10), matchtype, ws->hostname, ws->userdefkey);
+		fprintf(stdout, "3,%s,%s,CVE-%.4d-%.4d,%.1f,%d,%s,%s\n", filename, buffer, cveyear, cvenum, (cvssScore * 1.0 / 10), matchtype, ws->hostname, ws->userdefkey);
 	} else {
 		if (matchtype == 0) {
-			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  Vulnerability match is version only\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore / 10));
+			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  Vulnerability match is version only\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore * 1.0 / 10));
 		} else if (matchtype == 1) {
-			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  Full vulnerability match (incl. edition/language)\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore / 10));
+			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  Full vulnerability match (incl. edition/language)\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore * 1.0/ 10));
 		} else if (matchtype == 2) {
-			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  Match with potential higher version\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore / 10));
+			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  Match with potential higher version\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore * 1.0 / 10));
 		} else {
-			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  UNIDENTIFIED MATCH RULE\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore / 10));
+			fprintf(stdout, "File \"%s\" (CPE = %s) on host %s (key %s)\n  Potential vulnerability found (CVE-%.4d-%.4d)\n  CVSS Score is %.1f\n  UNIDENTIFIED MATCH RULE\n", filename, buffer, ws->hostname, ws->userdefkey, cveyear, cvenum, (cvssScore * 1.0 / 10));
 		};
 	};
 };

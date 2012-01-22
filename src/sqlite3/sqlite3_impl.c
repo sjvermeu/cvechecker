@@ -339,7 +339,7 @@ int run_upgrade_fixes(struct workstate * ws) {
   while ((rc = sqlite3_step(sql_stmt)) == SQLITE_ROW) {
     const unsigned char * sqltext;
 
-    sqltext = sqlite3_column_text(stmt, 0);
+    sqltext = sqlite3_column_text(sql_stmt, 0);
     if (strstr(sqltext, "cvss int") == -1) {
       fprintf(stderr, "I am missing the cvss column in the tb_cve table. This is to be expected if you upgraded cvechecker from 3.1 or lower.\n");
       sprintf(stmt, "ALTER TABLE tb_cve ADD COLUMN cvss int DEFAULT -1;");
