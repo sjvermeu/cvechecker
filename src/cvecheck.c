@@ -1264,9 +1264,12 @@ int load_cve(struct workstate * ws) {
 		mysql_dbimpl_store_cve_in_db_init(ws);
 	}
 
+	fprintf(stderr, "DEBUG A\n");
 	cvelist = fopen(arg->cvedata, "r");
+	fprintf(stderr, "DEBUG A\n");
 	while (fgets(buffer, sizeof(buffer), cvelist) != 0) {
 		int cvelength = 0;
+		fprintf(stderr, "DEBUG B\n");
 
 		// Overflow?
 		if (buffer[BUFFERSIZE-1] != '\0') {
