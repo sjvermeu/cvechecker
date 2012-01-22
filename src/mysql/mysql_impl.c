@@ -33,7 +33,7 @@ int mysql_dbimpl_clear_versiondata(struct workstate * ws) {
  * Run updates on the database (due to cvechecker upgrades or 
  * fixes)
  */
-int run_upgrade_fixes(struct workstate * ws) {
+int mysql_run_upgrade_fixes(struct workstate * ws) {
   // TODO include add column to cve table
   return 1;  
 };
@@ -110,7 +110,7 @@ int mysql_dbimpl_load_databases(struct workstate * ws) {
     return 1;
   } else {
     if (! ws->arg->initdatabases) {
-      rc += run_upgrade_fixes(ws);
+      rc += mysql_run_upgrade_fixes(ws);
       if (rc) {
         fprintf(stderr, "Some updates have occurred which might affect the database initialization.\n");
         fprintf(stderr, "Please restart the command.\n");
