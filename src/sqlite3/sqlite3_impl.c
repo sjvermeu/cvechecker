@@ -334,7 +334,7 @@ int run_upgrade_fixes(struct workstate * ws) {
   /**
    * 5 - Add CVSS scoring in CVE detail
    */
-  sprintft(stmt, "SELECT sql FROM sqlite_master WHERE tbl_name = 'tb_cve' AND type = 'table';");
+  sprintf(stmt, "SELECT sql FROM sqlite_master WHERE tbl_name = 'tb_cve' AND type = 'table';");
   PREPARE_SQLITE(rc, ws->localdb[0], stmt, sql_stmt)
   while ((rc = sqlite3_step(sql_stmt)) == SQLITE_ROW) {
     const unsigned char * sqltext;
