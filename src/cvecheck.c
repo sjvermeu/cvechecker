@@ -1174,9 +1174,11 @@ int get_installed_software(struct workstate * ws) {
 /**
  * Validates if the buffer contains a valid CVE entry
  *
- * Entry should be "CVE-####-####:cpe:/a:.*:.*:.*[:.*[:.*]]
+ * Entry should be "CVE-####-####:[0-9.]*:cpe:/a:.*:.*:.*[:.*[:.*]]
  */
 int validate_cve_data(char * buffer) {
+	char * bufferptr;
+
 	if (strstr(buffer, "CVE-") != buffer)
 		return 1;
 	if (buffer[3] != '-')
@@ -1185,11 +1187,15 @@ int validate_cve_data(char * buffer) {
 		return 3;
 	if (buffer[13] != ':')
 		return 4;
-	if (strstr(buffer+14, "cpe:/") != buffer+14)
+	bufferptr = buffer+14;
+	if ((bufferptr[0] > '9') || (bufferptr[0] < '0'))
+		return 8;
+	bufferptr = strstr(bufferptr, ':')+1;
+	if (strstr(bufferptr, "cpe:/") != bufferptr)
 		return 5;
-	if ((buffer[19] != 'a') && (buffer[19] != 'o') && (buffer[19] != 'h'))
+	if ((bufferptr[5] != 'a') && (bufferptr[5] != 'o') && (bufferptr[5] != 'h'))
 		return 6;
-	if (buffer[20] != ':')
+	if (bufferptr[6] != ':')
 		return 7;
 
 	return 0;
