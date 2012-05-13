@@ -1,3 +1,7 @@
+** (2012-05-13) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Use memset in zero_string
+	- Clean up buffers before reusing (suggestion by Francesco Colista)
+
 ** (2012-04-20) Sven Vermeulen <sven.vermeulen@siphos.be>
 	- Add check on xsltproc (reported by Scott Garman)
 
