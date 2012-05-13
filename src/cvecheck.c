@@ -1263,6 +1263,7 @@ int load_cve(struct workstate * ws) {
 	}
 
 	cvelist = fopen(arg->cvedata, "r");
+	zero_string(buffer, BUFFERSIZE);
 	while (fgets(buffer, sizeof(buffer), cvelist) != 0) {
 		int cvelength = 0;
 
@@ -1317,6 +1318,7 @@ int load_cve(struct workstate * ws) {
 				mysql_dbimpl_store_cve_in_db_checkpoint(ws);
 		};
 		linenum++;
+		zero_string(buffer, BUFFERSIZE);
 	};
 
 	if (ws->dbtype == sqlite)
