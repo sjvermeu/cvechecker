@@ -18,9 +18,8 @@ void zero_string(char * buffer, size_t numlen) {
 
 	if (numlen <= 0) 
 		numlen = strlen(buffer);
-	for (i = 0; i < numlen; i++) {
-		buffer[i] = 0x00;
-	};
+
+	memset(buffer, 0x00, numlen);
 };
 
 /**
