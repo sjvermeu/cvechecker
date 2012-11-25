@@ -1,3 +1,8 @@
+** (2012-11-25) Release 3.2
+
+** (2012-11-25) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Fix declarations for dummy database handlers wrt cvss scoring
+
 ** (2012-05-13) Sven Vermeulen <sven.vermeulen@siphos.be>
 	- Use memset in zero_string
 	- Clean up buffers before reusing (suggestion by Francesco Colista)

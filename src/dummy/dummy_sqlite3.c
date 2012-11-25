@@ -39,7 +39,7 @@ int sqlite_dbimpl_store_cve_in_db_exit(struct workstate * ws) { return -1; };
 int sqlite_dbimpl_store_cve_in_db_checkpoint(struct workstate * ws) { return -1; };
 
 // sqlite_dbimpl_store_cve_in_db - Add the selected CVE into the database
-int sqlite_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpeId) { return -1; };
+int sqlite_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpeId, char * cvssNum) { return -1; };
 
 // sqlite_dbimpl_add_versiongather - Add a versiongather entry into the database
 int sqlite_dbimpl_add_versiongather(struct workstate * ws, struct versiongather_data vg, struct cpe_data cpe) { return -1; };

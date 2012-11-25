@@ -15,18 +15,11 @@
       <email>sven.vermeulen@siphos.be</email>
     </author>
 
-    <pubdate>2011/04/11</pubdate>
+    <pubdate>2012/11/25</pubdate>
   </info>
 
   <section>
     <title>Introduction</title>
-
-    <important>
-      <para>Not all options mentioned in the user guide are available in the
-      latest stable version - more specifically, those related to the
-      watchlist feature or MySQL support are currently only available in the
-      SVN version and will be part of the next release.</para>
-    </important>
 
     <para>Welcome to the CVE checker user guide. The purpose of this document
     is to guide you through the installation and usage of CVE checker. But
