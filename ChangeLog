@@ -1,3 +1,7 @@
+** (2013-02-04) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Add fix for cpe:language when additional ':' was provided (Thanks to
+	  Arnaud Fileux)
+
 ** (2012-11-25) Release 3.2
 
 ** (2012-11-25) Sven Vermeulen <sven.vermeulen@siphos.be>
