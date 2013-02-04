@@ -116,9 +116,19 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		return;
 	}
 
-	fieldwidth = swstrlen(nextpos+1);
-	strncpy(cpe->language, nextpos+1, fieldwidth);
-	cpe->language[fieldwidth] = '\0';
+	cpos = nextpos+1;
+	nextpos = strchr(cpos, ':');
+	if (nextpos != NULL) {
+		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
+		strncpy(cpe->language, cpos, fieldwidth);
+		cpe->language[fieldwidth] = '\0';
+	} else {
+		strncpy(cpe->language, cpos, swstrlen(cpos));
+		cpe->language[swstrlen(cpos)] = '\0';
+		cpe->language[0] = '\0';
+		
+		return;
+	}
 };
 
 int copy_cpe(struct cpe_data * target, struct cpe_data * source) {
