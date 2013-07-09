@@ -181,19 +181,26 @@ int get_cpelist(void * cbobj, int argc, char **argv, char **azColName) {
 };
 
 
-void run_statement(struct workstate * ws, sqlite3 * db, char * stmt) {
+int run_statement(struct workstate * ws, sqlite3 * db, char * stmt) {
   int rc = 0;
   char * errmsg;
 
   EXEC_SQLITE(rc, db, stmt, NULL)
+
+  return rc;
 };
 
-void run_statement_alldb(struct workstate * ws, char * stmt) {
+int run_statement_alldb(struct workstate * ws, char * stmt) {
   int i = 0;
+  int rc;
 
   for (i = 0; i < 3*FIELDSIZE+1; i++) {
-    run_statement(ws, ws->localdb[i], stmt);
+    rc = run_statement(ws, ws->localdb[i], stmt);
+    if (rc)
+    	break;
   };
+
+  return rc;
 };
 
 /**
@@ -201,12 +208,13 @@ void run_statement_alldb(struct workstate * ws, char * stmt) {
  */
 int sqlite_dbimpl_clear_versiondatabase(struct workstate * ws) {
         char stmt[SQLLINESIZE];
+	int rc;
 
         sprintf(stmt, "delete from tb_binmatch;");
 
-        run_statement(ws, ws->localdb[0], stmt);
+        rc = run_statement(ws, ws->localdb[0], stmt);
 
-	return 0;
+	return rc;
 };
 
 /**
@@ -214,11 +222,12 @@ int sqlite_dbimpl_clear_versiondatabase(struct workstate * ws) {
  */
 int sqlite_dbimpl_clear_versiondata(struct workstate * ws) {
         char stmt[SQLLINESIZE];
+	int rc;
 
         sprintf(stmt, "delete from tb_versionmatch;");
-        run_statement(ws, ws->matchdb, stmt);
+        rc = run_statement(ws, ws->matchdb, stmt);
 
-	return 0;
+	return rc;
 };
 
 /**
@@ -227,6 +236,7 @@ int sqlite_dbimpl_clear_versiondata(struct workstate * ws) {
  */
 int run_upgrade_fixes(struct workstate * ws) {
   int rc = 0;
+  int errState = 0;
   int i;
   int c;
   int numChange = 0;
@@ -247,10 +257,22 @@ int run_upgrade_fixes(struct workstate * ws) {
         fprintf(stderr, "I am missing the tables in %c%d (tb_cpe_%c_%d). This is to be expected if this is the first run of cvechecker since an upgrade.\nI will now create tb_cpe_%c_%d for you, no further actions are needed.\n", partchar[c], i, partchar[c], i, partchar[c], i);
         zero_string(stmt, SQLLINESIZE);
         sprintf(stmt, "CREATE TABLE tb_cpe_%c_%d (cpeid integer primary key, cpepart char(1), cpevendor char(%d), cpeproduct char(%d), cpeversion char(%d), cpeupdate char(%d), cpeedition char(%d), cpelanguage char(%d));", partchar[c], i, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE);
-        run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
+        rc = run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
+	if (rc) {
+          fprintf(stderr, "Failed to execute the SQL statement, bailing out...\n");
+	  errState = 1;
+	  break;
+	};
 	numChange++;
       };
+      rc = 0;
     };
+    if (errState)
+      break;
+  };
+
+  if (errState) {
+    return 1;
   };
 
   /**
@@ -262,18 +284,36 @@ int run_upgrade_fixes(struct workstate * ws) {
           fprintf(stderr, "I am missing the index binmatchidx. This is to be expected if this is the first run of cvechecker since an upgrade.\nI will now create binmatchidx for you, no further actions are needed.\n");
           zero_string(stmt, SQLLINESIZE);
           sprintf(stmt, "CREATE INDEX binmatchidx on tb_binmatch (cpe, cpepart, cpevendorlength);");
-          run_statement(ws, ws->localdb[0], stmt);
+          rc = run_statement(ws, ws->localdb[0], stmt);
+	  if (rc) {
+            fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
+	    errState = 1;
+	    break;
+	  };
 	  numChange++;
   };
+
+  if (errState)
+    return 1;
+
   sprintf(stmt, "select count(rowid) from sqlite_master where name = 'cveidx2';");
   rc = get_int_value(ws->localdb[0], stmt, ws);
   if (rc == 0) {
     fprintf(stderr, "I am missing the index cveidx2. This is to be expected if this is the first run of cvechecker since an upgrade.\nI will now create cveidx2 for you, no further actions are needed.\n");
     zero_string(stmt, SQLLINESIZE);
     sprintf(stmt, "CREATE INDEX cveidx2 on tb_cve (cpe, cpepart, cpevendorlength);");
-    run_statement(ws, ws->localdb[0], stmt);
+    rc = run_statement(ws, ws->localdb[0], stmt);
+    if (rc) {
+      fprintf(stderr, "Failed to execute SQL statement; bailing out...\n");
+      errState = 1;
+      break;
+    };
     numChange++;
   };
+
+  if (errState)
+    return 1;
+
   for (i = 1; i <= FIELDSIZE; i++) {
     for (c = 0; c < 3; c++) {
       sprintf(stmt, "select count(rowid) from sqlite_master where name = 'cpe_%c_%d_idx';", partchar[c], i);
@@ -282,11 +322,21 @@ int run_upgrade_fixes(struct workstate * ws) {
         fprintf(stderr, "I am missing the index cpe_%c_%d_idx. This is to be expected if this is the first run of cvechecker since an upgrade.\nI will now create cpe_%c_%d_idx for you, no further actions are needed.\n", partchar[c], i, partchar[c], i);
         zero_string(stmt, SQLLINESIZE);
         sprintf(stmt, "CREATE INDEX cpe_%c_%d_idx on tb_cpe_%c_%d (cpevendor, cpeproduct, cpeversion, cpeid, cpeedition, cpeupdate, cpelanguage);", partchar[c], i, partchar[c], i);
-        run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
+        rc = run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
+	if (rc) {
+          fprintf(stderr, "Failing to execute the SQL statement, bailing out...\n");
+	  errState = 1;
+	  break;
+	};
 	numChange++;
       };
     };
+    if (errState)
+      break;
   };
+
+  if (errState)
+    return 1;
 
   /**
    * 3 - Add tb_cpe_version tables and populate 
@@ -302,7 +352,12 @@ int run_upgrade_fixes(struct workstate * ws) {
         zero_string(stmt, SQLLINESIZE);
 
         sprintf(stmt, "CREATE TABLE tb_cpe_versions (cpeversion char(%d) primary key, f1 integer, f2 integer, f3 integer, f4 integer, f5 integer, f6 integer, f7 integer, f8 integer, f9 integer, f10 integer, f11 integer, f12 integer, f13 integer, f14 integer, f15 integer); CREATE INDEX cpe_versions_idx on tb_cpe_versions (cpeversion); CREATE INDEX cpe_versions_2_idx on tb_cpe_versions (f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15);", FIELDSIZE);
-        run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
+        rc = run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
+	if (rc) {
+          fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
+	  errState = 1;
+	  break;
+	};
 
         zero_string(stmt, SQLLINESIZE);
         sprintf(stmt, "SELECT distinct cpeversion from tb_cpe_%c_%d;", partchar[c], i);
@@ -319,13 +374,23 @@ int run_upgrade_fixes(struct workstate * ws) {
   
           zero_string(stmt, SQLLINESIZE);
           sprintf(stmt, "INSERT INTO tb_cpe_versions (cpeversion, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15) values (\"%s\", %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);", cpeversion, f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13], f[14]);
-          run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
+          rc = run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
+	  if (rc) {
+            fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
+	    errState = 1;
+	    break;
+	  };
 	  numChange++;
         };
         ASSERT_FINALIZE(rc, stmt, versstmt)
       };
     };
+    if (errState)
+      break;
   };
+
+  if (errState)
+    return 1;
 
   /**
    * 4 - For SQLite, we don't need to increate VARCHAR sizes - it automatically allows growing of sizes.
@@ -343,7 +408,12 @@ int run_upgrade_fixes(struct workstate * ws) {
     if (strstr(sqltext, "cvss int") == NULL) {
       fprintf(stderr, "I am missing the cvss column in the tb_cve table. This is to be expected if you upgraded cvechecker from 3.1 or lower.\n");
       sprintf(stmt, "ALTER TABLE tb_cve ADD COLUMN cvss int DEFAULT -1;");
-      run_statement(ws, ws->localdb[0], stmt);
+      rc = run_statement(ws, ws->localdb[0], stmt);
+      if (rc) {
+        fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
+	errState = 1;
+	break;
+      };
       numChange++;
     };
   };
@@ -393,8 +463,18 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
     sqlite3_close(ws->localdb[0]);
     return rc;
   };
-  run_statement(ws, ws->localdb[0], "PRAGMA cache_size=10000;");
+
+  rc = run_statement(ws, ws->localdb[0], "PRAGMA cache_size=10000;");
+  if (rc) {
+    fprintf(stderr, "Failed to run SQL statement, bailing out...\n");
+    return rc;
+  };
+
   run_statement(ws, ws->localdb[0], "PRAGMA synchronous=OFF;");
+  if (rc) {
+    fprintf(stderr, "Failed to run SQL statement, bailing out...\n");
+    return rc;
+  };
 
   for (i = 1; i <= FIELDSIZE; i++) {
     for (c = 0; c < 3; c++) {
@@ -403,9 +483,19 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
       if (rc) {
         fprintf(stderr, "Can't open database %s: %s\n", buffer2, sqlite3_errmsg(ws->localdb[i+c*FIELDSIZE]));
         sqlite3_close(ws->localdb[i+c*FIELDSIZE]);
+	return rc;
       } else {
-        run_statement(ws, ws->localdb[i+c*FIELDSIZE], "PRAGMA cache_size=10000;");
+        rc = run_statement(ws, ws->localdb[i+c*FIELDSIZE], "PRAGMA cache_size=10000;");
+	if (rc) {
+          fprintf(stderr, "Failed to execute statement, bailing out...\n");
+	  return rc;
+	};
+
         run_statement(ws, ws->localdb[i+c*FIELDSIZE], "PRAGMA synchronous=OFF;");
+	if (rc) {
+	  fprintf(stderr, "Failed to execute statement, bailing out...\n");
+	  return rc;
+	};
       };
     };
   };
@@ -427,8 +517,18 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
     fprintf(stderr, "Can't open database %s: %s\n", buffer, sqlite3_errmsg(ws->matchdb));
     sqlite3_close(ws->matchdb);
   };
-  run_statement(ws, ws->matchdb, "PRAGMA cache_size=10000;");
-  run_statement(ws, ws->matchdb, "PRAGMA synchronous=OFF;");
+  
+  rc = run_statement(ws, ws->matchdb, "PRAGMA cache_size=10000;");
+  if (rc) {
+    fprintf(stderr, "Failed to execute statement, bailing out...\n");
+    return rc;
+  };
+
+  rc = run_statement(ws, ws->matchdb, "PRAGMA synchronous=OFF;");
+  if (rc) {
+    fprintf(stderr, "Failed to execute statement, bailing out...\n");
+    return rc;
+  };
 
   if (! ws->arg->initdatabases) {
     rc += run_upgrade_fixes(ws);
@@ -441,7 +541,7 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
   return rc;
 };
 
-void add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
+int add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
         int rc = 0;
         char stmt[SQLLINESIZE];
 
@@ -453,7 +553,11 @@ void add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
 
         if (rc == 0) {
                 sprintf(stmt, "insert into tb_cpe_%c_%zu (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
-                run_statement(ws, get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt);
+                rc = run_statement(ws, get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt);
+		if (rc) {
+			fprintff(stderr, "Failed to execute statement, bailing out...\n");
+			return rc;
+		};
 
                 zero_string(stmt, SQLLINESIZE);
                 sprintf(stmt, "select count(cpeversion) from tb_cpe_versions where cpeversion = \"%s\";", cpe.version);
@@ -466,7 +570,11 @@ void add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
                                 f[c] = get_version_field(cpe.version, c);
                         zero_string(stmt, SQLLINESIZE);
                         sprintf(stmt, "INSERT INTO tb_cpe_versions (cpeversion, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15) values (\"%s\", %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);", cpe.version, f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13], f[14]);
-                        run_statement(ws, get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt); 
+                        rc = run_statement(ws, get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt); 
+			if (rc) {
+				fprintf(stderr, "Failed to execute statement, bailing out...\n");
+				return rc;
+			};
                 };
 
                 sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
@@ -478,10 +586,18 @@ void add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
         };
 
         sprintf(stmt, "delete from tb_binmatch where basedir = \"%s\" and filename = \"%s\";", ws->currentdir, ws->currentfile);
-        run_statement(ws, ws->localdb[0], stmt);
+        rc = run_statement(ws, ws->localdb[0], stmt);
+	if (rc) {
+		fprintf(stderr, "Failed to execute statement, bailing out...\n");
+		return rc;
+	};
 
         sprintf(stmt, "insert into tb_binmatch values ('%s', '%s', '%c', %zu, %d, 1);", ws->currentdir, ws->currentfile, cpe.part, strlen(cpe.vendor), rc);
-        run_statement(ws, ws->localdb[0], stmt);
+        rc = run_statement(ws, ws->localdb[0], stmt);
+	if (rc) {
+		fprintf(stderr, "Failed to execute statement, bailing out...\n");
+		return rc;
+	};
 };
 
 /**
@@ -633,13 +749,14 @@ int get_version_and_store(void * cbobj, int argc, char **argv, char **azColName)
  */
 int sqlite_dbimpl_delete_binary(struct workstate * ws) {
         char stmt[SQLLINESIZE];
+	int rc;
 
         zero_string(stmt, SQLLINESIZE);
 
         sprintf(stmt, "delete from tb_binmatch where basedir = \"%s\" and filename = \"%s\";", ws->currentdir, ws->currentfile);
-        run_statement(ws, ws->localdb[0], stmt);
+        rc = run_statement(ws, ws->localdb[0], stmt);
 
-	return 0;
+	return rc;
 };
 
 /**
@@ -1013,7 +1130,11 @@ int check_cvecpe_in_sqlite_db(struct workstate * ws, int year, int sequence, str
 
         if (rc == 0) {
                 sprintf(stmt, "insert into tb_cpe_%c_%zu (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
-                run_statement(ws, get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt);
+                rc = run_statement(ws, get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt);
+		if (rc) {
+			fprintf(stderr, "Failed to execute statement, bailing out...\n");
+			return -1;
+		};
 
                 zero_string(stmt, SQLLINESIZE);
                 sprintf(stmt, "select count(cpeversion) from tb_cpe_versions where cpeversion = \"%s\";", cpe.version);
@@ -1067,9 +1188,9 @@ int sqlite_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cp
         rc = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
 
         sprintf(stmt, "insert into tb_cve values (%d, %d, '%c', %zu, %d, %d);", year, sequence, cpe.part, strlen(cpe.vendor), rc, cvssScore);
-        run_statement(ws, ws->localdb[0], stmt);
+        rc = run_statement(ws, ws->localdb[0], stmt);
 
-        return 0;
+        return rc;
 };
 
 
@@ -1080,6 +1201,7 @@ int sqlite_dbimpl_add_versiongather(struct workstate * ws, struct versiongather_
         char stmt[SQLLINESIZE];
         char stmt2[SQLLINESIZE];
         int cpid = 0;
+	int rc;
 
         sprintf(stmt, "select cpeid from tb_cpe where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
 
@@ -1088,7 +1210,11 @@ int sqlite_dbimpl_add_versiongather(struct workstate * ws, struct versiongather_
         if (cpid == 0) {
                 zero_string(stmt2, SQLLINESIZE);
                 sprintf(stmt2, "insert into tb_cpe (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
-                run_statement(ws, ws->matchdb, stmt2);
+                rc = run_statement(ws, ws->matchdb, stmt2);
+		if (rc) {
+			fprintf(stderr, "Failed to execute statements, bailing out...\n");
+			return rc;
+		};
 
                 cpid = get_int_value(ws->matchdb, stmt, ws);
         };
@@ -1100,9 +1226,9 @@ int sqlite_dbimpl_add_versiongather(struct workstate * ws, struct versiongather_
 
         zero_string(stmt2, SQLLINESIZE);
         sprintf(stmt2, "insert into tb_versionmatch values (\"%s\", %d, \"%s\", \"%s\", %d);", vg.filepart, vg.gathertype, vg.filematch, vg.versionexpression, cpid);
-        run_statement(ws, ws->matchdb, stmt2);
+        rc = run_statement(ws, ws->matchdb, stmt2);
 
-        return 0;
+        return rc;
 };
 
 /**
@@ -1112,23 +1238,32 @@ int sqlite_dbimpl_initialize_databases(struct workstate * ws) {
   char stmt[SQLLINESIZE];
   int size = 1;
   int c = 0;
+  int rc = 0;
 
   // Setup of global
   sprintf(stmt, "PRAGMA foreign_keys=OFF; BEGIN TRANSACTION; DROP TABLE IF EXISTS tb_versionmatch; DROP TABLE IF EXISTS tb_cpe; CREATE TABLE tb_versionmatch (filename varchar(%d), filetype smallint, filematch varchar(%d), contentmatch varchar(%d), cpe int); CREATE INDEX vmidx ON tb_versionmatch (filename); CREATE TABLE tb_cpe (cpeid integer primary key, cpepart char(1), cpevendor varchar(%d), cpeproduct varchar(%d), cpeversion varchar(%d), cpeupdate varchar(%d), cpeedition varchar(%d), cpelanguage varchar(%d)); COMMIT;", FILENAMESIZE, FILENAMESIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE);
-  run_statement(ws, ws->matchdb, stmt);
+  rc = run_statement(ws, ws->matchdb, stmt);
+  if (rc)
+    return rc;
 
   // Setup of locals
   zero_string(stmt, SQLLINESIZE);
   sprintf(stmt, "PRAGMA foreign_keys=OFF; BEGIN TRANSACTION; DROP TABLE IF EXISTS tb_binmatch; DROP TABLE IF EXISTS tb_cve; CREATE TABLE tb_binmatch ( basedir varchar(%d), filename varchar(%d), cpepart char(1), cpevendorlength int, cpe int, fullmatch int); CREATE TABLE tb_cve ( year smallint, sequence int, cpepart char(1), cpevendorlength int, cpe int, cvss int); CREATE INDEX cveidx ON tb_cve (year, sequence); CREATE INDEX cveidx2 on tb_cve (cpe, cpepart, cpevendorlength); CREATE INDEX binmatchidx on tb_binmatch (cpe, cpepart, cpevendorlength); COMMIT;", FILENAMESIZE, FILENAMESIZE);
-  run_statement(ws, ws->localdb[0], stmt);
+  rc = run_statement(ws, ws->localdb[0], stmt);
+  if (rc) 
+    return rc;
 
   for (size = 1; size <= FIELDSIZE; size++) {
     for (c = 0; c < 3; c++) {
       zero_string(stmt, SQLLINESIZE);
       sprintf(stmt, "DROP TABLE IF EXISTS tb_cpe_%c_%d; CREATE TABLE tb_cpe_%c_%d (cpeid integer primary key, cpepart char(1), cpevendor char(%d), cpeproduct char(%d), cpeversion char(%d), cpeupdate char(%d), cpeedition char(%d), cpelanguage char(%d)); CREATE INDEX cpe_%c_%d_idx on tb_cpe_%c_%d (cpevendor, cpeproduct, cpeversion, cpeid, cpeedition, cpeupdate, cpelanguage);", partchar[c], size, partchar[c], size, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, partchar[c], size, partchar[c], size);
-      run_statement(ws, get_local_db(ws, partchar[c], size), stmt);
+      rc = run_statement(ws, get_local_db(ws, partchar[c], size), stmt);
+      if (rc)
+        return rc;
       sprintf(stmt, "DROP TABLE IF EXISTS tb_cpe_versions; CREATE TABLE tb_cpe_versions (cpeversion char(%d) primary key, f1 integer, f2 integer, f3 integer, f4 integer, f5 integer, f6 integer, f7 integer, f8 integer, f9 integer, f10 integer, f11 integer, f12 integer, f13 integer, f14 integer, f15 integer); CREATE INDEX cpe_versions_idx on tb_cpe_versions (cpeversion); CREATE INDEX cpe_versions_2_idx on tb_cpe_versions (f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15);", FIELDSIZE);
-      run_statement(ws, get_local_db(ws, partchar[c], size), stmt);
+      rc = run_statement(ws, get_local_db(ws, partchar[c], size), stmt);
+      if (rc)
+        return rc;
     };
   };
   
