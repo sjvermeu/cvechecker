@@ -1456,7 +1456,11 @@ int main(int argc, char ** argv) {
 		get_installed_software(&workstate);
 	// Operational task
 	if (arguments.haswatchlist)
-		load_watch_list(&workstate);
+		rc = load_watch_list(&workstate);
+
+	if (rc)
+		exit(EXIT_FAILURE)
+
 	// Administrative task
 	if (arguments.loadcve)
 		load_cve(&workstate);
