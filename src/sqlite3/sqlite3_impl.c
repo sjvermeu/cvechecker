@@ -556,7 +556,7 @@ int add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
                 sprintf(stmt, "insert into tb_cpe_%c_%zu (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
                 rc = run_statement(ws, get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt);
 		if (rc) {
-			fprintff(stderr, "Failed to execute statement, bailing out...\n");
+			fprintf(stderr, "Failed to execute statement, bailing out...\n");
 			return rc;
 		};
 
