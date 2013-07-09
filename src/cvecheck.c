@@ -1459,7 +1459,7 @@ int main(int argc, char ** argv) {
 		rc = load_watch_list(&workstate);
 
 	if (rc)
-		exit(EXIT_FAILURE)
+		exit(EXIT_FAILURE);
 
 	// Administrative task
 	if (arguments.loadcve)
