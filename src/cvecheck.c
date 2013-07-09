@@ -996,11 +996,14 @@ void clear_versiondata(struct workstate * ws) {
  * Basically, this will remove the previous version settings in the database so
  * that the new run can populate the database with the current version list.
  */
-void clear_versiondatabase(struct workstate * ws) {
+int clear_versiondatabase(struct workstate * ws) {
+	int rc = 0;
 	if (ws->dbtype == sqlite)
-		sqlite_dbimpl_clear_versiondatabase(ws);
+		rc = sqlite_dbimpl_clear_versiondatabase(ws);
 	else if (ws->dbtype == mysql)
 		mysql_dbimpl_clear_versiondatabase(ws);
+
+	return rc;
 };
 
 /**
@@ -1068,9 +1071,12 @@ int load_watch_list(struct workstate * ws) {
 		return rc;
 	
 	if (!((ws->arg->deltaonly) || (ws->arg->deletedeltaonly)) && (ws->versionListCleared != 1)) {
-		clear_versiondatabase(ws);
+		rc = clear_versiondatabase(ws);
 		ws->versionListCleared = 1;
 	}
+
+	if (rc)
+		return rc;
 
 	if (ws->arg->deletedeltaonly) {
 		fprintf(stdout, "Deleting entries related to selected CPEs\n");

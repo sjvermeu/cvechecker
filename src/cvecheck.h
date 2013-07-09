@@ -88,7 +88,7 @@ int process_binfile(char * line, struct workstate * ws);
 void delete_binfile(char * line, struct workstate * ws);
 
 // clear_versiondatabase - Purse the local database
-void clear_versiondatabase(struct workstate * ws);
+int clear_versiondatabase(struct workstate * ws);
 
 // get_installed_software - Read the list of installed binaries and process the list
 int get_installed_software(struct workstate * ws);
