@@ -288,7 +288,6 @@ int run_upgrade_fixes(struct workstate * ws) {
 	  if (rc) {
             fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
 	    errState = 1;
-	    break;
 	  };
 	  numChange++;
   };
@@ -306,7 +305,6 @@ int run_upgrade_fixes(struct workstate * ws) {
     if (rc) {
       fprintf(stderr, "Failed to execute SQL statement; bailing out...\n");
       errState = 1;
-      break;
     };
     numChange++;
   };
@@ -419,6 +417,9 @@ int run_upgrade_fixes(struct workstate * ws) {
   };
   ASSERT_FINALIZE(rc, stmt, sql_stmt)
 
+
+  if (errState)
+    return -errState;
 
   return numChange;
 };
