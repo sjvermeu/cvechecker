@@ -1143,9 +1143,12 @@ int get_installed_software(struct workstate * ws) {
 		return rc;
 
 	if (!((ws->arg->deltaonly) || (ws->arg->deletedeltaonly)) && (ws->versionListCleared != 1)) {
-		clear_versiondatabase(ws);
+		rc = clear_versiondatabase(ws);
 		ws->versionListCleared = 1;
 	}
+
+	if (rc)
+		return rc;
 
 	if (ws->arg->deletedeltaonly) {
 		fprintf(stdout, "Deleting entries related to selected files...\n");
