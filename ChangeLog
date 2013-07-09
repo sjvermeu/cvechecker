@@ -1,3 +1,6 @@
+** (2013-07-08) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Handle cve data file open failures correctly
+
 ** (2013-02-04) Sven Vermeulen <sven.vermeulen@siphos.be>
 	- Add fix for cpe:language when additional ':' was provided (Thanks to
 	  Arnaud Fileux)

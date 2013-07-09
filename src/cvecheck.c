@@ -1273,6 +1273,13 @@ int load_cve(struct workstate * ws) {
 	}
 
 	cvelist = fopen(arg->cvedata, "r");
+	if (cvelist == NULL) {
+		fprintf(stderr, "Could not open file %s for reading: ", arg->binlist);
+		perror(arg->binlist);
+		return 1;
+	};
+
+
 	zero_string(buffer, BUFFERSIZE);
 	while (fgets(buffer, sizeof(buffer), cvelist) != 0) {
 		int cvelength = 0;
