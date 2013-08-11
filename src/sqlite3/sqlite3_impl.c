@@ -471,7 +471,7 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
     return rc;
   };
 
-  run_statement(ws, ws->localdb[0], "PRAGMA synchronous=OFF;");
+  rc = run_statement(ws, ws->localdb[0], "PRAGMA synchronous=OFF;");
   if (rc) {
     fprintf(stderr, "Failed to run SQL statement, bailing out...\n");
     return rc;
@@ -480,7 +480,7 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
   for (i = 1; i <= FIELDSIZE; i++) {
     for (c = 0; c < 3; c++) {
       sprintf(buffer2, "%s%c%d.db", buffer, partchar[c], i);
-      rc += sqlite3_open(buffer2, &(ws->localdb[i+c*FIELDSIZE]));
+      rc = sqlite3_open(buffer2, &(ws->localdb[i+c*FIELDSIZE]));
       if (rc) {
         fprintf(stderr, "Can't open database %s: %s\n", buffer2, sqlite3_errmsg(ws->localdb[i+c*FIELDSIZE]));
         sqlite3_close(ws->localdb[i+c*FIELDSIZE]);
@@ -492,7 +492,7 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
 	  return rc;
 	};
 
-        run_statement(ws, ws->localdb[i+c*FIELDSIZE], "PRAGMA synchronous=OFF;");
+        rc = run_statement(ws, ws->localdb[i+c*FIELDSIZE], "PRAGMA synchronous=OFF;");
 	if (rc) {
 	  fprintf(stderr, "Failed to execute statement, bailing out...\n");
 	  return rc;
@@ -513,7 +513,7 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
   };
   zero_string(buffer, BUFFERSIZE);
   strncpy(buffer, config_setting_get_string(globaldb), i);
-  rc += sqlite3_open(buffer, &(ws->matchdb));
+  rc = sqlite3_open(buffer, &(ws->matchdb));
   if (rc) {
     fprintf(stderr, "Can't open database %s: %s\n", buffer, sqlite3_errmsg(ws->matchdb));
     sqlite3_close(ws->matchdb);
@@ -532,7 +532,7 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
   };
 
   if (! ws->arg->initdatabases) {
-    rc += run_upgrade_fixes(ws);
+    rc = run_upgrade_fixes(ws);
     if (rc) {
       fprintf(stderr, "Some updates have occurred which might affect the database initialization.\n");
       fprintf(stderr, "Please restart the command.\n");
