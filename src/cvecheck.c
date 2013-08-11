@@ -1226,7 +1226,6 @@ int get_installed_software(struct workstate * ws) {
 int validate_cve_data(char * buffer) {
 	char * bufferptr;
 	char * buffer2ptr;
-	int iSize;
 
 	if (strstr(buffer, "CVE-") != buffer)
 		return 1;

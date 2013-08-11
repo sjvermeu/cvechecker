@@ -8,6 +8,7 @@
 	- Use LARGEFIELDSIZE for contentmatch column (tb_versionmatch) and
 	  C-type variables related to the content match
 	- Introduce database fixing for MySQL
+	- Remove unused variables
 
 ** (2013-07-08) Sven Vermeulen <sven.vermeulen@siphos.be>
 	- Handle cve data file open failures correctly

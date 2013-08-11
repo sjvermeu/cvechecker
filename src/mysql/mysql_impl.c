@@ -336,7 +336,6 @@ int mysql_dbimpl_process_binary(struct workstate * ws) {
   MYSQL_RES * result;
   MYSQL_ROW row;
   int num_fields;
-  int i;
 
   strcpy(buffer, "select v.filename as filename, v.filetype as filetype, v.filematch as filematch, v.contentmatch as contentmatch, c.cpepart as cpepart, c.cpevendor as cpevendor, c.cpeproduct as cpeproduct, c.cpeversion as cpeversion, c.cpeupdate as cpeupdate, c.cpeedition as cpeedition, c.cpelanguage as cpelanguage from tb_versionmatch v, tb_cpe c where v.cpe = c.cpeid and \"");
   strcat(buffer, ws->currentfile);
@@ -347,7 +346,7 @@ int mysql_dbimpl_process_binary(struct workstate * ws) {
   num_fields = mysql_num_fields(result);
   
   while ((row = mysql_fetch_row(result))) {
-    int i, rc;
+    int rc;
     regex_t preg;
     regmatch_t pmatch[16]; // Assuming the maximum amount of detected groups is 16
     struct cpe_data cpe_data;
@@ -400,9 +399,7 @@ int mysql_dbimpl_process_binary(struct workstate * ws) {
 };
 
 int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
-  int rc = 0;
   char stmt[SQLLINESIZE*8];
-  char inset1[SQLLINESIZE], inset2[SQLLINESIZE];
   MYSQL_RES * result;
   MYSQL_ROW row;
 
@@ -717,21 +714,17 @@ int mysql_dbimpl_initialize_workstate(struct workstate * ws) {
  */
 int mysql_dbimpl_add_versiongather(struct workstate * ws, struct versiongather_data vg, struct cpe_data cpe) {
   char stmt[SQLLINESIZE];
-  char stmt2[SQLLINESIZE];
   char filematch[FIELDSIZE];
   char expression[FIELDSIZE];
   int cpid = 0;
-  int num_fields = 0;
-  MYSQL_RES * result;
-  MYSQL_ROW row;
 
   cpid = add_to_mysql_database(ws, cpe);
 
   mysql_real_escape_string(ws->conn, filematch, vg.filematch, swstrlen(vg.filematch));
   mysql_real_escape_string(ws->conn, expression, vg.versionexpression, swstrlen(vg.versionexpression));
 
-  sprintf(stmt2, "insert into tb_versionmatch values (\"%s\", %d, \"%s\", \"%s\", %d);", vg.filepart, vg.gathertype, filematch, expression, cpid);
-  if (mysql_query(ws->conn, stmt2)) {
+  sprintf(stmt, "insert into tb_versionmatch values (\"%s\", %d, \"%s\", \"%s\", %d);", vg.filepart, vg.gathertype, filematch, expression, cpid);
+  if (mysql_query(ws->conn, stmt)) {
     fprintf(stderr, "Error %u: %s\n", mysql_errno(ws->conn), mysql_error(ws->conn));
     return 1;
   };
@@ -743,11 +736,7 @@ int mysql_dbimpl_add_versiongather(struct workstate * ws, struct versiongather_d
  * Initialize the databases
  */
 int mysql_dbimpl_initialize_databases(struct workstate * ws) {
-  char stmt[SQLLINESIZE];
   char buffer[SQLLINESIZE];
-  const config_setting_t * dbname;
-  int size = 1;
-  int c = 0;
   
   MYSQL_QUERY(ws->conn, "DROP TABLE IF EXISTS tb_binmatch")
   MYSQL_QUERY(ws->conn, "DROP TABLE IF EXISTS tb_cpe_versions")
@@ -763,7 +752,7 @@ int mysql_dbimpl_initialize_databases(struct workstate * ws) {
   MYSQL_QUERY(ws->conn, buffer)
   MYSQL_QUERY(ws->conn, "CREATE INDEX vmidx ON tb_versionmatch (filename)")
 
-  sprintf(buffer, "CREATE TABLE tb_binmatch (basedir VARCHAR(%d), filename VARCHAR(%d), cpe INT, fullmatch INT, hostname VARCHAR(%d), userdefkey VARCHAR(256), FOREIGN KEY (cpe) REFERENCES tb_cpe(cpeid) ON DELETE CASCADE) ENGINE=InnoDB", FILENAMESIZE, FILENAMESIZE, FIELDSIZE, FIELDSIZE);
+  sprintf(buffer, "CREATE TABLE tb_binmatch (basedir VARCHAR(%d), filename VARCHAR(%d), cpe INT, fullmatch INT, hostname VARCHAR(%d), userdefkey VARCHAR(256), FOREIGN KEY (cpe) REFERENCES tb_cpe(cpeid) ON DELETE CASCADE) ENGINE=InnoDB", FILENAMESIZE, FILENAMESIZE, FIELDSIZE);
   MYSQL_QUERY(ws->conn, buffer)
   MYSQL_QUERY(ws->conn, "CREATE TABLE tb_cve (year SMALLINT, sequence INT, cpe INT, cvss INT, FOREIGN KEY (cpe) REFERENCES tb_cpe(cpeid) ON DELETE CASCADE) ENGINE=InnoDB")
   MYSQL_QUERY(ws->conn, "CREATE INDEX cveidx ON tb_cve (year, sequence)")
@@ -787,7 +776,6 @@ int mysql_dbimpl_report_installed(struct workstate * ws, int showfiles) {
   char stmt[SQLLINESIZE];
   MYSQL_RES * result;
   MYSQL_ROW row;
-  int rc;
 
   sprintf(stmt, "SELECT DISTINCT a.cpe AS cpe, b.cpepart AS cpepart, b.cpevendor AS cpevendor, b.cpeproduct AS cpeproduct, b.cpeversion AS cpeversion, b.cpeupdate AS cpeupdate, b.cpeedition AS cpeedition, b.cpelanguage AS cpelanguage FROM tb_binmatch a, tb_cpe b WHERE b.cpeid = a.cpe AND a.hostname = \"%s\" AND a.userdefkey = \"%s\"", ws->hostname, ws->userdefkey);
   MYSQL_QUERY(ws->conn, stmt)

@@ -12,8 +12,6 @@
  * @param numlen Length of the buffer. If 0 or lower, the length of the buffer * is calculated using strlen().
  */
 void zero_string(char * buffer, size_t numlen) {
-	int i;
-
 	assert(buffer != NULL);
 
 	if (numlen <= 0) 
