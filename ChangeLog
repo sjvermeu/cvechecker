@@ -1,3 +1,6 @@
+** (2013-08-11) Sven Vermeulen <sven.vermeulen@siphos.be>
+	- Check on CPE field sizes to prevent potential overflows
+
 ** (2013-07-08) Sven Vermeulen <sven.vermeulen@siphos.be>
 	- Handle cve data file open failures correctly
 	- Bail out when SQL instruction in SQLite fails
