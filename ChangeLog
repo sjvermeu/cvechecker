@@ -1,5 +1,6 @@
 ** (2013-08-11) Sven Vermeulen <sven.vermeulen@siphos.be>
 	- Check on CPE field sizes to prevent potential overflows
+	- Check on CVE field sizes before loading into database
 
 ** (2013-07-08) Sven Vermeulen <sven.vermeulen@siphos.be>
 	- Handle cve data file open failures correctly

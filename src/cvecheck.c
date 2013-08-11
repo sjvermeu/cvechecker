@@ -1225,6 +1225,8 @@ int get_installed_software(struct workstate * ws) {
  */
 int validate_cve_data(char * buffer) {
 	char * bufferptr;
+	char * buffer2ptr;
+	int iSize;
 
 	if (strstr(buffer, "CVE-") != buffer)
 		return 1;
@@ -1244,6 +1246,51 @@ int validate_cve_data(char * buffer) {
 		return 6;
 	if (bufferptr[6] != ':')
 		return 7;
+
+	bufferptr = bufferptr+8;
+	// vendor field length
+	buffer2ptr = strchr(bufferptr, ':');
+	if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE)
+		return 8;
+	bufferptr = buffer2ptr+1;
+	// product field length
+	buffer2ptr = strchr(bufferptr, ':');
+	if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE)
+		return 9;
+	bufferptr = buffer2ptr+1;
+	// version field length
+	buffer2ptr = strchr(bufferptr, ':');
+	if (buffer2ptr == NULL) {
+		if (swstrlen(bufferptr) >= FIELDSIZE)
+			return 10;
+		else
+			return 0;
+	} else if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE) {
+		return 10;
+	}
+	bufferptr = buffer2ptr+1;
+	// update field length
+	buffer2ptr = strchr(bufferptr, ':');
+	if (buffer2ptr == NULL) {
+		if (swstrlen(bufferptr) >= FIELDSIZE)
+			return 11;
+		else
+			return 0;
+	} else if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE) {
+		return 10;
+	}
+	bufferptr = buffer2ptr+1;
+	// edition field length
+	buffer2ptr = strchr(bufferptr, ':');
+	if (buffer2ptr == NULL) {
+		if (swstrlen(bufferptr) >= FIELDSIZE)
+			return 12;
+		else
+			return 0;
+	} else if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE) {
+		return 10;
+	}
+	bufferptr = buffer2ptr+1;
 
 	return 0;
 };
