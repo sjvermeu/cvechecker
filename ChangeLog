@@ -5,6 +5,9 @@
 ** (2013-08-11) Sven Vermeulen <sven.vermeulen@siphos.be>
 	- Check on CPE field sizes to prevent potential overflows
 	- Check on CVE field sizes before loading into database
+	- Use LARGEFIELDSIZE for contentmatch column (tb_versionmatch) and
+	  C-type variables related to the content match
+	- Introduce database fixing for MySQL
 
 ** (2013-07-08) Sven Vermeulen <sven.vermeulen@siphos.be>
 	- Handle cve data file open failures correctly

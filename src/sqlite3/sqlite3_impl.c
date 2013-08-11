@@ -417,9 +417,16 @@ int run_upgrade_fixes(struct workstate * ws) {
   };
   ASSERT_FINALIZE(rc, stmt, sql_stmt)
 
-
   if (errState)
     return -errState;
+
+  /**
+   * 6 - Fieldsize of column contentmatch should be LARGEFIELDSIZE, not
+   * FIELDSIZE.
+   *
+   * For SQLite, that doesn't matter, as the size in varchar(###) is ignored.
+   */
+
 
   return numChange;
 };
@@ -1244,7 +1251,7 @@ int sqlite_dbimpl_initialize_databases(struct workstate * ws) {
   int rc = 0;
 
   // Setup of global
-  sprintf(stmt, "PRAGMA foreign_keys=OFF; BEGIN TRANSACTION; DROP TABLE IF EXISTS tb_versionmatch; DROP TABLE IF EXISTS tb_cpe; CREATE TABLE tb_versionmatch (filename varchar(%d), filetype smallint, filematch varchar(%d), contentmatch varchar(%d), cpe int); CREATE INDEX vmidx ON tb_versionmatch (filename); CREATE TABLE tb_cpe (cpeid integer primary key, cpepart char(1), cpevendor varchar(%d), cpeproduct varchar(%d), cpeversion varchar(%d), cpeupdate varchar(%d), cpeedition varchar(%d), cpelanguage varchar(%d)); COMMIT;", FILENAMESIZE, FILENAMESIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE);
+  sprintf(stmt, "PRAGMA foreign_keys=OFF; BEGIN TRANSACTION; DROP TABLE IF EXISTS tb_versionmatch; DROP TABLE IF EXISTS tb_cpe; CREATE TABLE tb_versionmatch (filename varchar(%d), filetype smallint, filematch varchar(%d), contentmatch varchar(%d), cpe int); CREATE INDEX vmidx ON tb_versionmatch (filename); CREATE TABLE tb_cpe (cpeid integer primary key, cpepart char(1), cpevendor varchar(%d), cpeproduct varchar(%d), cpeversion varchar(%d), cpeupdate varchar(%d), cpeedition varchar(%d), cpelanguage varchar(%d)); COMMIT;", FILENAMESIZE, FILENAMESIZE, LARGEFIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE);
   rc = run_statement(ws, ws->matchdb, stmt);
   if (rc)
     return rc;

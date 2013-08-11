@@ -34,8 +34,61 @@ int mysql_dbimpl_clear_versiondata(struct workstate * ws) {
  * fixes)
  */
 int mysql_run_upgrade_fixes(struct workstate * ws) {
-  // TODO include add column to cve table
-  return 1;  
+  char stmt[SQLLINESIZE];
+  MYSQL_RES * result;
+  MYSQL_ROW row;
+  int intValue;
+  int numChange = 0;
+
+
+  /*
+   * 5 - Add CVSS score in CVE detail
+   */
+  sprintf(stmt, "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'tb_cve' AND COLUMN_NAME = 'cvss';");
+  MYSQL_QUERY(ws->conn, stmt)
+  result = mysql_store_result(ws->conn);
+  row = mysql_fetch_row(result);
+  if (row != NULL) {
+    intValue = atoi(row[0]);
+    mysql_free_result(result);
+    if (intValue == 0) {
+      // Column doesn't exist, create it
+      fprintf(stderr, "Could not find a CVSS column in tb_cve. This is to be expected if you are upgrading from cvechecker 4.0 or lower.\n");
+      sprintf(stmt, "ALTER TABLE tb_cve ADD COLUMN cvss INT AFTER cpe;");
+      MYSQL_QUERY(ws->conn, stmt)
+      numChange++;
+    };
+  } else {
+    // ERROR OUT, NO VALUE?
+    fprintf(stderr, "Could not get a value from a simple count()?\n");
+    return 1;
+  };
+
+
+  /*
+   * 6 - Make contentmatch field in tb_versionmatch size LARGEFIELDSIZE
+   */
+  sprintf(stmt, "SELECT CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_name = 'tb_versionmatch' AND COLUMN_NAME = 'contentmatch';");
+  MYSQL_QUERY(ws->conn, stmt)
+  result = mysql_store_result(ws->conn);
+  row = mysql_fetch_row(result);
+  if (row != NULL) {
+    intValue = atoi(row[0]);
+    mysql_free_result(result);
+    if (intValue == 128) {
+      // Change length to 512
+      fprintf(stderr, "Length of contentmatch column does not match expected value of 512. This is to be expected if you are upgrading from cvechecker 4.0 or lower.\n");
+      sprintf(stmt, "ALTER TABLE tb_versionmatch MODIFY COLUMN contentmatch VARCHAR(512);");
+      MYSQL_QUERY(ws->conn, stmt)
+      numChange++;
+    };
+  } else {
+    // ERROR OUT, NO VALUE?
+    fprintf(stderr, "Could not get a value for CHARACTER_MAXIMUM_LENGTH of tb_versionmatch.contentmatch ?\n");
+    return 1;
+  };
+
+  return numChange;
 };
 
 /**
@@ -706,13 +759,13 @@ int mysql_dbimpl_initialize_databases(struct workstate * ws) {
   MYSQL_QUERY(ws->conn, buffer)
   MYSQL_QUERY(ws->conn, "CREATE INDEX cpeidx ON tb_cpe (cpevendor, cpeproduct)")
 
-  sprintf(buffer, "CREATE TABLE tb_versionmatch (filename VARCHAR(%d), filetype SMALLINT, filematch VARCHAR(%d), contentmatch VARCHAR(%d), cpe INT, FOREIGN KEY (cpe) REFERENCES tb_cpe(cpeid) ON DELETE CASCADE) ENGINE=InnoDB", FILENAMESIZE, FILENAMESIZE, FIELDSIZE);
+  sprintf(buffer, "CREATE TABLE tb_versionmatch (filename VARCHAR(%d), filetype SMALLINT, filematch VARCHAR(%d), contentmatch VARCHAR(%d), cpe INT, FOREIGN KEY (cpe) REFERENCES tb_cpe(cpeid) ON DELETE CASCADE) ENGINE=InnoDB", FILENAMESIZE, FILENAMESIZE, LARGEFIELDSIZE);
   MYSQL_QUERY(ws->conn, buffer)
   MYSQL_QUERY(ws->conn, "CREATE INDEX vmidx ON tb_versionmatch (filename)")
 
   sprintf(buffer, "CREATE TABLE tb_binmatch (basedir VARCHAR(%d), filename VARCHAR(%d), cpe INT, fullmatch INT, hostname VARCHAR(%d), userdefkey VARCHAR(256), FOREIGN KEY (cpe) REFERENCES tb_cpe(cpeid) ON DELETE CASCADE) ENGINE=InnoDB", FILENAMESIZE, FILENAMESIZE, FIELDSIZE, FIELDSIZE);
   MYSQL_QUERY(ws->conn, buffer)
-  MYSQL_QUERY(ws->conn, "CREATE TABLE tb_cve (year SMALLINT, sequence INT, cpe INT, FOREIGN KEY (cpe) REFERENCES tb_cpe(cpeid) ON DELETE CASCADE) ENGINE=InnoDB")
+  MYSQL_QUERY(ws->conn, "CREATE TABLE tb_cve (year SMALLINT, sequence INT, cpe INT, cvss INT, FOREIGN KEY (cpe) REFERENCES tb_cpe(cpeid) ON DELETE CASCADE) ENGINE=InnoDB")
   MYSQL_QUERY(ws->conn, "CREATE INDEX cveidx ON tb_cve (year, sequence)")
   MYSQL_QUERY(ws->conn, "CREATE INDEX cveidx2 ON tb_cve (cpe)")
   MYSQL_QUERY(ws->conn, "CREATE INDEX binmatchidx ON tb_binmatch (cpe)")

@@ -18,6 +18,7 @@
 #define _CVETYPES
 
 #define FIELDSIZE 128
+#define LARGEFIELDSIZE 512
 #define FILENAMESIZE 256
 #define BUFFERSIZE 256
 #define CVELINESIZE 16
@@ -92,7 +93,7 @@ struct versiongather_data {
 	char filepart[FILENAMESIZE];
 	int gathertype;
 	char filematch[FILENAMESIZE];
-	char versionexpression[FIELDSIZE];
+	char versionexpression[LARGEFIELDSIZE];
 };
 
 /***********************************************************************************************

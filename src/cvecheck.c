@@ -667,8 +667,8 @@ int process_versiondata(char * line, struct workstate * ws) {
 		fprintf(stderr, "Error in first field (filepart), field cannot be empty\n");
 		return 2;
 	};
-	if (temppos >= 64) {
-		fprintf(stderr, "Error in first field (filepart), field cannot be larger than 63 bytes\n");
+	if (temppos >= FILENAMESIZE) {
+		fprintf(stderr, "Error in first field (filepart), field cannot be larger than %u bytes\n", FILENAMESIZE-1);
 		return 3;
 	};
 	strncpy(vg.filepart, line+startpos, temppos);
@@ -704,8 +704,8 @@ int process_versiondata(char * line, struct workstate * ws) {
 		fprintf(stderr, "Error in third field (filematch), field cannot be empty\n");
 		return 2;
 	};
-	if (temppos >= 128) {
-		fprintf(stderr, "Error in third field (filematch), field cannot be larger than 127 characters\n");
+	if (temppos >= FILENAMESIZE) {
+		fprintf(stderr, "Error in third field (filematch), field cannot be larger than %u characters\n", FILENAMESIZE-1);
 		return 3;
 	};
 	strncpy(vg.filematch, line+startpos, temppos);
@@ -722,8 +722,8 @@ int process_versiondata(char * line, struct workstate * ws) {
 		fprintf(stderr, "Error in fourth field (contentmatch), field cannot be empty\n");
 		return 2;
 	};
-	if (temppos >= 256) {
-		fprintf(stderr, "Error in fourth field (contentmatch), field cannot be larger than 255 characters\n");
+	if (temppos >= LARGEFIELDSIZE) {
+		fprintf(stderr, "Error in fourth field (contentmatch), field cannot be larger than %u characters\n", LARGEFIELDSIZE-1);
 		return 3;
 	};
 	ctrpos = startpos;
