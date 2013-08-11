@@ -50,6 +50,9 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		return;
 
 	fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
+	// The length of the fields is always at most FIELDSIZE.
+	if (fieldwidth >= FIELDSIZE)
+		fieldwidth = FIELDSIZE - 1;
 	strncpy(cpe->vendor, cpos, fieldwidth);
 	cpe->vendor[fieldwidth] = '\0';
 
@@ -57,11 +60,16 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 	nextpos = strchr(cpos, ':');
 	if (nextpos != NULL) {
 		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
+		if (fieldwidth >= FIELDSIZE)
+			fieldwidth = FIELDSIZE - 1;
 		strncpy(cpe->product, cpos, fieldwidth);
 		cpe->product[fieldwidth] = '\0';
 	} else {
-		strncpy(cpe->product, cpos, swstrlen(cpos));
-		cpe->product[swstrlen(cpos)] = '\0';
+		fieldwidth = swstrlen(cpos);
+		if (fieldwidth >= FIELDSIZE)
+			fieldwidth = FIELDSIZE - 1;
+		strncpy(cpe->product, cpos, fieldwidth);
+		cpe->product[fieldwidth] = '\0';
 		cpe->version[0] = '\0';
 		cpe->update[0] = '\0';
 		cpe->edition[0] = '\0';
@@ -75,11 +83,16 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 	nextpos = strchr(cpos, ':');
 	if (nextpos != NULL) {
 		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
+		if (fieldwidth >= FIELDSIZE)
+			fieldwidth = FIELDSIZE - 1;
 		strncpy(cpe->version, cpos, fieldwidth);
 		cpe->version[fieldwidth] = '\0';
 	} else {
-		strncpy(cpe->version, cpos, swstrlen(cpos));
-		cpe->version[swstrlen(cpos)] = '\0';
+		fieldwidth = swstrlen(cpos);
+		if (fieldwidth >= FIELDSIZE)
+			fieldwidth = FIELDSIZE - 1;
+		strncpy(cpe->version, cpos, fieldwidth);
+		cpe->version[fieldwidth] = '\0';
 		cpe->update[0] = '\0';
 		cpe->edition[0] = '\0';
 		cpe->language[0] = '\0';
@@ -91,11 +104,16 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 	nextpos = strchr(cpos, ':');
 	if (nextpos != NULL) {
 		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
+		if (fieldwidth >= FIELDSIZE)
+			fieldwidth = FIELDSIZE - 1;
 		strncpy(cpe->update, cpos, fieldwidth);
 		cpe->update[fieldwidth] = '\0';
 	} else {
-		strncpy(cpe->update, cpos, swstrlen(cpos));
-		cpe->update[swstrlen(cpos)] = '\0';
+		fieldwidth = swstrlen(cpos);
+		if (fieldwidth >= FIELDSIZE)
+			fieldwidth = FIELDSIZE - 1;
+		strncpy(cpe->update, cpos, fieldwidth);
+		cpe->update[fieldwidth] = '\0';
 		cpe->edition[0] = '\0';
 		cpe->language[0] = '\0';
 
@@ -106,11 +124,16 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 	nextpos = strchr(cpos, ':');
 	if (nextpos != NULL) {
 		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
+		if (fieldwidth >= FIELDSIZE)
+			fieldwidth = FIELDSIZE - 1;
 		strncpy(cpe->edition, cpos, fieldwidth);
 		cpe->edition[fieldwidth] = '\0';
 	} else {
-		strncpy(cpe->edition, cpos, swstrlen(cpos));
-		cpe->edition[swstrlen(cpos)] = '\0';
+		fieldwidth = swstrlen(cpos);
+		if (fieldwidth >= FIELDSIZE)
+			fieldwidth = FIELDSIZE - 1;
+		strncpy(cpe->edition, cpos, fieldwidth);
+		cpe->edition[fieldwidth] = '\0';
 		cpe->language[0] = '\0';
 		
 		return;
@@ -120,11 +143,16 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 	nextpos = strchr(cpos, ':');
 	if (nextpos != NULL) {
 		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
+		if (fieldwidth >= FIELDSIZE)
+			fieldwidth = FIELDSIZE - 1;
 		strncpy(cpe->language, cpos, fieldwidth);
 		cpe->language[fieldwidth] = '\0';
 	} else {
-		strncpy(cpe->language, cpos, swstrlen(cpos));
-		cpe->language[swstrlen(cpos)] = '\0';
+		fieldwidth = swstrlen(cpos);
+		if (fieldwidth >= FIELDSIZE)
+			fieldwidth = FIELDSIZE - 1;
+		strncpy(cpe->language, cpos, fieldwidth);
+		cpe->language[fieldwidth] = '\0';
 		cpe->language[0] = '\0';
 		
 		return;
