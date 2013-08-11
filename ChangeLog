@@ -1,3 +1,6 @@
+** (2013-08-11) Mulhern / Mulkieran <e-mail redacted>
+	- Fix zero cpeids in tb_binmatch table
+
 ** (2013-08-11) Sven Vermeulen <sven.vermeulen@siphos.be>
 	- Check on CPE field sizes to prevent potential overflows
 	- Check on CVE field sizes before loading into database

@@ -544,15 +544,17 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
 
 int add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
         int rc = 0;
+	int cpeid = 0;
+	int count = 0;
         char stmt[SQLLINESIZE];
 
         // Full match
 
         sprintf(stmt, "select count(*) from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
 
-        rc = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
+        count = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
 
-        if (rc == 0) {
+        if (count == 0) {
                 sprintf(stmt, "insert into tb_cpe_%c_%zu (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
                 rc = run_statement(ws, get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt);
 		if (rc) {
@@ -562,9 +564,9 @@ int add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
 
                 zero_string(stmt, SQLLINESIZE);
                 sprintf(stmt, "select count(cpeversion) from tb_cpe_versions where cpeversion = \"%s\";", cpe.version);
-                rc = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
+                count = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
 
-                if (rc == 0) {
+                if (count == 0) {
                         int f[15];
                         int c;
                         for (c = 0; c < 15; c++)
@@ -580,10 +582,10 @@ int add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
 
                 sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
         
-                rc = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
+                cpeid = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
         } else {
                 sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
-                rc = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
+                cpeid = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
         };
 
         sprintf(stmt, "delete from tb_binmatch where basedir = \"%s\" and filename = \"%s\";", ws->currentdir, ws->currentfile);
@@ -593,7 +595,7 @@ int add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
 		return rc;
 	};
 
-        sprintf(stmt, "insert into tb_binmatch values ('%s', '%s', '%c', %zu, %d, 1);", ws->currentdir, ws->currentfile, cpe.part, strlen(cpe.vendor), rc);
+        sprintf(stmt, "insert into tb_binmatch values ('%s', '%s', '%c', %zu, %d, 1);", ws->currentdir, ws->currentfile, cpe.part, strlen(cpe.vendor), cpeid);
         rc = run_statement(ws, ws->localdb[0], stmt);
 	if (rc) {
 		fprintf(stderr, "Failed to execute statement, bailing out...\n");
