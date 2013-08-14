@@ -3,6 +3,7 @@
 
 ** (2013-08-12) Mulhern / Mulkieran <e-mail redacted>
 	- Handle cvechecker return codes in pullcves
+	- Properly bail out if CPE data is not correctly formatted
 
 ** (2013-08-11) Mulhern / Mulkieran <e-mail redacted>
 	- Fix zero cpeids in tb_binmatch table

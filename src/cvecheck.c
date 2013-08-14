@@ -1249,12 +1249,12 @@ int validate_cve_data(char * buffer) {
 	bufferptr = bufferptr+8;
 	// vendor field length
 	buffer2ptr = strchr(bufferptr, ':');
-	if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE)
+	if (buffer2ptr == NULL) || ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE)
 		return 8;
 	bufferptr = buffer2ptr+1;
 	// product field length
 	buffer2ptr = strchr(bufferptr, ':');
-	if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE)
+        if (buffer2ptr == NULL) || ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE)
 		return 9;
 	bufferptr = buffer2ptr+1;
 	// version field length
