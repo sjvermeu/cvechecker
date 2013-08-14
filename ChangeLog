@@ -1,3 +1,9 @@
+** (2013-08-12) Sven Vermeulen
+	- Exit gracefully in pullcves
+
+** (2013-08-12) Mulhern / Mulkieran <e-mail redacted>
+	- Handle cvechecker return codes in pullcves
+
 ** (2013-08-11) Mulhern / Mulkieran <e-mail redacted>
 	- Fix zero cpeids in tb_binmatch table
 	- Improve return code handling in sqlite code

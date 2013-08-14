@@ -7,6 +7,11 @@ then
   exit 1;
 fi
 
+die() {
+  echo "*** $*"
+  exit 1;
+}
+
 CONFFILE="";
 if [ -f ~/.cvechecker.rc ];
 then
@@ -47,7 +52,7 @@ do
     printf "ok\nConverting nvdcve-2.0-20${YEAR}.xml to CSV... ";
     xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml > ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv;
     printf "ok\nLoading in nvdcve-2.0-20${YEAR}.csv in cvechecker.\n";
-    cvechecker -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv;
+    cvechecker -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv || die "Could not import nvdcve-2.0-20${YEAR}.csv";
   fi
 done
 
@@ -78,7 +83,7 @@ then
   rm ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted;
   diff ${CVECACHE}/nvdcve-2.0-modified.csv.old ${CVECACHE}/nvdcve-2.0-modified.csv | grep '^> ' | sed -e 's:^> ::g' > ${CVECACHE}/nvdcve-2.0-modified.delta;
   printf "ok\nLoading in nvdcve-2.0-modified.csv differences in cvechecker.\n";
-  cvechecker -c ${CVECACHE}/nvdcve-2.0-modified.delta;
+  cvechecker -c ${CVECACHE}/nvdcve-2.0-modified.delta || die "Could not import nvdcve-2.0-modified.delta";
   DLCVE=1;
 else
   printf "ok (not downloaded, same file)\n";
@@ -93,7 +98,7 @@ then
   printf "ok (downloaded)\n";
   test -f versions.dat.1 && mv versions.dat.1 versions.dat;
   printf "Loading in versions.dat in cvechecker.\n";
-  cvechecker -l ${CVECACHE}/versions.dat;
+  cvechecker -l ${CVECACHE}/versions.dat || die "Could not load versions.dat";
   DLDAT=1;
 else
   printf "ok (not downloaded, same file)\n";
