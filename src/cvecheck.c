@@ -516,7 +516,7 @@ int init_watchlist(struct workstate * ws) {
  */
 int init_binlist(struct workstate * ws) {
 	struct arguments * arg = ws->arg;
-	if (!strcmp(arg->binlist, "-")) {
+	if (strcmp(arg->binlist, "-")) {
 		ws->binlist = fopen(arg->binlist, "r");
 		if (ws->binlist == NULL) {
 			fprintf(stderr, "Could not open file %s for reading: ", arg->binlist);
