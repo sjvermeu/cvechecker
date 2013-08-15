@@ -427,7 +427,7 @@
 ,unexpand,1,unexpand$,^([0-9][0-9]*(\.[0-9]+)+),a,gnu,coreutils,\1,,,
 ,uniq,1,uniq$,^([0-9][0-9]*(\.[0-9]+)+),a,gnu,coreutils,\1,,,
 ,wc,1,wc$,dA([0-9][0-9]*(\.[0-9]+)+),a,gnu,coreutils,\1,,,
-,basename,1,basename$,^([0-9][0-9]*(\.[0-9]+)+),a,gnu,coreutils,\1,,,
+,basename,1,basename$,^([0-46-9][0-9]*(\.[0-9]+)+),a,gnu,coreutils,\1,,,
 ,env,1,env$,^([0-9][0-9]*(\.[0-9]+)+),a,gnu,coreutils,\1,,,
 ,expr,1,expr$,^([0-9][0-9]*(\.[0-9]+)+),a,gnu,coreutils,\1,,,
 ,factor,1,factor$,^([0-9][0-9]*(\.[0-9]+)+),a,gnu,coreutils,\1,,,
