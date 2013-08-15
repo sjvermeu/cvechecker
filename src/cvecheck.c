@@ -516,12 +516,16 @@ int init_watchlist(struct workstate * ws) {
  */
 int init_binlist(struct workstate * ws) {
 	struct arguments * arg = ws->arg;
-	ws->binlist = fopen(arg->binlist, "r");
-	if (ws->binlist == NULL) {
-		fprintf(stderr, "Could not open file %s for reading: ", arg->binlist);
-		perror(arg->binlist);
-		return 1;
-	};
+	if (!strcmp(arg->binlist, "-")) {
+		ws->binlist = fopen(arg->binlist, "r");
+		if (ws->binlist == NULL) {
+			fprintf(stderr, "Could not open file %s for reading: ", arg->binlist);
+			perror(arg->binlist);
+			return 1;
+		};
+	} else {
+		ws->binlist = stdin;
+	}
 
 	return 0;
 };

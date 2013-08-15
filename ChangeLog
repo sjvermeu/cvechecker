@@ -3,6 +3,7 @@
 	- Update default location for versions.dat to github URL
 	- Remove versions.dat with a pullcves cleancache
 	- Feed tb_cpe_versions table if it is not "full"
+	- Allow binlist to be stdin if "-" is provided
 
 ** (2013-08-14) Sven Vermeulen
 	- Exit gracefully in pullcves
