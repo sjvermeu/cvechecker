@@ -2,6 +2,7 @@
 	- Further improve error handling
 	- Update default location for versions.dat to github URL
 	- Remove versions.dat with a pullcves cleancache
+	- Feed tb_cpe_versions table if it is not "full"
 
 ** (2013-08-14) Sven Vermeulen
 	- Exit gracefully in pullcves

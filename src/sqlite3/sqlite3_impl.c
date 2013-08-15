@@ -203,6 +203,40 @@ int run_statement_alldb(struct workstate * ws, char * stmt) {
   return rc;
 };
 
+/*
+ * feed_cpe_versions_table - Enrich the tb_cpe_versions table with the expanded
+ * version information.
+ */
+int feed_cpe_versions_table(struct workstate * ws, char type, int length) {
+  char stmt[SQLLINESIZE];
+  sqlite3_stmt * versstmt;
+  int rc = 0;
+
+  zero_string(stmt, SQLLINESIZE);
+
+  // for each version in the tb_cpe_* table...
+  sprintf(stmt, "SELECT distinct cpeversion from tb_cpe_%c_%d;", type, length);
+  PREPARE_SQLITE(rc, get_local_db(ws, type, length), stmt, versstmt)
+  while ((rc = sqlite3_step(versstmt)) == SQLITE_ROW) {
+    const unsigned char * cpeversion;
+    int d;
+    int f[15];
+
+    cpeversion = sqlite3_column_text(versstmt, 0); // get the version (string)
+
+    for (d = 0; d < 15; d++)
+      f[d] = get_version_field((char *) cpeversion, d); // get the next version part (from the string)
+
+      // ... add the expanded version into the tb_cpe_versions table
+      zero_string(stmt, SQLLINESIZE);
+      sprintf(stmt, "INSERT OR REPLACE INTO tb_cpe_versions (cpeversion, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15) values (\"%s\", %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);", cpeversion, f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13], f[14]);
+      rc = run_statement(ws, get_local_db(ws, type, length), stmt);
+      if (rc)
+        break;
+  };
+  ASSERT_FINALIZE(rc, stmt, versstmt)
+};
+
 /**
  * Clear the version database.
  */
@@ -341,6 +375,9 @@ int run_upgrade_fixes(struct workstate * ws) {
    */
   for (i = 1; i <= FIELDSIZE; i++) {
     for (c = 0; c < 3; c++) {
+      int count1Value = 0;
+      int count2Value = 0;
+
       sprintf(stmt, "select count(rowid) from sqlite_master where name = 'tb_cpe_versions';");
       rc = get_int_value(get_local_db(ws, partchar[c], i), stmt, ws);
       if (rc == 0) {
@@ -357,30 +394,28 @@ int run_upgrade_fixes(struct workstate * ws) {
 	  break;
 	};
 
-        zero_string(stmt, SQLLINESIZE);
-        sprintf(stmt, "SELECT distinct cpeversion from tb_cpe_%c_%d;", partchar[c], i);
-	PREPARE_SQLITE(rc, get_local_db(ws, partchar[c], i), stmt, versstmt)
-        while ((rc = sqlite3_step(versstmt)) == SQLITE_ROW) {
-          const unsigned char * cpeversion;
-          int d;
-          int f[15];
-
-          cpeversion = sqlite3_column_text(versstmt, 0);
-
-          for (d = 0; d < 15; d++)
-            f[d] = get_version_field((char *) cpeversion, d);
-  
-          zero_string(stmt, SQLLINESIZE);
-          sprintf(stmt, "INSERT INTO tb_cpe_versions (cpeversion, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15) values (\"%s\", %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);", cpeversion, f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13], f[14]);
-          rc = run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
-	  if (rc) {
-            fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
-	    errState = 1;
-	    break;
-	  };
-	  numChange++;
+        rc = feed_cpe_versions_table(ws, partchar[c], i);
+        if (rc) {
+          fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
+          errState = 1;
+          break;
         };
-        ASSERT_FINALIZE(rc, stmt, versstmt)
+	numChange++;
+      };
+      // Check if all versions are persent in tb_cpe_versions
+      sprintf(stmt, "select count(distinct cpeversion) from tb_cpe_%c_%d;", partchar[c], i);
+      count1Value = get_int_value(get_local_db(ws, partchar[c], i), stmt, ws);
+      sprintf(stmt, "select count(distinct cpeversion) from tb_cpe_versions;");
+      count2Value = get_int_value(get_local_db(ws, partchar[c], i), stmt, ws);
+      if (count1Value != count2Value) {
+        // Not all versions are mentioned in tb_cpe_versions, this would break
+	// the ability of cvechecker to report on lower versions (bug #7).
+	rc = feed_cpe_versions_table(ws, partchar[c], i);
+	if (rc) {
+          fprintf(stderr, "Failed to feed the versioning table for %c%d.db.\n", partchar[c], i);
+	  errState = 1;
+	  break;
+	};
       };
     };
     if (errState)
