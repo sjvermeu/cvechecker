@@ -410,6 +410,16 @@ int run_upgrade_fixes(struct workstate * ws) {
       if (count1Value != count2Value) {
         // Not all versions are mentioned in tb_cpe_versions, this would break
 	// the ability of cvechecker to report on higher versions (bug #7).
+	//
+	// First purge the table
+	sprintf(stmt, "DELETE FROM tb_cpe_versions;");
+	rc = run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
+	if (rc) {
+          fprintf(stderr, "Failed to purge tb_cpe_versions table.\n");
+	  errState = 1;
+	  break;
+	};
+        // Now feed it back in
 	rc = feed_cpe_versions_table(ws, partchar[c], i);
 	if (rc) {
           fprintf(stderr, "Failed to feed the versioning table for %c%d.db.\n", partchar[c], i);
