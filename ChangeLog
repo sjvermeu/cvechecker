@@ -1,7 +1,10 @@
-** (2013-08-12) Sven Vermeulen
+** (2013-08-15) Sven Vermeulen
+	- Further improve error handling
+
+** (2013-08-14) Sven Vermeulen
 	- Exit gracefully in pullcves
 
-** (2013-08-12) Mulhern / Mulkieran <e-mail redacted>
+** (2013-08-14) Mulhern / Mulkieran <e-mail redacted>
 	- Handle cvechecker return codes in pullcves
 	- Properly bail out if CPE data is not correctly formatted
 

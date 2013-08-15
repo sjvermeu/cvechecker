@@ -160,13 +160,28 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 };
 
 int copy_cpe(struct cpe_data * target, struct cpe_data * source) {
+  struct cpe_data * ptr;
+
   target->part = source->part;
-  strcpy(target->vendor, source->vendor);
-  strcpy(target->product, source->product);
-  strcpy(target->version, source->version);
-  strcpy(target->update, "");
-  strcpy(target->edition, "");
-  strcpy(target->language, "");
+  ptr = (struct cpe_data *) strcpy(target->vendor, source->vendor);
+  if ((struct cpe_data *) ptr != (struct cpe_data *) target->vendor)
+    return 1;
+  ptr = (struct cpe_data *) strcpy(target->product, source->product);
+  if ((struct cpe_data *) ptr != (struct cpe_data *) target->product)
+    return 2;
+  ptr = (struct cpe_data *) strcpy(target->version, source->version);
+  if ((struct cpe_data *) ptr != (struct cpe_data *) target->version)
+    return 3;
+  ptr = (struct cpe_data *) strcpy(target->update, "");
+  if ((struct cpe_data *) ptr != (struct cpe_data *) target->update)
+    return 4;
+  ptr = (struct cpe_data *) strcpy(target->edition, "");
+  if ((struct cpe_data *) ptr != (struct cpe_data *) target->edition)
+    return 5;
+  ptr = (struct cpe_data *) strcpy(target->language, "");
+  if ((struct cpe_data *) ptr != (struct cpe_data *) target->language)
+    return 6;
+  return 0;
 };
 
 /**
@@ -1249,12 +1264,12 @@ int validate_cve_data(char * buffer) {
 	bufferptr = bufferptr+8;
 	// vendor field length
 	buffer2ptr = strchr(bufferptr, ':');
-	if (buffer2ptr == NULL) || ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE)
+	if ((buffer2ptr == NULL) || ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE))
 		return 8;
 	bufferptr = buffer2ptr+1;
 	// product field length
 	buffer2ptr = strchr(bufferptr, ':');
-        if (buffer2ptr == NULL) || ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE)
+        if ((buffer2ptr == NULL) || ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE))
 		return 9;
 	bufferptr = buffer2ptr+1;
 	// version field length
