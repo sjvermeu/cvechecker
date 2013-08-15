@@ -7,7 +7,7 @@ dbtype = "sqlite";
 cvecache = "@localstatedir@/cvechecker/cache";
 datadir = "@pkgdatadir@";
 stringcmd = "/usr/bin/strings -n 3 '@file@'";
-version_url = "http://cvechecker.svn.sourceforge.net/viewvc/cvechecker/versions.dat";
+version_url = "https://raw.github.com/sjvermeu/cvechecker/master/versions.dat"
 #userkey = "servertag";
 
 #
