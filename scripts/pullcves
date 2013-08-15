@@ -113,6 +113,7 @@ then
   rm ${CVECACHE}/*.old 2>/dev/null;
   rm ${CVECACHE}/*.unsorted 2>/dev/null;
   rm ${CVECACHE}/*.delta 2>/dev/null;
+  rm ${CVECACHE}/versions.dat 2>/dev/null;
 else
   echo "Sorry, command \"${COMMAND}\" is not supported."
   exit 1;

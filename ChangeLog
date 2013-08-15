@@ -1,6 +1,7 @@
 ** (2013-08-15) Sven Vermeulen
 	- Further improve error handling
 	- Update default location for versions.dat to github URL
+	- Remove versions.dat with a pullcves cleancache
 
 ** (2013-08-14) Sven Vermeulen
 	- Exit gracefully in pullcves
