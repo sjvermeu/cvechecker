@@ -21,6 +21,7 @@
 ,libMagickCore.so,1,libMagickCore.so.*,ImageMagick ([0-9\.-]+) ,a,imagemagick,imagemagick,\1,,,
 ,nano,1234567890123456789012345678901234567890123456789012345678901234,perl.*,.*,a,perl,perl,\1,,,
 ,libMagickCore.so,1,libMagickCore.so.*,ImageMagick ([0-9\.-]+) ,a,imagemagick,imagemagick,\1,,,
-,nano,1,1234567890123456789012345678901234567890123456789012345678901234,.*,a,perl,perl,\1,,,
 ,libMagickCore.so,1,libMagickCore.so.*,ImageMagick ([0-9\.-]+) ,a,imagemagick,imagemagick,\1,,,
 ,nano,1,nano,1234567890123456789012345678901234567890123456789012345678901234,a,perl,perl,\1,,,
+,nano,1,nano,1234567890123456789012345678901234567890123456789012345678901234                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ,a,perl,perl,\1,,,
+,nano,1,name.*,this is a very long content match field with                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        578 characters,a,perl,perl,\1,,,
