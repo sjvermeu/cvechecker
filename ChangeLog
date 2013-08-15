@@ -4,11 +4,11 @@
 ** (2013-08-14) Sven Vermeulen
 	- Exit gracefully in pullcves
 
-** (2013-08-14) Mulhern / Mulkieran <e-mail redacted>
+** (2013-08-14) Anne Mulhern <e-mail redacted>
 	- Handle cvechecker return codes in pullcves
 	- Properly bail out if CPE data is not correctly formatted
 
-** (2013-08-11) Mulhern / Mulkieran <e-mail redacted>
+** (2013-08-11) Anne Mulhern <e-mail redacted>
 	- Fix zero cpeids in tb_binmatch table
 	- Improve return code handling in sqlite code
 
