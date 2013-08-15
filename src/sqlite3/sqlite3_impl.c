@@ -902,7 +902,32 @@ void find_cpe_for_software(struct workstate * ws, char cpepart, int cpevendorlen
    */
 
   if (ws->arg->reporthigher == 0) {
-    sprintf(stmt, "select a.cpeid as cpeid, b.cpeid as parentcpeid from tb_cpe_%c_%d a, tb_cpe_%c_%d b where (b.cpeid = %d) and (a.cpevendor = b.cpevendor) and (a.cpeproduct = b.cpeproduct) and (a.cpeversion = b.cpeversion) and ( (a.cpeedition = b.cpeedition) or ( (a.cpeedition <> 1 ) and (b.cpeedition == 0) ) ) and ( (a.cpeupdate = b.cpeupdate) or ( (a.cpeupdate <> 0 ) and (b.cpeupdate == 0 ) ) ) and ( (a.cpelanguage = b.cpelanguage) or ( (a.cpelanguage <> 0) and (b.cpelanguage == 0 ) ) );", cpepart, cpevendorlength, cpepart, cpevendorlength, cpe);
+    sprintf(stmt, "select a.cpeid as cpeid, b.cpeid as parentcpeid from tb_cpe_%c_%d a, tb_cpe_%c_%d b where "
+    "(b.cpeid = %d) and "
+    "(a.cpevendor = b.cpevendor) and "
+    "(a.cpeproduct = b.cpeproduct) and "
+    "(a.cpeversion = b.cpeversion) and "
+    "( "
+      "(a.cpeedition = b.cpeedition) or"
+      "( "
+        "(a.cpeedition <> 0 ) and "
+	"(b.cpeedition == 0)"
+      ")"
+    ") and "
+    "( "
+      "(a.cpeupdate = b.cpeupdate) or "
+      "( "
+        "(a.cpeupdate <> 0 ) and "
+	"(b.cpeupdate == 0 )"
+      ") "
+    ") and "
+    "( "
+      "(a.cpelanguage = b.cpelanguage) or "
+      "( "
+        "(a.cpelanguage <> 0) and "
+	"(b.cpelanguage == 0 )"
+      ")"
+    ");", cpepart, cpevendorlength, cpepart, cpevendorlength, cpe);
   } else {
     sprintf(stmt, "select a.cpeid as cpeid, b.cpeid as parentcpeid from tb_cpe_%c_%d a, tb_cpe_%c_%d b, tb_cpe_versions c, tb_cpe_versions d where "
     "(b.cpeid = %d) and "
@@ -1082,7 +1107,7 @@ void find_cpe_for_software(struct workstate * ws, char cpepart, int cpevendorlen
     "( "
     "  (a.cpeedition = b.cpeedition) or "
     "  ( "
-    "    (a.cpeedition <> 1 ) and "
+    "    (a.cpeedition <> 0 ) and "
     "        (b.cpeedition == 0) "
     "  ) "
     ") and "
