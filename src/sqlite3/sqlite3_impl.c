@@ -409,7 +409,7 @@ int run_upgrade_fixes(struct workstate * ws) {
       count2Value = get_int_value(get_local_db(ws, partchar[c], i), stmt, ws);
       if (count1Value != count2Value) {
         // Not all versions are mentioned in tb_cpe_versions, this would break
-	// the ability of cvechecker to report on lower versions (bug #7).
+	// the ability of cvechecker to report on higher versions (bug #7).
 	rc = feed_cpe_versions_table(ws, partchar[c], i);
 	if (rc) {
           fprintf(stderr, "Failed to feed the versioning table for %c%d.db.\n", partchar[c], i);
