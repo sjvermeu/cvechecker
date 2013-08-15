@@ -235,6 +235,8 @@ int feed_cpe_versions_table(struct workstate * ws, char type, int length) {
         break;
   };
   ASSERT_FINALIZE(rc, stmt, versstmt)
+
+  return rc;
 };
 
 /**
@@ -381,8 +383,6 @@ int run_upgrade_fixes(struct workstate * ws) {
       sprintf(stmt, "select count(rowid) from sqlite_master where name = 'tb_cpe_versions';");
       rc = get_int_value(get_local_db(ws, partchar[c], i), stmt, ws);
       if (rc == 0) {
-        sqlite3_stmt * versstmt;
-
         fprintf(stderr, "I am missing the tb_cpe_versions table for the database containing tb_cpe_%c_%d. Creating and populating. This is to be expected if you upgraded cvechecker from 1.0 or lower. This action will take a (long) while, be patient.\n", partchar[c], i);
         zero_string(stmt, SQLLINESIZE);
 
@@ -448,7 +448,9 @@ int run_upgrade_fixes(struct workstate * ws) {
     const unsigned char * sqltext;
 
     sqltext = sqlite3_column_text(sql_stmt, 0);
-    if (strstr(sqltext, "cvss int") == NULL) {
+    // Casting sqltext from unsigned char to char because text should not
+    // contain UTF-8 special characters so should be safe
+    if (strstr((char *) sqltext, "cvss int") == NULL) {
       fprintf(stderr, "I am missing the cvss column in the tb_cve table. This is to be expected if you upgraded cvechecker from 3.1 or lower.\n");
       sprintf(stmt, "ALTER TABLE tb_cve ADD COLUMN cvss int DEFAULT -1;");
       rc = run_statement(ws, ws->localdb[0], stmt);
@@ -653,6 +655,8 @@ int add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
 		fprintf(stderr, "Failed to execute statement, bailing out...\n");
 		return rc;
 	};
+
+	return 0;
 };
 
 /**
