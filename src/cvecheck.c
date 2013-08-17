@@ -283,6 +283,27 @@ int get_version_field(const char * version, int fieldnum) {
  * (using the *_dbimpl_* functions).
  ***********************************************************************************************/
 
+
+/**
+ * Reads configuration from a configuration file.
+ *
+ * If the file can not be statted return -1
+ */
+int initialize_configuration(struct workstate * ws, char * configfile) {
+	struct stat filestat;
+	if (stat(configfile, &filestat) > -1) {
+		if (config_read_file(ws->cfg, configfile) == CONFIG_FALSE) {
+			fprintf(stderr, "Could not process configuration file \"%s\" - %s at line %d", configfile, config_error_text(ws->cfg), config_error_line(ws->cfg));
+			exit(EXIT_FAILURE);
+		} else {
+			return 0;
+		};
+	} else {
+		return -1;
+	};
+};
+
+
 /**
  * Initialize configuration file
  *
@@ -290,75 +311,71 @@ int get_version_field(const char * version, int fieldnum) {
  * that file doesn't exist, use the /etc location.
  */
 int initialize_configfile(struct workstate * ws) {
+	char * ENV_VARIABLE = "CVECHECKER_CONFFILE";
 	// Configuration file
 	char * configfile;
-	char * buffer;
-	char * buffer2;
 	char * homeloc;
 
-	configfile = (char *) calloc(sizeof(char), FILENAMESIZE);
-	buffer     = (char *) calloc(sizeof(char), BUFFERSIZE);
-	buffer2    = (char *) calloc(sizeof(char), BUFFERSIZE);
-
-	if ((configfile == NULL) || (buffer == NULL) || (buffer2 == NULL)) {
-		fprintf(stderr, "Could not reserve system memory for allocation\n");
-		exit(EXIT_FAILURE);
-	}
 
 	ws->cfg = (config_t *) calloc(sizeof(config_t), 1);
 	if (ws->cfg == NULL) {
 		fprintf(stderr, "Could not reserve system memory for allocation\n");
 		exit(EXIT_FAILURE);
 	};
-
-	homeloc = getenv("HOME");
 	config_init(ws->cfg);
 
+
+	//Check for location of configuration file in environment variable
+	configfile = getenv(ENV_VARIABLE);
+	if (configfile != NULL) {
+		if (initialize_configuration(ws, configfile) == -1) {
+			fprintf(stderr, "Configuration file %s specified via environment variable \"%s\", but does not exist.\n", configfile, ENV_VARIABLE);
+			exit(EXIT_FAILURE);
+		} else {
+			return 0;
+		}
+	};
+
+
+	configfile = (char *) calloc(sizeof(char), FILENAMESIZE);
+	if (configfile == NULL) {
+		fprintf(stderr, "Could not reserve system memory for allocation\n");
+		exit(EXIT_FAILURE);
+	}
+
+
+	//Check for configuration file in home directory
+	homeloc = getenv("HOME");
 	if (homeloc != NULL) {
 		strncpy(configfile, homeloc, FILENAMESIZE-16);
 		strcat(configfile, "/.cvechecker.rc");
-	};
-
-	if ((homeloc == NULL) || (config_read_file(ws->cfg, configfile) == CONFIG_FALSE)) {
-		int rc = 0;
-		// Store error message in case the fallback to /etc/cvechecker.conf doesn't work
-		rc = snprintf(buffer, BUFFERSIZE-1, "Could not process configuration file \"%s\" - %s at line %d", configfile, config_error_text(ws->cfg), config_error_line(ws->cfg));
-		if (rc == 0) {
-			fprintf(stderr, "Failed to copy data into buffer\n");
-			exit(EXIT_FAILURE);
-		};
-
-		zero_string(configfile, FILENAMESIZE);
-		strcpy(configfile, "/usr/local/etc/cvechecker.conf");
-
-		if (config_read_file(ws->cfg, configfile) == CONFIG_FALSE) {
-			int rc2 = 0;
-			rc2 = snprintf(buffer2, BUFFERSIZE-1, "Could not process configuration file \"%s\" - %s at line %d", configfile, config_error_text(ws->cfg), config_error_line(ws->cfg));
-			if (rc2 == 0) {
-				fprintf(stderr, "Failed to copy data into buffer(2)\n");
-				exit(EXIT_FAILURE);
-			};
-
-			zero_string(configfile, FILENAMESIZE);
-			strcpy(configfile, "/etc/cvechecker.conf");
-
-			if (config_read_file(ws->cfg, configfile) == CONFIG_FALSE) {
-				fprintf(stderr, "%s\n", buffer);
-				fprintf(stderr, "%s\n", buffer2);
-				fprintf(stderr, "Could not process configuration file \"%s\" - %s at line %d\n", configfile, config_error_text(ws->cfg), config_error_line(ws->cfg));
-				config_destroy(ws->cfg);
-				free(ws->cfg);
-				free(configfile);
-				free(buffer);
-				exit(EXIT_FAILURE);
-			};
+		if(initialize_configuration(ws, configfile) == 0) {
+			free(configfile);
+			return 0;
 		};
 	};
 
-	free(configfile);
-	free(buffer);
 
-	return 0;
+	//Check for configuration file in /usr/local/etc
+	zero_string(configfile, FILENAMESIZE);
+	strcpy(configfile, "/usr/local/etc/cvechecker.conf");
+	if (initialize_configuration(ws, configfile) == 0) {
+		free(configfile);
+		return 0;
+	};
+
+
+	//Check for configuration file in /etc
+	zero_string(configfile, FILENAMESIZE);
+	strcpy(configfile, "/etc/cvechecker.conf");
+	if (initialize_configuration(ws, configfile) == 0) {
+		free(configfile);
+		return 0;
+	};
+
+	fprintf(stderr, "Could not locate a configuration file. Environment variable \"%s\" was not set. No \".cvechecker.rc\" file was located in the users home directory and no \"cvechecker.conf\" file was located in either of the \"/usr/local/etc\" or \"/etc\" directories.", ENV_VARIABLE);
+	exit(EXIT_FAILURE);
+
 };
 
 /**

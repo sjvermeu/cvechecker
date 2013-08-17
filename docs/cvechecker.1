@@ -5,7 +5,7 @@
 \\$2 \(la\\$1\(ra\\$3
 ..
 .if \n(.g .mso www.tmac
-.TH cvechecker 1 "12 April 2011" "April 09, 2011" "cvechecker Manual"
+.TH cvechecker 1 "17 August 2013" "August 17, 2013" "cvechecker Manual"
 .SH NAME
 cvechecker \- Attempt to identify possible vulnerable software on the system
 .SH SYNOPSIS
@@ -159,7 +159,8 @@ Initialize the databases
 Load the version detection rules
 .TP 
 -b <binlist>, --binlist=<binlist>
-Load the list of binaries available on the system
+Load the list of binaries available on the system. Accepts
+standard input if "-" is given.
 .TP 
 -c <cvelist>, --cvedata=<cvelist>
 Load the CSV file with CVE data. The CSV file can be generated
@@ -208,7 +209,9 @@ software that is installed on your system
 Load the watchlist information (a file containing CPE entries
 - one per line - using the official CPE syntax)
 .SH "CONFIGURATION FILE"
-cvechecker will read ~/.cvechecker.rc or /etc/cvechecker.conf,
+cvechecker will read the configuration file pointed towards by the
+CVECHECKER_CONFFILE variable. If that variable is not set,
+~/.cvechecker.rc, /usr/local/etc/cvechecker.conf or /etc/cvechecker.conf,
 whichever comes first. This file contains the locations as well as other
 static parameters for the cvechecker application. An example configuration
 file is:
@@ -222,7 +225,7 @@ dbtype = "mysql";
 cvecache = "/var/lib/cvechecker/cache";
 datadir = "/usr/share/cvechecker";
 stringcmd = "/usr/bin/strings \-n 3 '@file@'";
-version_url = "http://cvechecker.svn.sourceforge.net/viewvc/cvechecker/versions.dat";
+version_url = "https://raw.github.com/sjvermeu/cvechecker/master/versions.dat";
 #userkey = "servertag";
 
 #

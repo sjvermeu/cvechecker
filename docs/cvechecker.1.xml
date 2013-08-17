@@ -7,7 +7,7 @@
 
     <manvolnum>1</manvolnum>
 
-    <refmiscinfo class="source">April 09, 2011</refmiscinfo>
+    <refmiscinfo class="source">August 17, 2013</refmiscinfo>
 
     <refmiscinfo class="manual">cvechecker Manual</refmiscinfo>
   </refmeta>
@@ -201,7 +201,8 @@ cvechecker -b filelist.txt</programlisting>
         <term>--binlist=&lt;binlist&gt;</term>
 
         <listitem>
-          <para>Load the list of binaries available on the system</para>
+          <para>Load the list of binaries available on the system. Accepts
+          standard input if "-" is given.</para>
         </listitem>
       </varlistentry>
 
@@ -327,7 +328,9 @@ cvechecker -b filelist.txt</programlisting>
   <refsect1>
     <title>Configuration File</title>
 
-    <para>cvechecker will read ~/.cvechecker.rc or /etc/cvechecker.conf,
+    <para>cvechecker will read the configuration file pointed towards by the
+    CVECHECKER_CONFFILE variable. If that variable is not set,
+    ~/.cvechecker.rc, /usr/local/etc/cvechecker.conf or /etc/cvechecker.conf,
     whichever comes first. This file contains the locations as well as other
     static parameters for the cvechecker application. An example configuration
     file is:</para>
@@ -340,7 +343,7 @@ dbtype = "mysql";
 cvecache = "/var/lib/cvechecker/cache";
 datadir = "/usr/share/cvechecker";
 stringcmd = "/usr/bin/strings -n 3 '@file@'";
-version_url = "http://cvechecker.svn.sourceforge.net/viewvc/cvechecker/versions.dat";
+version_url = "https://raw.github.com/sjvermeu/cvechecker/master/versions.dat";
 #userkey = "servertag";
 
 #

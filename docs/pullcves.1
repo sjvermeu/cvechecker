@@ -5,7 +5,7 @@
 \\$2 \(la\\$1\(ra\\$3
 ..
 .if \n(.g .mso www.tmac
-.TH pullcves 1 "29 August 2010" "August 29, 2010" "pullcves Manual"
+.TH pullcves 1 "17 August 2013" "August 17, 2013" "pullcves Manual"
 .SH NAME
 pullcves \- Update the local cvechecker CVE database and version matching rules
 .SH SYNOPSIS
@@ -39,6 +39,13 @@ If \fBcleancache\fR is used, it will clean its internal
 cache. This will effectively remove the downloaded XML (and generated CSV)
 files, causing the next \fBpull\fR to redownload and reimport
 everything.
+.PP
+The pullcves script uses the configuration file of cvechecker for
+the paths of the various locations using the same logic (if
+CVECHECKER_CONFFILE is set as environment variable, then it has to point
+to a valid configuration file; if the environment variable is not set, it
+ties ~/.cvechecker.rc, /usr/local/etc/cvechecker.conf and
+/etc/cvechecker.conf in that order).
 .SH USAGE
 The command is simply \fBpullcves pull\fR or
 \fBpullcves cleancache\fR.

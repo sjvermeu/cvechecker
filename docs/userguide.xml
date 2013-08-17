@@ -15,7 +15,7 @@
       <email>sven.vermeulen@siphos.be</email>
     </author>
 
-    <pubdate>2012/11/25</pubdate>
+    <pubdate>2013/08/17</pubdate>
   </info>
 
   <section>
@@ -169,12 +169,16 @@
         <title>Configuration File</title>
 
         <para>The cvechecker command uses a configuration file which it looks
-        for in the users' home directory (${HOME}/.cvechecker.rc) or
-        /usr/local/etc/cvechecker.conf or /etc/cvechecker.conf, in that order.
-        The first configuration file that parses correctly is used, the rest
-        is ignored (so there is no accumulation of configurations). Below,
-        you'll find an example configuration file which shows both the sqlite3
-        and mysql support:</para>
+        for in the location pointed to by the
+        <varname>CVECHECKER_CONFFILE</varname> variable or, if that variable
+        is not set, the users' home directory
+        (<filename>${HOME}/.cvechecker.rc</filename>),
+        <filename>/usr/local/etc/cvechecker.conf</filename> or
+        <filename>/etc/cvechecker.conf</filename>, in that order. The first
+        configuration file that parses correctly is used, the rest is ignored
+        (so there is no accumulation of configurations). Below, you'll find an
+        example configuration file which shows both the sqlite3 and mysql
+        support:</para>
 
         <programlisting>#
 # Generic settings
@@ -184,7 +188,7 @@ dbtype = "mysql";
 cvecache = "/var/lib/cvechecker/cache";
 datadir = "/usr/share/cvechecker";
 stringcmd = "/usr/bin/strings -n 3 '@file@'";
-version_url = "http://cvechecker.svn.sourceforge.net/viewvc/cvechecker/versions.dat";
+version_url = "https://raw.github.com/sjvermeu/cvechecker/master/versions.dat";
 #userkey = "servertag";
 
 #
@@ -437,6 +441,17 @@ qlist ${CATEGORY}/${P} &gt; "${TMPFILE}";
 cvechecker -D -b "${TMPFILE}";
 rm "${TMPFILE}";</programlisting>
       </section>
+
+      <section>
+        <title>Adding through standard input</title>
+
+        <para>The cvechecker command will also accept standard input for the
+        --binlist (-b) option when the minus sign is used:</para>
+
+        <programlisting>~$ <command>find /usr/bin -type f | cvechecker -b -</command>
+Searching for known software titles...
+ - Found match for /proc/version:    cpe:/o:linux:linux_kernel:3.10.5-hardened:::</programlisting>
+      </section>
     </section>
 
     <section>
@@ -574,10 +589,11 @@ Outputversion,Vendor,Product,Version,Update,Edition,Language,Hostname,Userkey,Fi
     store its intermediate and final data (such as downloaded XML files, CSV
     files, database files).</para>
 
-    <para>The tool first looks for .cvechecker.rc inside the users' home
-    directory. If it can't find it, it will look for
-    /usr/local/etc/cvechecker.conf and, if that file doesn't exist either,
-    /etc/cvechecker.conf.</para>
+    <para>The tool first looks for the configuration file pointed towards by
+    the CVECHECKER_CONFFILE variable. If that environment variable doesn't
+    exist, then .cvechecker.rc inside the users' home directory is looked for.
+    If it can't find it, it will look for /usr/local/etc/cvechecker.conf and,
+    if that file doesn't exist either, /etc/cvechecker.conf.</para>
 
     <section>
       <title>Configuration File Format</title>
@@ -593,7 +609,7 @@ dbtype = "mysql";
 cvecache = "/var/lib/cvechecker/cache";
 datadir = "/usr/share/cvechecker";
 stringcmd = "/usr/bin/strings -n 3 '@file@'";
-version_url = "http://cvechecker.svn.sourceforge.net/viewvc/cvechecker/versions.dat";
+version_url = "https://raw.github.com/sjvermeu/cvechecker/master/versions.dat";
 #userkey = "servertag";
 
 #

@@ -1,5 +1,10 @@
+** (2013-08-17) Anne Mulhern <e-mail redacted>
+	- Support configuration file lookup through the CVECHECKER_CONFFILE
+	  environment variable
+
 ** (2013-08-17) Sven Vermeulen
 	- Some CVEs mention CPEs without version
+	- Update documents with latest developments
 
 ** (2013-08-15) Sven Vermeulen
 	- Further improve error handling

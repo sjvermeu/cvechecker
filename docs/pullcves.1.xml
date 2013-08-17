@@ -7,7 +7,7 @@
 
     <manvolnum>1</manvolnum>
 
-    <refmiscinfo class="source">August 29, 2010</refmiscinfo>
+    <refmiscinfo class="source">August 17, 2013</refmiscinfo>
 
     <refmiscinfo class="manual">pullcves Manual</refmiscinfo>
   </refmeta>
@@ -46,6 +46,13 @@
     cache. This will effectively remove the downloaded XML (and generated CSV)
     files, causing the next <command>pull</command> to redownload and reimport
     everything.</para>
+
+    <para>The pullcves script uses the configuration file of cvechecker for
+    the paths of the various locations using the same logic (if
+    CVECHECKER_CONFFILE is set as environment variable, then it has to point
+    to a valid configuration file; if the environment variable is not set, it
+    ties ~/.cvechecker.rc, /usr/local/etc/cvechecker.conf and
+    /etc/cvechecker.conf in that order).</para>
   </refsect1>
 
   <refsect1>

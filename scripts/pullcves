@@ -13,7 +13,15 @@ die() {
 }
 
 CONFFILE="";
-if [ -f ~/.cvechecker.rc ];
+if [ -n ${CVECHECKER_CONFFILE} ];
+then
+  if [ -f ${CVECHECKER_CONFFILE} ];
+  then
+    CONFFILE=${CVECHECKER_CONFFILE};
+  else
+    die "File ${CVECHECKER_CONFILE} specified in CVECHECKER_CONFFILE environment variable does not exist.";
+  fi
+elif [ -f ~/.cvechecker.rc ];
 then
   CONFFILE=~/.cvechecker.rc;
 elif [ -f /usr/local/etc/cvechecker.conf ];
@@ -22,6 +30,11 @@ then
 elif [ -f /etc/cvechecker.conf ];
 then
   CONFFILE=/etc/cvechecker.conf;
+fi
+
+if [ ! -f ${CONFFILE} ];
+then
+  die "Configuration file ${CONFFILE} does not exist.";
 fi
 
 xsltproc -V > /dev/null 2>&1;
