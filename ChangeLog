@@ -1,3 +1,6 @@
+** (2013-08-17) Sven Vermeulen
+	- Some CVEs mention CPEs without version
+
 ** (2013-08-15) Sven Vermeulen
 	- Further improve error handling
 	- Update default location for versions.dat to github URL

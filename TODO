@@ -1,0 +1,9 @@
+Modified CVEs need reset of database
+------------------------------------
+
+We currently assume that, once a CVE is assigned, modifications to the CVE
+include additional CPE matches, but the original ones remain. However, this is
+not always the case. We should seek a way to clear the CVE<>CPE mappings.
+
+Not easy as, by design, we load in information one line at a time. Perhaps
+include a special line in the CSV that sais "please clear and continue"?
