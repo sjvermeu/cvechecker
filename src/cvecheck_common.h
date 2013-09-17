@@ -10,7 +10,7 @@
 #endif
 
 /*
- * Copyright 2010 Sven Vermeulen.
+ * Copyright 2010-2013 Sven Vermeulen.
  * Subject to the GNU Public License, version 3.
  */
  

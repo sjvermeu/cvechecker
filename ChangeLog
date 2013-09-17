@@ -1,3 +1,9 @@
+** (2013-09-17) Release 3.4
+
+** (2013-09-17) Sven Vermeulen
+	- Quote variables in pullcves, otherwise the tests (such as "is empty")
+	  have wrong return values (resulting in a hanging pullcves command)
+
 ** (2013-09-16) Release 3.3
 
 ** (2013-08-17) Anne Mulhern <e-mail redacted>
