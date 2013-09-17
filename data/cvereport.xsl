@@ -74,7 +74,7 @@ yet to be acknowledged by you.
     <xsl:variable name="fileid" select="File" />
     <xsl:variable name="cpeid" select="CPE" />
     <xsl:variable name="cvss" select="CVSS" />
-    <xsl:for-each select="//record[File=$fileid][not(CVE=document('acknowledgements.xml')/acknowledgements/file[@name=$fileid]/@cve)][not(CVE=preceding-sibling::record/CVE)]/CVE">
+    <xsl:for-each select="//record[File=$fileid][not(CVE=document('acknowledgements.xml')/acknowledgements/file[@name=$fileid]/@cve)][not(CVE=preceding-sibling::record[File=$fileid]/CVE)]/CVE">
       <xsl:variable name="cveid" select="." />
       <tr>
         <td><xsl:value-of select="$fileid" /></td>
