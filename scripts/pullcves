@@ -13,11 +13,11 @@ die() {
 }
 
 CONFFILE="";
-if [ -n ${CVECHECKER_CONFFILE} ];
+if [ -n "${CVECHECKER_CONFFILE}" ];
 then
-  if [ -f ${CVECHECKER_CONFFILE} ];
+  if [ -f "${CVECHECKER_CONFFILE}" ];
   then
-    CONFFILE=${CVECHECKER_CONFFILE};
+    CONFFILE="${CVECHECKER_CONFFILE}";
   else
     die "File ${CVECHECKER_CONFILE} specified in CVECHECKER_CONFFILE environment variable does not exist.";
   fi
@@ -32,7 +32,7 @@ then
   CONFFILE=/etc/cvechecker.conf;
 fi
 
-if [ ! -f ${CONFFILE} ];
+if [ ! -f "${CONFFILE}" ];
 then
   die "Configuration file ${CONFFILE} does not exist.";
 fi
