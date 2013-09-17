@@ -471,7 +471,7 @@
 ,imuxsock.so,1,imuxsock.so,^([0-9][0-9]*(\.[0-9]+)+),a,rsyslog,rsyslogd,\1,,,
 ,ommail.so,1,ommail.so,^([0-9][0-9]*(\.[0-9]+)+),a,rsyslog,rsyslog,\1,,,
 ,ommail.so,1,ommail.so,^([0-9][0-9]*(\.[0-9]+)+),a,rsyslog,rsyslogd,\1,,,
-,sudo,1,sudo.*,^([0-9][0-9]*(\.[0-9]+)+),a,todd_miller,sudo,\1,,,
+,sudo,1,sudo.*,^([0-9][0-9]*(\.[0-9]+)+(p[0-9]*)?),a,todd_miller,sudo,\1,,,
 ,visudo,1,visudo,^([0-9][0-9]*(\.[0-9]+)+),a,todd_miller,sudo,\1,,,
 ,vinagre,1,vinagre,^([0-9][0-9]*(\.[0-9]+)+),a,gnome,vinagre,\1,,,
 ,w3m,1,w3m,w3m/([0-9][0-9]*(\.[0-9]+)+),a,w3m,w3m,\1,,,
