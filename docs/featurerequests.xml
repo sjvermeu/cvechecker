@@ -13,7 +13,7 @@
       <personname><firstname>Sven</firstname><surname>Vermeulen</surname></personname>
     </author>
 
-    <pubdate>2011-06-02</pubdate>
+    <pubdate>2013-09-18</pubdate>
   </info>
 
   <section>
@@ -64,6 +64,19 @@
 
             <entry>Draft</entry>
           </row>
+
+          <row>
+            <entry>Ignore potential vulnerabilities from within cvechecker
+            (without using cvereport)</entry>
+
+            <entry>"dummys" on GitHub (issue #10)</entry>
+
+            <entry>2013-09-18</entry>
+
+            <entry>Medium</entry>
+
+            <entry>Draft</entry>
+          </row>
         </tbody>
       </tgroup>
     </table>
@@ -109,6 +122,37 @@
       this can be included in the information that CVE checker pulls in (or
       can be fed) so that the reports generated from it can include this
       information too?</para>
+    </section>
+
+    <section>
+      <title>Ignore potential vulnerabilities</title>
+
+      <note>
+        <para>This request is still in draft (meaning it has not been
+        started). Feedback (or perhaps even patches) are greatly
+        appreciated.</para>
+      </note>
+
+      <para>Currently, false positives need to be handled by an XML/XSLT hack
+      through the cvereport command. This means that the false positives need
+      to be entered (manually) in an XML file.</para>
+
+      <para>It would be nice to update cvechecker itself so that these false
+      positives can be handled from within the tool.</para>
+
+      <para>For instance (hypothetical code listing), to ignore a false
+      positive:</para>
+
+      <programlisting>$ cvechecker --invalidate --file /usr/bin/sudo --cve CVE-2013-1441</programlisting>
+
+      <para>To acknowledge one (i.e. make differentiation in report if it is a
+      new one or not):</para>
+
+      <programlisting>$ cvechecker --acknowledge --file /usr/bin/sudo --cve CVE-2013-1441</programlisting>
+
+      <para>The output of cvechecker can then be extended with this
+      information (Status: New, Acknowledged or Invalid), perhaps even
+      ignoring the invalid ones.</para>
     </section>
   </section>
 </article>
