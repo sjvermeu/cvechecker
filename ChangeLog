@@ -1,3 +1,8 @@
+** (2013-09-20) Sven Vermeulen
+	- Add LICENSE to distribution archive
+	- Update feature request document with request for handling false
+	  positives (ack/ignore) from within cvechecker
+
 ** (2013-09-17) Sven Vermeulen
 	- Report by cvereport should show all files in scope
 
