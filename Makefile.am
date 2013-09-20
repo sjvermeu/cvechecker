@@ -1,3 +1,5 @@
+EXTRA_DIST = README LICENSE ChangeLog
+
 SUBDIRS =  \
           src \
 	  data \
