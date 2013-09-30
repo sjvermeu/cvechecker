@@ -1,4 +1,4 @@
-AC_INIT([cvechecker], [3.4], [sven.vermeulen@siphos.be])
+AC_INIT([cvechecker], [3.5], [sven.vermeulen@siphos.be])
 AC_PREREQ([2.62])
 AM_INIT_AUTOMAKE([1.9.6 no-define])
 AC_CONFIG_HEADERS([config.h])
