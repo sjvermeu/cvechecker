@@ -163,7 +163,7 @@ int mysql_dbimpl_load_databases(struct workstate * ws) {
     return 1;
   } else {
     if (! ws->arg->initdatabases) {
-      rc += mysql_run_upgrade_fixes(ws);
+      rc = mysql_run_upgrade_fixes(ws);
       if (rc) {
         fprintf(stderr, "Some updates have occurred which might affect the database initialization.\n");
         fprintf(stderr, "Please restart the command.\n");
