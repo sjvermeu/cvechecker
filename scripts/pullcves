@@ -44,6 +44,13 @@ then
   exit 1;
 fi
 
+xsltproc -V > /dev/null 2>&1;
+if [ $? -ne 0 ];
+then
+  echo "This script requires wget to be available on the system and reachable in a directory mentioned in the PATH variable."
+  exit 1;
+fi
+
 DATADIR=$(awk -F'=' '/^datadir/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}');
 CVECACHE=$(awk -F'=' '/^cvecache/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}');
 DLLOCATION=$(awk -F'=' '/^version_url/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}');
