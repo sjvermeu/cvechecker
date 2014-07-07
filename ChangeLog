@@ -1,3 +1,6 @@
+** (2014-07-07) Sven Vermeulen
+	- Drop all .svn dirs (thx to Jason Zaman)
+
 ** (2014-02-28) Christopher Meng
 	- Add check for wget availability
 
