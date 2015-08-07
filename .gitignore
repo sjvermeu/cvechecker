@@ -1,0 +1,11 @@
+*.o
+*.*~
+*.*.*~
+Makefile
+Makefile.*
+conf/cvechecker.conf
+stamp-h1
+aclocal.m4
+config.*
+compile
+configure
