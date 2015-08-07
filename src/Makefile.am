@@ -19,4 +19,4 @@ cvechecker_SOURCES = cvecheck.h cvecheck.c swstring.h swstring.c cvecheck_common
                      output/stringscmd.h output/stringscmd.c $(SQLITESOURCE) $(MYSQLSOURCE)
 
 
-INCLUDES = $(SQLITEINCLUDE) $(MYSQLINCLUDE)
+AM_CPPFLAGS = $(SQLITEINCLUDE) $(MYSQLINCLUDE)
