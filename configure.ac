@@ -37,6 +37,7 @@ AC_CHECK_FUNCS([regcomp strchr strrchr strstr])
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 
+AC_MSG_WARN([Please make sure pkg-config is installed and autoreconf run])
 PKG_CHECK_MODULES([CONFIG], [libconfig >= 1.3])
 CFLAGS="$CFLAGS $CONFIG_CFLAGS"
 LIBS="$LIBS $CONFIG_LIBS"
