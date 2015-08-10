@@ -585,6 +585,7 @@ PACKAGE_STRING='cvechecker 3.5'
 PACKAGE_BUGREPORT='sven.vermeulen@siphos.be'
 PACKAGE_URL=''
 
+ac_unique_file="config.h.in"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -2835,6 +2836,7 @@ END
     as_fn_error $? "Your 'rm' program is bad, sorry." "$LINENO" 5
   fi
 fi
+
 ac_config_headers="$ac_config_headers config.h"
 
 
@@ -4420,7 +4422,7 @@ done
 
 
 # Checks for library functions.
-for ac_func in regcomp strchr strrchr strstr
+for ac_func in gethostname memset regcomp strchr strrchr strstr
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -4790,17 +4792,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile"
-
-ac_config_files="$ac_config_files src/Makefile"
-
-ac_config_files="$ac_config_files data/Makefile"
-
-ac_config_files="$ac_config_files conf/Makefile"
-
-ac_config_files="$ac_config_files scripts/Makefile"
-
-ac_config_files="$ac_config_files docs/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile data/Makefile conf/Makefile scripts/Makefile docs/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
