@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+></TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"></HEAD
+><BODY
+CLASS="article"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="ARTICLE"
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>1. <A
+HREF="#AEN9"
+>Requested Features</A
+></DT
+><DD
+><DL
+><DT
+>1.1. <A
+HREF="#AEN41"
+>Distribution-specific checks</A
+></DT
+><DT
+>1.2. <A
+HREF="#AEN50"
+>End Of Support / End Of Life Information</A
+></DT
+><DT
+>1.3. <A
+HREF="#AEN55"
+>Ignore potential vulnerabilities</A
+></DT
+></DL
+></DD
+></DL
+></DIV
+>
+  <FONT
+COLOR="RED"
+>&#13;    <P
+><B
+>Feature Requests</B
+></P
+>
+
+    Sven Vermeulen
+
+    <SPAN
+CLASS="pubdate"
+>2013-09-18</SPAN
+>
+  </FONT
+>
+
+  <DIV
+CLASS="section"
+><HR><H2
+CLASS="section"
+><A
+NAME="AEN9"
+>1. Requested Features</A
+></H2
+>
+    
+
+    <P
+>The following table lists the feature requests that are currently
+    received but not part of a stable released version.</P
+>
+
+    <DIV
+CLASS="table"
+><A
+NAME="AEN12"
+></A
+><P
+><B
+>Table 1. List of requested features</B
+></P
+>
+      
+
+      <TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><COL><COL>
+          
+        
+          
+
+          
+
+          
+        </TABLE
+>
+    </DIV
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN41"
+>1.1. Distribution-specific checks</A
+></H3
+>
+      
+
+      <DIV
+CLASS="note"
+><P
+></P
+><TABLE
+CLASS="note"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/note.gif"
+HSPACE="5"
+ALT="Note"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&#13;        <P
+>This request is still in draft (meaning it has not been
+        started). Feedback (or perhaps even patches) are greatly
+        appreciated.</P
+>
+      </TD
+></TR
+></TABLE
+></DIV
+>
+
+      <P
+>Support a distribution specific check script (most likely using
+      the cvechecker output) that investigates if a vulnerability hasn't been
+      solved by the distribution itself through an applied patch (rather than
+      a version upgrade). The check script itself should be a wrapper that
+      detects on which distribution the script is being ran (/etc/*release)
+      and then calls the script particularly made for that distribution (on a
+      predefined location, say lib/cvechecker/scripts).</P
+>
+
+      <P
+>The distribution-specific scripts must adhere to a predefined
+      input/output scheme, returncodes and such.</P
+>
+
+      <P
+>They should support a human-friendly and computer-parsable
+      output.</P
+>
+
+      <P
+>A sample script is available in the cvechecker distribution,
+      <TT
+CLASS="filename"
+>scripts/cvedebian</TT
+>, courtesy of Nigel Horne.</P
+>
+    </DIV
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN50"
+>1.2. End Of Support / End Of Life Information</A
+></H3
+>
+      
+
+      <DIV
+CLASS="note"
+><P
+></P
+><TABLE
+CLASS="note"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/note.gif"
+HSPACE="5"
+ALT="Note"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&#13;        <P
+>This request is still in draft (meaning it has not been
+        started). Feedback (or perhaps even patches) are greatly
+        appreciated.</P
+>
+      </TD
+></TR
+></TABLE
+></DIV
+>
+
+      <P
+>Part of keeping a system in a secure state is to make sure that
+      the software installed is not end-of-support or end-of-life. Perhaps
+      this can be included in the information that CVE checker pulls in (or
+      can be fed) so that the reports generated from it can include this
+      information too?</P
+>
+    </DIV
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN55"
+>1.3. Ignore potential vulnerabilities</A
+></H3
+>
+      
+
+      <DIV
+CLASS="note"
+><P
+></P
+><TABLE
+CLASS="note"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/note.gif"
+HSPACE="5"
+ALT="Note"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&#13;        <P
+>This request is still in draft (meaning it has not been
+        started). Feedback (or perhaps even patches) are greatly
+        appreciated.</P
+>
+      </TD
+></TR
+></TABLE
+></DIV
+>
+
+      <P
+>Currently, false positives need to be handled by an XML/XSLT hack
+      through the cvereport command. This means that the false positives need
+      to be entered (manually) in an XML file.</P
+>
+
+      <P
+>It would be nice to update cvechecker itself so that these false
+      positives can be handled from within the tool.</P
+>
+
+      <P
+>For instance (hypothetical code listing), to ignore a false
+      positive:</P
+>
+
+      <PRE
+CLASS="programlisting"
+>$ cvechecker --invalidate --file /usr/bin/sudo --cve CVE-2013-1441</PRE
+>
+
+      <P
+>To acknowledge one (i.e. make differentiation in report if it is a
+      new one or not):</P
+>
+
+      <PRE
+CLASS="programlisting"
+>$ cvechecker --acknowledge --file /usr/bin/sudo --cve CVE-2013-1441</PRE
+>
+
+      <P
+>The output of cvechecker can then be extended with this
+      information (Status: New, Acknowledged or Invalid), perhaps even
+      ignoring the invalid ones.</P
+>
+    </DIV
+>
+  </DIV
+>
+</DIV
+></BODY
+></HTML
+>

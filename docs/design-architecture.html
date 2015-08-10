@@ -1,0 +1,957 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+></TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"></HEAD
+><BODY
+CLASS="article"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="ARTICLE"
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>1. <A
+HREF="#AEN9"
+>Application Planning and Deliverables</A
+></DT
+><DD
+><DL
+><DT
+>1.1. <A
+HREF="#AEN15"
+>Background</A
+></DT
+><DT
+>1.2. <A
+HREF="#AEN20"
+>Objectives</A
+></DT
+><DT
+>1.3. <A
+HREF="#AEN37"
+>Scope</A
+></DT
+><DT
+>1.4. <A
+HREF="#AEN42"
+>Constraints</A
+></DT
+><DT
+>1.5. <A
+HREF="#AEN45"
+>Assumptions</A
+></DT
+><DT
+>1.6. <A
+HREF="#AEN51"
+>Risks</A
+></DT
+><DT
+>1.7. <A
+HREF="#AEN55"
+>Deliverables</A
+></DT
+></DL
+></DD
+><DT
+>2. <A
+HREF="#AEN61"
+>Design and Architecture</A
+></DT
+><DD
+><DL
+><DT
+>2.1. <A
+HREF="#AEN63"
+>Concepts</A
+></DT
+><DD
+><DL
+><DT
+>2.1.1. <A
+HREF="#AEN65"
+>CVEs</A
+></DT
+><DT
+>2.1.2. <A
+HREF="#AEN69"
+>CPEs</A
+></DT
+><DT
+>2.1.3. <A
+HREF="#AEN74"
+>cvechecker</A
+></DT
+></DL
+></DD
+><DT
+>2.2. <A
+HREF="#AEN102"
+>Logical Approach</A
+></DT
+><DD
+><DL
+><DT
+>2.2.1. <A
+HREF="#AEN105"
+>Get CVE and CPE data</A
+></DT
+><DT
+>2.2.2. <A
+HREF="#AEN129"
+>Get version detection rules</A
+></DT
+><DT
+>2.2.3. <A
+HREF="#AEN132"
+>Scan files for CPE data</A
+></DT
+><DT
+>2.2.4. <A
+HREF="#AEN135"
+>Read watchlist CPE data</A
+></DT
+><DT
+>2.2.5. <A
+HREF="#AEN138"
+>Store CVE and CPE data</A
+></DT
+><DT
+>2.2.6. <A
+HREF="#AEN141"
+>Store version detection rules</A
+></DT
+><DT
+>2.2.7. <A
+HREF="#AEN144"
+>Store CPE data</A
+></DT
+><DT
+>2.2.8. <A
+HREF="#AEN147"
+>Report potential vulnerabilities</A
+></DT
+><DT
+>2.2.9. <A
+HREF="#AEN150"
+>Report installed / watched software</A
+></DT
+></DL
+></DD
+></DL
+></DD
+></DL
+></DIV
+>
+  <FONT
+COLOR="RED"
+>&#13;    <P
+><B
+>cvechecker design and architecture</B
+></P
+>
+
+    Sven Vermeulen
+
+    <SPAN
+CLASS="pubdate"
+>2011/04/14</SPAN
+>
+  </FONT
+>
+
+  <DIV
+CLASS="section"
+><HR><H2
+CLASS="section"
+><A
+NAME="AEN9"
+>1. Application Planning and Deliverables</A
+></H2
+>
+    
+
+    <DIV
+CLASS="important"
+><P
+></P
+><TABLE
+CLASS="important"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/important.gif"
+HSPACE="5"
+ALT="Important"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>&#13;      <P
+>This document is work-in-progress!</P
+>
+    </TD
+></TR
+></TABLE
+></DIV
+>
+
+    <P
+>Applications tend to grow and grow as they evolve. To ensure that
+    the application stays within the boundaries of its early thoughts, proper
+    design and planning is often touted to be the key to success. Although
+    cvechecker isn't developed by a large company with architects, analysts,
+    designers and programmers in place, I find that it is still best to have
+    such a design document available - if not alone just to inform potential
+    co-developers on how everything fits together.</P
+>
+
+    <P
+>I'm going to start with the BOSCARD information on the applications'
+    planning and then continue with the design.</P
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN15"
+>1.1. Background</A
+></H3
+>
+      
+
+      <P
+>cvechecker started to form when I noticed that more and more
+      applications are being created based on popular free software
+      components, ranging from small development libraries to enterprise-grade
+      application servers and messaging systems. By itself, I applaud all use
+      of free software - but when you make it part of another product, you
+      must make sure that the evolutions in that component are considered with
+      it. And that's where some vendors or users fail - they tend to include
+      whatever version works for their product, but don't consider potential
+      security vulnerabilities.</P
+>
+
+      <P
+>More than often do I notice applications that use vulnerable or
+      even unsupported components (in which the community puts no effort in
+      anymore). When we, at my employer, ask the vendor how riskfull he finds
+      a particular security vulnerability that was open in the wild for a
+      component/version he used, we more than often hear that they will update
+      the component. But tracking components and their vulnerabilities is not
+      our primary focus, so I thought "why not create an application or
+      process that does it for me"?</P
+>
+
+      <P
+>There the idea of cvechecker was born.</P
+>
+    </DIV
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN20"
+>1.2. Objectives</A
+></H3
+>
+      
+
+      <P
+>The objectives of cvechecker are:</P
+>
+
+      <P
+></P
+><UL
+><LI
+>&#13;          <P
+>Be able to, given a set of files, deduce the components (with
+          versions) that are offering these files</P
+>
+
+          <P
+>For instance, a file called libbz2.so should result in the
+          necessary identification of bzip2, version 1.0.5</P
+>
+        </LI
+><LI
+>&#13;          <P
+>Be able to, given a deduced component, identify potential
+          vulnerabilities by using freely available security vulnerability
+          information</P
+>
+
+          <P
+>For instance, given bzip2 version 1.0.5, report that
+          CVE-2010-0405 might describe a potential threat</P
+>
+        </LI
+></UL
+>
+
+      <P
+>Since the start of the cvechecker project, the following
+      objectives have been added</P
+>
+
+      <P
+></P
+><UL
+><LI
+>&#13;          <P
+>Be able to, given a particular system, report on the
+          components (with versions) found on the system</P
+>
+        </LI
+><LI
+>&#13;          <P
+>Be able to, given a described component (without requiring
+          cvechecker to actually deduce it from a file), identify potential
+          vulnerabilities by using freely avaialble security vulnerability
+          information</P
+>
+
+          <P
+>For instance, give cvechecker "bzip2 version 1.0.5" and have
+          it report that CVE-2010-0405 might describe a potential
+          threat</P
+>
+        </LI
+></UL
+>
+    </DIV
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN37"
+>1.3. Scope</A
+></H3
+>
+      
+
+      <P
+>The cvechecker application's current scope is to run successfully
+      on Linux platforms, but be sufficiently platform independent to support
+      other Unix systems. Support for the Windows platform is not in scope
+      (but if anyone wants to take a stab or give me some pointers on how to
+      create such platform-independent software it would be greatly
+      appreciated).</P
+>
+
+      <P
+>Automated detection of software based on a heuristic approach is
+      not in scope (in other words, software detection should always be linked
+      with a user-defined metric, setting or expression). This is primarily to
+      keep the scope fixed and the tools' complexity low.</P
+>
+
+      <P
+>The scans that cvechecker will do will be local - remotely
+      scanning targets is not in scope.</P
+>
+    </DIV
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN42"
+>1.4. Constraints</A
+></H3
+>
+      
+
+      <P
+>As I'm running free software only on my system, I can only add the
+      necessary support for the free software components that I am running.
+      Although I tend to have many services running in virtual environments,
+      feedback on detection rules (cfr. the user guide documentation) is
+      greatly appreciated.</P
+>
+    </DIV
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN45"
+>1.5. Assumptions</A
+></H3
+>
+      
+
+      <P
+>The design of the tool assumes that the version of a software
+      component is more than often hardcoded within, allowing simple
+      expressions to extract the version from these files. This can be easily
+      confirmed with most command-line tools:</P
+>
+
+      <PRE
+CLASS="programlisting"
+>~$ <B
+CLASS="command"
+>cat --version</B
+>
+cat (GNU coreutils) 8.7
+Packaged by Gentoo (8.7 (p1))
+Copyright (C) 2010 Free Software Foundation, Inc.
+...
+~$ <B
+CLASS="command"
+>strings -n 3 /bin/cat | grep 8.7</B
+>
+8.7
+8.7 (p1)</PRE
+>
+    </DIV
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN51"
+>1.6. Risks</A
+></H3
+>
+      
+
+      <P
+>If more and more applications do not hardcode their version in
+      such a way that it can be easily retrieved from the file content, the
+      method used by cvechecker will fail to deliver results. To mitigate the
+      risk, the tool already supports the notion of "version gathering
+      routines" so that, if necessary, additional methods can be added.</P
+>
+
+      <P
+>On hardened systems, not all binaries and libraries can be read.
+      Although this is merely a matter of adjusting the security policy, this
+      does pose a potential security problem. To mitigate the risk, the tool
+      now also supports partial functionality (i.e. reporting) based on given
+      information (rather than deduced).</P
+>
+    </DIV
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN55"
+>1.7. Deliverables</A
+></H3
+>
+      
+
+      <P
+>Besides the objectives given earlier, the following are additional
+      requirements / deliverables:</P
+>
+
+      <P
+></P
+><UL
+><LI
+>&#13;          <P
+>Reporting should be based on CSV information (Comma Separated
+          Values), allowing for other applications to easily work with the
+          provided information.</P
+>
+        </LI
+></UL
+>
+    </DIV
+>
+  </DIV
+>
+
+  <DIV
+CLASS="section"
+><HR><H2
+CLASS="section"
+><A
+NAME="AEN61"
+>2. Design and Architecture</A
+></H2
+>
+    
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN63"
+>2.1. Concepts</A
+></H3
+>
+      
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN65"
+>2.1.1. CVEs</A
+></H4
+>
+        
+
+        <P
+>CVEs (Common Vulnerabilities and Exposures) are a market
+        standard approach for documenting vulnerabilities and threats within
+        software, hardware and operating systems. A CVE has a syntax of
+        <PRE
+CLASS="synopsis"
+>CVE-&#60;year&#62;-&#60;sequence&#62;</PRE
+>, such as
+        CVE-2010-0405. CVEs are publicly disclosed. One source of CVE
+        information are the feeds of nvd.nist.gov.</P
+>
+      </DIV
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN69"
+>2.1.2. CPEs</A
+></H4
+>
+        
+
+        <P
+>CPEs (Common Platform Enumeration) is a identification syntax to
+        identify hardware, software or operating systems. It has a syntax of
+        <PRE
+CLASS="synopsis"
+>cpe:/&#60;type&#62;:&#60;vendor&#62;:&#60;product&#62;:&#60;version&#62;:&#60;update&#62;:&#60;edition&#62;:&#60;language&#62;</PRE
+>.
+        such as "cpe:/a:bzip:bzip2:1.0.6:::.</P
+>
+
+        <P
+>CVEs report which CPEs are affected by their content. Although
+        the CPE syntax is well known and documented, not all CPEs are
+        correctly filled in or their syntax changes as acquisitions occur. A
+        notable example is java, which was earlier known as
+        "cpe:/a:sun:java:jre:6:update_1::" and then as
+        "cpe:/a:oracle:jre:6:update_19". Users of CPEs should definitely take
+        such changes into account.</P
+>
+      </DIV
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN74"
+>2.1.3. cvechecker</A
+></H4
+>
+        
+
+        <P
+>The following diagram gives a conceptual overview of the
+        application.</P
+>
+
+        <DIV
+CLASS="figure"
+><A
+NAME="AEN77"
+></A
+><P
+><B
+>Figure 1. cvechecker conceptual overview</B
+></P
+>
+          
+
+          <DIV
+CLASS="mediaobject"
+><P
+>&#13;              <IMG
+SRC="images/cvechecker-conceptual.png">
+            </P
+></DIV
+>
+        </DIV
+>
+
+        <P
+></P
+><UL
+><LI
+>&#13;            <P
+>"Get CVE and CPE data" retrieves the publicly available CVE
+            information (with the included CPE information)</P
+>
+          </LI
+><LI
+>&#13;            <P
+>"Get version detection rules" retrieves the version
+            detection rules as delivered by the cvechecker project</P
+>
+          </LI
+><LI
+>&#13;            <P
+>"Scan files for CPE data" scans the system (given a set of
+            files to scan on the system) for software</P
+>
+          </LI
+><LI
+>&#13;            <P
+>"Read watchlist CPE data" retrieves CPE information from a
+            watchlist file as delivered by the user</P
+>
+          </LI
+><LI
+>&#13;            <P
+>"Store CVE and CPE data" stores the CVE and CPE data
+            retrieved from "Get CVE and CPE data" in the database</P
+>
+          </LI
+><LI
+>&#13;            <P
+>"Store version detection rules" stores the version detection
+            rules as received by "Get version detection rules" in the
+            database</P
+>
+          </LI
+><LI
+>&#13;            <P
+>"Store CPE data" stores the CPE information as received from
+            "Scan files for CPE data" and "Read watchlist CPE data" in the
+            database</P
+>
+          </LI
+><LI
+>&#13;            <P
+>"Report potential vulnerabilities" queries the database for
+            any match of CPE information (received from the "Store CPE data")
+            with CVE information (received from the "Store CVE and CPE
+            information")</P
+>
+          </LI
+><LI
+>&#13;            <P
+>"Report installed / watched software" queries the database
+            for the information stored by "Store CPE data"</P
+>
+          </LI
+></UL
+>
+
+        <P
+>Given the tool's deliverables, the reporting blocks need to be
+        able to put the data in CSV format.</P
+>
+      </DIV
+>
+    </DIV
+>
+
+    <DIV
+CLASS="section"
+><HR><H3
+CLASS="section"
+><A
+NAME="AEN102"
+>2.2. Logical Approach</A
+></H3
+>
+      
+
+      <P
+>The design of the abovementioned specific blocks is handled in the
+      next few sections...</P
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN105"
+>2.2.1. Get CVE and CPE data</A
+></H4
+>
+        
+
+        <DIV
+CLASS="figure"
+><A
+NAME="AEN107"
+></A
+><P
+><B
+>Figure 2. Get CVE and CPE data logical approach</B
+></P
+>
+          
+
+          <DIV
+CLASS="mediaobject"
+><P
+>&#13;              <IMG
+SRC="images/cvechecker-getcvecpe-logical.png">
+            </P
+></DIV
+>
+        </DIV
+>
+
+        <P
+>As the tool bases itself (currently) on CVE information, we want
+        to retrieve the information as made available by sites such as
+        nvd.nist.gov. This site offers the data in XML feeds:</P
+>
+
+        <P
+></P
+><UL
+><LI
+>&#13;            <P
+>nvdcve-2.0-2002.xml - All CVE information of 2002 and
+            earlier</P
+>
+          </LI
+><LI
+>&#13;            <P
+>nvdcve-2.0-2003.xml - All CVE information of 2003</P
+>
+          </LI
+><LI
+>&#13;            <P
+>...</P
+>
+          </LI
+><LI
+>&#13;            <P
+>nvdcve-2.0-2011.xml - All CVE information of 2011</P
+>
+          </LI
+><LI
+>&#13;            <P
+>nvdcve-2.0-modified.xml - Recently modified/added CVE
+            information</P
+>
+          </LI
+><LI
+>&#13;            <P
+>nvdcve-2.0-recent.xml - Recently added CVE
+            information</P
+>
+          </LI
+></UL
+>
+
+        <P
+>With this in place, cvechecker pulls in all the year XML files
+        (2002, 2003, ..., 2011) and the modified.xml file. The year-specific
+        files are then not redownloaded anymore as they either don't change,
+        or the changes are also available in the modified.xml file.</P
+>
+
+        <P
+>The downloaded XML file is then converted in CSV format which
+        contains the CVE+CPE (one set per line) to make it easier for the
+        application to read it. The XML file itself contains lots of other
+        information as well, but that information is irrelevant for this
+        project.</P
+>
+
+        <P
+>Finally, the CSV file is compared with the previous CSV file (in
+        case the XML file was redownloaded) and the delta itself is stored.
+        This allows the application to only grab the changes rather than
+        having to revisit the entire CVE download (whose processing is quite
+        time consuming).</P
+>
+      </DIV
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN129"
+>2.2.2. Get version detection rules</A
+></H4
+>
+        
+
+        <P
+></P
+>
+      </DIV
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN132"
+>2.2.3. Scan files for CPE data</A
+></H4
+>
+        
+
+        <P
+></P
+>
+      </DIV
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN135"
+>2.2.4. Read watchlist CPE data</A
+></H4
+>
+        
+
+        <P
+></P
+>
+      </DIV
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN138"
+>2.2.5. Store CVE and CPE data</A
+></H4
+>
+        
+
+        <P
+></P
+>
+      </DIV
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN141"
+>2.2.6. Store version detection rules</A
+></H4
+>
+        
+
+        <P
+></P
+>
+      </DIV
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN144"
+>2.2.7. Store CPE data</A
+></H4
+>
+        
+
+        <P
+></P
+>
+      </DIV
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN147"
+>2.2.8. Report potential vulnerabilities</A
+></H4
+>
+        
+
+        <P
+></P
+>
+      </DIV
+>
+
+      <DIV
+CLASS="section"
+><HR><H4
+CLASS="section"
+><A
+NAME="AEN150"
+>2.2.9. Report installed / watched software</A
+></H4
+>
+        
+
+        <P
+></P
+>
+      </DIV
+>
+    </DIV
+>
+  </DIV
+>
+</DIV
+></BODY
+></HTML
+>
