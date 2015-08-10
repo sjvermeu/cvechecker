@@ -1,6 +1,7 @@
 AC_INIT([cvechecker], [3.5], [sven.vermeulen@siphos.be])
-AC_PREREQ([2.62])
+AC_PREREQ([2.69])
 AM_INIT_AUTOMAKE
+AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
 
 AC_MSG_CHECKING([Determining host operating system])
@@ -32,7 +33,7 @@ AC_CHECK_HEADERS([unistd.h],,[AC_MSG_ERROR([unistd.h header missing])])
 AC_CHECK_HEADERS([argp.h],,[AC_MSG_ERROR([argp.h header missing (part of GNU coreutils)])])
 
 # Checks for library functions.
-AC_CHECK_FUNCS([regcomp strchr strrchr strstr])
+AC_CHECK_FUNCS([gethostname memset regcomp strchr strrchr strstr])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
@@ -58,10 +59,10 @@ if test "$enable_sqlite3" != "no"; then
 fi
 AM_CONDITIONAL([USE_SQLITE], [ test "x$enable_sqlite3" = "xyes" ])
 
-AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([data/Makefile])
-AC_CONFIG_FILES([conf/Makefile])
-AC_CONFIG_FILES([scripts/Makefile])
-AC_CONFIG_FILES([docs/Makefile])
+AC_CONFIG_FILES([Makefile
+		src/Makefile
+		data/Makefile
+		conf/Makefile
+		scripts/Makefile
+		docs/Makefile])
 AC_OUTPUT
