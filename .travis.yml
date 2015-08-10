@@ -1,8 +1,9 @@
+# Waiting on 14.04 support from travis-ci.org
 language: c
 sudo: required
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libconfig++-dev
-  - sudo apt-get install sqlite3
-  - sudo apt-get install autoconf
+  - sudo apt-get install -y sqlite3
+  - sudo apt-get install -y autoconf
   - sudo autoconf
