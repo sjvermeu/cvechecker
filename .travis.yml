@@ -6,4 +6,8 @@ before_install:
   - sudo apt-get install -y libconfig++-dev
   - sudo apt-get install -y sqlite3
   - sudo apt-get install -y autoconf
+  - sudo aclocal
+  - sudo autoheader
+  - sudo automake --force-missing --add-missing
   - sudo autoconf
+install: ./configure && make
