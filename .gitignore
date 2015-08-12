@@ -8,3 +8,4 @@ stamp-h1
 aclocal.m4
 config.*
 compile
+configure
