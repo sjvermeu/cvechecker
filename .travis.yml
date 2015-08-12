@@ -10,3 +10,4 @@ before_install:
   - sudo autoheader
   - sudo automake --force-missing --add-missing
   - sudo autoconf
+install: ./configure && make && make install
