@@ -6,6 +6,14 @@ the CVE database. This is not a bullet-proof method and you will have many false
 
 ### Build status
 [![Build Status](https://travis-ci.org/cwarner-mdsol/cvechecker.svg?branch=master)](https://travis-ci.org/cwarner-mdsol/cvechecker)
+### Quick installation
+----------------------
+1. Run autogen  
+   ```~# ./autogen.sh```
+
+2. Run configure, make, make install  
+   ```~# ./configure && make && make install```
+
 ### Quickstart
 --------------
 1. Initalize the SQLite3 Database  
