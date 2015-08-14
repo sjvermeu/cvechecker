@@ -1,3 +1,17 @@
+** (2015-08-08) Christopher Warner
+	- Add .gitignore cleanups
+	- Remove AM_PROG_CC_C_O as AC_PROG_CC was rewritten to implement the check for C compiler supporting -c and -o options together
+	- Remove deprecated form of macro call for AM_INIT_AUTOMAKE
+	- AC_MSG_WARN([Please make sure pkg-config is installed and autoreconf run])
+	- INCLUDES has been depreacted for AM_CPPFLAGS
+	- Make sqlite the default DB
+	- Update depcomp
+	- Update missing
+	- Refresh install-sh
+	- README to README.md minor cleanup
+	- Delete README
+	- Update this ChangeLog
+
 ** (2014-07-07) Sven Vermeulen
 	- Drop all .svn dirs (thx to Jason Zaman)
 

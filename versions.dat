@@ -54,6 +54,7 @@
 ,gpg-agent,1,gpg-agent,^([0-9][0-9]*(\.[0-9]+)+),a,gnupg,gnupg,\1,,,
 ,vim,1,vim,VIM - Vi IMproved ([0-9\.]+) ,a,vim,vim,\1,,,
 ,bash,1,bash,Bash version ([0-9\.]+),a,bash,bash,\1,,,
+,dash,1,dash,^([0-9\.]+)$,a,canonical,debian,\1,,,
 ,gs,1,gs,ghostscript/([0-9\.]+),a,ghostscript,ghostscript,\1,,,
 ,gocr,1,gocr,Optical Character Recognition --- gocr ([0-9\.]+) ,a,gocr,optical_character_recognition_utility,\1,,,
 ,pdftops,1,pdftops,^([0-9\.]+)$,a,poppler,poppler,\1,,,

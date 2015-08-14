@@ -1,4 +1,4 @@
-EXTRA_DIST = README LICENSE ChangeLog
+EXTRA_DIST = README.md LICENSE ChangeLog
 
 SUBDIRS =  \
           src \
