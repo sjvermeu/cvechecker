@@ -10,7 +10,7 @@
 #include <libconfig.h>
 
 /*
- * Copyright 2010-2013 Sven Vermeulen.
+ * Copyright 2010-2015 Sven Vermeulen.
  * Subject to the GNU Public License, version 3.
  */
  
@@ -35,7 +35,7 @@ static error_t parse_opt (int key, char * arg, struct argp_state *state);
 #include "dummy/dummy_mysql.h"
 #endif
 
-const char * argp_program_version     = "cvechecker 3.5";
+const char * argp_program_version     = "cvechecker 3.6";
 const char * argp_program_bug_address = "<sven.vermeulen@siphos.be>";
 
 static char doc[]      = "cvechecker -- Verify the state of the system against a CVE database";
