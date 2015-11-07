@@ -1,3 +1,8 @@
+** (2015-11-07) Release 3.6
+
+** (2015-11-06) Sven Vermeulen
+	- Download compressed NVD XML files
+
 ** (2015-08-08) Christopher Warner
 	- Add .gitignore cleanups
 	- Remove AM_PROG_CC_C_O as AC_PROG_CC was rewritten to implement the check for C compiler supporting -c and -o options together
