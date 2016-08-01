@@ -72,10 +72,10 @@ yet to be acknowledged by you.
   </tr>
   <xsl:for-each select="//record[not(File=document('acknowledgements.xml')/acknowledgements/file/@name)][not(File=preceding-sibling::record/File)]">
     <xsl:variable name="fileid" select="File" />
-    <xsl:variable name="cpeid" select="CPE" />
-    <xsl:variable name="cvss" select="CVSS" />
-    <xsl:for-each select="//record[File=$fileid][not(CVE=document('acknowledgements.xml')/acknowledgements/file[@name=$fileid]/@cve)][not(CVE=preceding-sibling::record[File=$fileid]/CVE)]/CVE">
-      <xsl:variable name="cveid" select="." />
+    <xsl:for-each select="//record[File=$fileid][not(CVE=document('acknowledgements.xml')/acknowledgements/file[@name=$fileid]/@cve)][not(CVE=preceding-sibling::record[File=$fileid]/CVE)]">
+      <xsl:variable name="cpeid" select="CPE" />
+      <xsl:variable name="cvss" select="CVSS" />
+      <xsl:variable name="cveid" select="CVE" />
       <tr>
         <td><xsl:value-of select="$fileid" /></td>
 	<td><xsl:value-of select="$cpeid" /></td>
