@@ -46,125 +46,125 @@ HREF="#AEN34"
 ></DT
 ><DT
 >2.3. <A
-HREF="#AEN62"
+HREF="#AEN66"
 >Initial Configuration</A
 ></DT
 ><DD
 ><DL
 ><DT
 >2.3.1. <A
-HREF="#AEN79"
+HREF="#AEN83"
 >Configuration File</A
 ></DT
 ><DT
 >2.3.2. <A
-HREF="#AEN88"
+HREF="#AEN92"
 >Initialize SQLite3 Database</A
 ></DT
 ><DT
 >2.3.3. <A
-HREF="#AEN95"
+HREF="#AEN99"
 >Initialize MySQL Database</A
 ></DT
 ><DT
 >2.3.4. <A
-HREF="#AEN110"
+HREF="#AEN114"
 >Load CVE and version matching rules</A
 ></DT
 ></DL
 ></DD
 ><DT
 >2.4. <A
-HREF="#AEN123"
+HREF="#AEN127"
 >Upgrades</A
 ></DT
 ></DL
 ></DD
 ><DT
 >3. <A
-HREF="#AEN127"
+HREF="#AEN131"
 >Regular Runs</A
 ></DT
 ><DD
 ><DL
 ><DT
 >3.1. <A
-HREF="#AEN148"
+HREF="#AEN152"
 >Pull Data</A
 ></DT
 ><DT
 >3.2. <A
-HREF="#AEN154"
+HREF="#AEN158"
 >Generate List of Files</A
 ></DT
 ><DT
 >3.3. <A
-HREF="#AEN166"
+HREF="#AEN170"
 >Gather List of Installed Software/Versions</A
 ></DT
 ><DD
 ><DL
 ><DT
 >3.3.1. <A
-HREF="#AEN171"
+HREF="#AEN175"
 >Integrating with a package manager</A
 ></DT
 ><DT
 >3.3.2. <A
-HREF="#AEN184"
+HREF="#AEN188"
 >Adding through standard input</A
 ></DT
 ></DL
 ></DD
 ><DT
 >3.4. <A
-HREF="#AEN189"
+HREF="#AEN193"
 >Output Matching CVE Entries</A
 ></DT
 ><DT
 >3.5. <A
-HREF="#AEN204"
+HREF="#AEN208"
 >(Optional) Generate A Report</A
 ></DT
 ></DL
 ></DD
 ><DT
 >4. <A
-HREF="#AEN217"
+HREF="#AEN221"
 >Detected Software</A
 ></DT
 ><DT
 >5. <A
-HREF="#AEN228"
+HREF="#AEN232"
 >Watch Lists</A
 ></DT
 ><DT
 >6. <A
-HREF="#AEN235"
+HREF="#AEN239"
 >Configuring cvechecker</A
 ></DT
 ><DD
 ><DL
 ><DT
 >6.1. <A
-HREF="#AEN239"
+HREF="#AEN243"
 >Configuration File Format</A
 ></DT
 ><DT
 >6.2. <A
-HREF="#AEN278"
+HREF="#AEN282"
 >MySQL Database Usage</A
 ></DT
 ><DD
 ><DL
 ><DT
 >6.2.1. <A
-HREF="#AEN281"
+HREF="#AEN285"
 >User Roles</A
 ></DT
 ><DT
 >6.2.2. <A
-HREF="#AEN299"
+HREF="#AEN303"
 >InnoDB or MyISAM?</A
 ></DT
 ></DL
@@ -173,24 +173,24 @@ HREF="#AEN299"
 ></DD
 ><DT
 >7. <A
-HREF="#AEN311"
+HREF="#AEN315"
 >Software Matching Rules</A
 ></DT
 ><DD
 ><DL
 ><DT
 >7.1. <A
-HREF="#AEN314"
+HREF="#AEN318"
 >Syntax</A
 ></DT
 ><DT
 >7.2. <A
-HREF="#AEN347"
+HREF="#AEN351"
 >Validating 'versions.dat'</A
 ></DT
 ><DT
 >7.3. <A
-HREF="#AEN356"
+HREF="#AEN360"
 >Helping with version rules management</A
 ></DT
 ></DL
@@ -210,7 +210,7 @@ COLOR="RED"
 
     <SPAN
 CLASS="pubdate"
->2013/08/17</SPAN
+>2015/08/01</SPAN
 >
   </FONT
 >
@@ -437,6 +437,24 @@ CLASS="command"
 ></PRE
 >
 
+     <P
+>&#13;       If the <B
+CLASS="command"
+>./configure</B
+> step fails (especially when using
+       the live code rather than a specific release), first run the following
+       command:
+     </P
+>
+
+     <PRE
+CLASS="programlisting"
+>~$ <B
+CLASS="command"
+>autoreconf --force --install</B
+></PRE
+>
+
       <P
 >Finally, create a group called cvechecker and change the
       permissions of the installed folders so that this group has write
@@ -463,7 +481,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN62"
+NAME="AEN66"
 >2.3. Initial Configuration</A
 ></H3
 >
@@ -548,7 +566,7 @@ CLASS="section"
 ><HR><H4
 CLASS="section"
 ><A
-NAME="AEN79"
+NAME="AEN83"
 >2.3.1. Configuration File</A
 ></H4
 >
@@ -628,7 +646,7 @@ CLASS="section"
 ><HR><H4
 CLASS="section"
 ><A
-NAME="AEN88"
+NAME="AEN92"
 >2.3.2. Initialize SQLite3 Database</A
 ></H4
 >
@@ -665,7 +683,7 @@ CLASS="section"
 ><HR><H4
 CLASS="section"
 ><A
-NAME="AEN95"
+NAME="AEN99"
 >2.3.3. Initialize MySQL Database</A
 ></H4
 >
@@ -740,7 +758,7 @@ CLASS="section"
 ><HR><H4
 CLASS="section"
 ><A
-NAME="AEN110"
+NAME="AEN114"
 >2.3.4. Load CVE and version matching rules</A
 ></H4
 >
@@ -805,7 +823,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN123"
+NAME="AEN127"
 >2.4. Upgrades</A
 ></H3
 >
@@ -837,7 +855,7 @@ CLASS="section"
 ><HR><H2
 CLASS="section"
 ><A
-NAME="AEN127"
+NAME="AEN131"
 >3. Regular Runs</A
 ></H2
 >
@@ -923,7 +941,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN148"
+NAME="AEN152"
 >3.1. Pull Data</A
 ></H3
 >
@@ -952,7 +970,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN154"
+NAME="AEN158"
 >3.2. Generate List of Files</A
 ></H3
 >
@@ -1011,7 +1029,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN166"
+NAME="AEN170"
 >3.3. Gather List of Installed Software/Versions</A
 ></H3
 >
@@ -1035,7 +1053,7 @@ CLASS="section"
 ><HR><H4
 CLASS="section"
 ><A
-NAME="AEN171"
+NAME="AEN175"
 >3.3.1. Integrating with a package manager</A
 ></H4
 >
@@ -1112,7 +1130,7 @@ CLASS="section"
 ><HR><H4
 CLASS="section"
 ><A
-NAME="AEN184"
+NAME="AEN188"
 >3.3.2. Adding through standard input</A
 ></H4
 >
@@ -1142,7 +1160,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN189"
+NAME="AEN193"
 >3.4. Output Matching CVE Entries</A
 ></H3
 >
@@ -1230,7 +1248,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN204"
+NAME="AEN208"
 >3.5. (Optional) Generate A Report</A
 ></H3
 >
@@ -1311,7 +1329,7 @@ CLASS="section"
 ><HR><H2
 CLASS="section"
 ><A
-NAME="AEN217"
+NAME="AEN221"
 >4. Detected Software</A
 ></H2
 >
@@ -1372,7 +1390,7 @@ CLASS="section"
 ><HR><H2
 CLASS="section"
 ><A
-NAME="AEN228"
+NAME="AEN232"
 >5. Watch Lists</A
 ></H2
 >
@@ -1411,7 +1429,7 @@ CLASS="section"
 ><HR><H2
 CLASS="section"
 ><A
-NAME="AEN235"
+NAME="AEN239"
 >6. Configuring cvechecker</A
 ></H2
 >
@@ -1436,7 +1454,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN239"
+NAME="AEN243"
 >6.1. Configuration File Format</A
 ></H3
 >
@@ -1649,7 +1667,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN278"
+NAME="AEN282"
 >6.2. MySQL Database Usage</A
 ></H3
 >
@@ -1665,7 +1683,7 @@ CLASS="section"
 ><HR><H4
 CLASS="section"
 ><A
-NAME="AEN281"
+NAME="AEN285"
 >6.2.1. User Roles</A
 ></H4
 >
@@ -1745,7 +1763,7 @@ CLASS="section"
 ><HR><H4
 CLASS="section"
 ><A
-NAME="AEN299"
+NAME="AEN303"
 >6.2.2. InnoDB or MyISAM?</A
 ></H4
 >
@@ -1812,7 +1830,7 @@ CLASS="section"
 ><HR><H2
 CLASS="section"
 ><A
-NAME="AEN311"
+NAME="AEN315"
 >7. Software Matching Rules</A
 ></H2
 >
@@ -1829,7 +1847,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN314"
+NAME="AEN318"
 >7.1. Syntax</A
 ></H3
 >
@@ -1961,7 +1979,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN347"
+NAME="AEN351"
 >7.2. Validating 'versions.dat'</A
 ></H3
 >
@@ -2010,7 +2028,7 @@ CLASS="section"
 ><HR><H3
 CLASS="section"
 ><A
-NAME="AEN356"
+NAME="AEN360"
 >7.3. Helping with version rules management</A
 ></H3
 >

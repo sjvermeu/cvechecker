@@ -15,7 +15,7 @@
       <email>sven.vermeulen@siphos.be</email>
     </author>
 
-    <pubdate>2013/08/17</pubdate>
+    <pubdate>2015/08/01</pubdate>
   </info>
 
   <section>
@@ -123,6 +123,14 @@
 ...
 ~$ <command>sudo -i</command>
 ~# <command>make install</command></programlisting>
+
+     <para>
+       If the <command>./configure</command> step fails (especially when using
+       the live code rather than a specific release), first run the following
+       command:
+     </para>
+
+     <programlisting>~$ <command>autoreconf --force --install</command></programlisting>
 
       <para>Finally, create a group called cvechecker and change the
       permissions of the installed folders so that this group has write
