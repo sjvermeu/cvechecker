@@ -22,5 +22,5 @@ the CVE database. This is not a bullet-proof method and you will have many false
 5. Output Matching CVE Entries  
     ```~$ cvechecker -r```
 
-More detailed installation information available via the [installation docs](http://cvechecker.sourceforge.net/docs/userguide.html#idp17392)   
-The homepage for this project is http://cvechecker.sourceforge.net.
+More detailed installation information available via the [installation docs](../../wiki/Installation).  
+[The homepage for this project](../../wiki).
