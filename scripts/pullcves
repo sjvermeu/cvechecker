@@ -78,28 +78,28 @@ do
 done
 
 cd ${CVECACHE};
-if [ ! -f nvdcve-2.0-modified.xml ];
+if [ ! -f nvdcve-2.0-Modified.xml ];
 then
   CKSUM="1"
 else
-  CKSUM=$(cksum nvdcve-2.0-modified.xml 2>/dev/null);
+  CKSUM=$(cksum nvdcve-2.0-Modified.xml 2>/dev/null);
 fi
-printf "Downloading nvdcve-2.0-modified.xml... ";
+printf "Downloading nvdcve-2.0-Modified.xml... ";
 ${WGETCMD} -q -N http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-Modified.xml.gz;
 gunzip -c nvdcve-2.0-Modified.xml.gz > nvdcve-2.0-Modified.xml && rm nvdcve-2.0-Modified.xml.gz;
-CKSUM2=$(cksum nvdcve-2.0-modified.xml 2>/dev/null);
-if [ "${CKSUM2}" != "${CKSUM}" ] || [ -f nvdcve-2.0-modified.xml.1 ];
+CKSUM2=$(cksum nvdcve-2.0-Modified.xml 2>/dev/null);
+if [ "${CKSUM2}" != "${CKSUM}" ] || [ -f nvdcve-2.0-Modified.xml.1 ];
 then
   printf "ok (downloaded)\n";
-  test -f nvdcve-2.0-modified.xml.1 && mv nvdcve-2.0-modified.xml.1 nvdcve-2.0-modified.xml;
-  printf "Converting nvdcve-2.0-modified.xml to CSV... ";
+  test -f nvdcve-2.0-Modified.xml.1 && mv nvdcve-2.0-Modified.xml.1 nvdcve-2.0-Modified.xml;
+  printf "Converting nvdcve-2.0-Modified.xml to CSV... ";
   if [ -f ${CVECACHE}/nvdcve-2.0-modified.csv ];
   then
     mv ${CVECACHE}/nvdcve-2.0-modified.csv ${CVECACHE}/nvdcve-2.0-modified.csv.old;
   else
     touch ${CVECACHE}/nvdcve-2.0-modified.csv.old;
   fi
-  xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-modified.xml > ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted;
+  xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-Modified.xml > ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted;
   printf "ok\nGathering differences with last pull... ";
   sort ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted > ${CVECACHE}/nvdcve-2.0-modified.csv;
   rm ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted;
