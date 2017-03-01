@@ -1257,82 +1257,64 @@ int get_installed_software(struct workstate * ws) {
 /**
  * Validates if the buffer contains a valid CVE entry
  *
- * Entry should be "CVE-####-####:[0-9.]*:cpe:/a:.*:.*:.*[:.*[:.*]]
+ * Entry should be "CVE-####-####+:[0-9.]*:cpe:/a:.*:.*:.*[:.*[:.*]]
+ * Note that the number (not the year) can be longer than 4 characters, but is at least 4.
  */
 int validate_cve_data(char * buffer) {
 	char * bufferptr;
 	char * buffer2ptr;
+    char field[BUFFERSIZE];
+    int pos = 0;
+    int fieldCounter = 0;
 
-	if (strstr(buffer, "CVE-") != buffer)
-		return 1;
-	if (buffer[3] != '-')
-		return 2;
-	if (buffer[8] != '-')
-		return 3;
-	if (buffer[13] != ':')
-		return 4;
-	bufferptr = buffer+14;
-	if ((bufferptr[0] > '9') || (bufferptr[0] < '0'))
-		return 8;
-	bufferptr = strchr(bufferptr, ':')+1;
-	if (strstr(bufferptr, "cpe:/") != bufferptr)
-		return 5;
-	if ((bufferptr[5] != 'a') && (bufferptr[5] != 'o') && (bufferptr[5] != 'h'))
-		return 6;
-	if (bufferptr[6] != ':')
-		return 7;
+    bufferptr = buffer;
 
-	bufferptr = bufferptr+8;
-	// vendor field length
-	buffer2ptr = strchr(bufferptr, ':');
-	if ((buffer2ptr == NULL) || ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE))
-		return 8;
-	bufferptr = buffer2ptr+1;
-	// product field length
-	buffer2ptr = strchr(bufferptr, ':');
-	if (buffer2ptr == NULL) {
-		if (swstrlen(bufferptr) >= FIELDSIZE)
-			return 9;
-		else
-			return 0;
-	} else if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE) {
-		return 9;
-	};
-	bufferptr = buffer2ptr+1;
-	// version field length
-	buffer2ptr = strchr(bufferptr, ':');
-	if (buffer2ptr == NULL) {
-		if (swstrlen(bufferptr) >= FIELDSIZE)
-			return 10;
-		else
-			return 0;
-	} else if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE) {
-		return 10;
-	}
-	bufferptr = buffer2ptr+1;
-	// update field length
-	buffer2ptr = strchr(bufferptr, ':');
-	if (buffer2ptr == NULL) {
-		if (swstrlen(bufferptr) >= FIELDSIZE)
-			return 11;
-		else
-			return 0;
-	} else if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE) {
-		return 10;
-	}
-	bufferptr = buffer2ptr+1;
-	// edition field length
-	buffer2ptr = strchr(bufferptr, ':');
-	if (buffer2ptr == NULL) {
-		if (swstrlen(bufferptr) >= FIELDSIZE)
-			return 12;
-		else
-			return 0;
-	} else if ((swstrlen(buffer2ptr) - swstrlen(bufferptr)) >= FIELDSIZE) {
-		return 10;
-	}
-	bufferptr = buffer2ptr+1;
+    // Split based on ':' character
+    while (sscanf(bufferptr, "[^:]%s", field, &pos) == 1) {
+        if (fieldCounter == 0) {
+        	// Should be "CVE-####-####+" (CVE identifier)
+    		char sCVE[BUFFERSIZE];
+			unsigned int iYear;
+			unsigned int iID;
+			if (sscanf(field, "%s-%u-%u", sCVE, &iYear, &iID) != 3) {
+				// Not all three fields were correctly assigned
+				return 1;
+			}
+        } else if (fieldCounter == 1) {
+			// Should be [0-9]+.[0-9]+ (score)
+			unsigned int iPre;
+			unsigned int iPost;
+			if (sscanf(field, "%u.%u", &iPre, &iPost) != 2) {
+				// Not both fields were correctly assigned
+				return 2;
+			}
+        } else if (fieldCounter == 2) {
+			// Should be "cpe"
+			if (strncmp(field, "cpe", 3) != 0) {
+				return 3;
+			}
+		} else if (fieldCounter == 3) {
+			// Should be "/a", "/o" or "/h" (app, operating system or hardware)
+			if (
+				(strncmp(field, "/a", 2) != 0) &&
+				(strncmp(field, "/o", 2) != 0) &&
+				(strncmp(field, "/h", 2) != 0) ) {
+				return 4;
+			}
 
+		} else if (fieldCounter >= 4) {
+			// Should be a string (vendor, software title, version, edition or language)
+			int ptr = 0;
+			while(field[ptr] != 0) {
+				if (! isgraph(field[ptr]) ) {
+					return 5;
+				}
+			}
+		}
+
+		bufferptr = bufferptr + swstrlen(field) + 1;
+		++fieldCounter;
+    }
 	return 0;
 };
 
