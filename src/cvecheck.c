@@ -1254,70 +1254,6 @@ int get_installed_software(struct workstate * ws) {
 	return rc;
 };
 
-/**
- * Validates if the buffer contains a valid CVE entry
- *
- * Entry should be "CVE-####-####+:[0-9.]*:cpe:/a:.*:.*:.*[:.*[:.*]]
- * Note that the number (not the year) can be longer than 4 characters, but is at least 4.
- */
-int validate_cve_data(char * buffer) {
-	char * bufferptr;
-	char * buffer2ptr;
-    char field[BUFFERSIZE];
-    int pos = 0;
-    int fieldCounter = 0;
-
-    bufferptr = buffer;
-
-    // Split based on ':' character
-    while (sscanf(bufferptr, "[^:]%s", field, &pos) == 1) {
-        if (fieldCounter == 0) {
-        	// Should be "CVE-####-####+" (CVE identifier)
-    		char sCVE[BUFFERSIZE];
-			unsigned int iYear;
-			unsigned int iID;
-			if (sscanf(field, "%s-%u-%u", sCVE, &iYear, &iID) != 3) {
-				// Not all three fields were correctly assigned
-				return 1;
-			}
-        } else if (fieldCounter == 1) {
-			// Should be [0-9]+.[0-9]+ (score)
-			unsigned int iPre;
-			unsigned int iPost;
-			if (sscanf(field, "%u.%u", &iPre, &iPost) != 2) {
-				// Not both fields were correctly assigned
-				return 2;
-			}
-        } else if (fieldCounter == 2) {
-			// Should be "cpe"
-			if (strncmp(field, "cpe", 3) != 0) {
-				return 3;
-			}
-		} else if (fieldCounter == 3) {
-			// Should be "/a", "/o" or "/h" (app, operating system or hardware)
-			if (
-				(strncmp(field, "/a", 2) != 0) &&
-				(strncmp(field, "/o", 2) != 0) &&
-				(strncmp(field, "/h", 2) != 0) ) {
-				return 4;
-			}
-
-		} else if (fieldCounter >= 4) {
-			// Should be a string (vendor, software title, version, edition or language)
-			int ptr = 0;
-			while(field[ptr] != 0) {
-				if (! isgraph(field[ptr]) ) {
-					return 5;
-				}
-			}
-		}
-
-		bufferptr = bufferptr + swstrlen(field) + 1;
-		++fieldCounter;
-    }
-	return 0;
-};
-
 void report_installed(struct workstate * ws, int showfiles) {
 	if (ws->arg->docsvoutput)
 		fprintf(stdout, "Outputversion,Vendor,Product,Version,Update,Edition,Language,Hostname,Userkey,Files\n");
@@ -1364,13 +1300,23 @@ int load_cve(struct workstate * ws) {
 	char buffer[BUFFERSIZE];
 	char cveId[CVELINESIZE];
 	char cpeId[CPELINESIZE];
-	char cvssNum[5];
+	char cvssNum[6];
 	char * bufferptr;
 	long int ctr = 0;
 	long int dup = 0;
 	int linenum  = 1;
 	struct arguments * arg = ws->arg;
-	
+	char field[BUFFERSIZE];
+	int pos = 0;
+	int fieldCounter = 0;
+	char tmpCpeId[3];
+	char tmpCpeVendor[FIELDSIZE];
+	char tmpCpeProduct[FIELDSIZE];
+	char tmpCpeVersion[FIELDSIZE];
+	char tmpCpeUpdate[FIELDSIZE];
+	char tmpCpeEdition[FIELDSIZE];
+	char tmpCpeLanguage[FIELDSIZE];
+
 	fprintf(stdout, "Loading CVE data from %s into database\n", arg->cvedata);
 
 	if (ws->dbtype == sqlite)
@@ -1388,8 +1334,16 @@ int load_cve(struct workstate * ws) {
 
 
 	zero_string(buffer, BUFFERSIZE);
+	// buffer will contain a single line from the CSV file
 	while (fgets(buffer, sizeof(buffer), cvelist) != 0) {
 		int cvelength = 0;
+		zero_string(tmpCpeId, 3);
+		zero_string(tmpCpeVendor, FIELDSIZE);
+		zero_string(tmpCpeProduct, FIELDSIZE);
+		zero_string(tmpCpeVersion, FIELDSIZE);
+		zero_string(tmpCpeUpdate, FIELDSIZE);
+		zero_string(tmpCpeEdition, FIELDSIZE);
+		zero_string(tmpCpeLanguage, FIELDSIZE);
 
 		// Overflow?
 		if (buffer[BUFFERSIZE-1] != '\0') {
@@ -1402,33 +1356,81 @@ int load_cve(struct workstate * ws) {
 			linenum++;
 		};
 
-		if (validate_cve_data(buffer) != 0) {
-			fprintf(stderr, " ! Error while reading in CVE entries.  Skipping line %d (invalid)\n", linenum);
-			zero_string(buffer, BUFFERSIZE);
-			linenum++;
-		};
-		
-		if (strlen(buffer) < CVELINESIZE)
-			continue;
+		bufferptr = buffer;
 
-		if (buffer[strlen(buffer)-1] == '\n')
-		  buffer[strlen(buffer)-1] = '\0';
+		// Split based on ':' character
+		while (sscanf(bufferptr, "[^:]%s", field, &pos) == 1) {
+			if (fieldCounter == 0) {
+				// Should be "CVE-####-####+" (CVE identifier)
+				char sCVE[BUFFERSIZE];
+				unsigned int iYear;
+				unsigned int iID;
+				if (sscanf(field, "%s-%u-%u", sCVE, &iYear, &iID) != 3) {
+					// Not all three fields were correctly assigned
+					return 1;
+				}
+				if (swstrlen(field) >= CVELINESIZE) {
+					// Length of this field is beyond the size that we expect
+					return 1;
+				}
+				strncpy(cveId, field, CVELINESIZE);
 
-		cvelength = strlen(buffer)-strlen(strchr(buffer, ':'));
-		// Read in CVE data
-		strncpy(cveId, buffer, cvelength);
-		cveId[cvelength] = '\0';
-		// Read in CVSS data
-		bufferptr = strchr(buffer, ':')+1;
-		cvelength = strlen(bufferptr);
-		zero_string(cvssNum, 5);
-		strncpy(cvssNum, bufferptr, strlen(bufferptr)-strlen(strchr(bufferptr, ':')));
-		cvssNum[4] = '\0';
-		bufferptr = strchr(bufferptr, ':')+1;
-		// Read in CPE data
-		cvelength = strlen(bufferptr);
-		strncpy(cpeId, bufferptr, cvelength);
-		cpeId[cvelength] = '\0';
+			} else if (fieldCounter == 1) {
+				// Should be [0-9]+.[0-9]+ (score)
+				unsigned int iPre;
+				unsigned int iPost;
+				if (sscanf(field, "%u.%u", &iPre, &iPost) != 2) {
+					// Not both fields were correctly assigned
+					return 2;
+				}
+				snprintf(cvssNum, 6, "%u.%u", iPre, iPost);
+
+			} else if (fieldCounter == 2) {
+				// Should be "cpe"
+				if (strncmp(field, "cpe", 3) != 0) {
+					return 3;
+				}
+			} else if (fieldCounter == 3) {
+				// Should be "/a", "/o" or "/h" (app, operating system or hardware)
+				if (
+					(strncmp(field, "/a", 2) != 0) &&
+					(strncmp(field, "/o", 2) != 0) &&
+					(strncmp(field, "/h", 2) != 0) ) {
+					return 4;
+				}
+				snprintf(tmpCpeId, 3, "%s", field);
+
+			} else if (fieldCounter >= 4) {
+				// Should be a string (vendor, software title, version, edition or language)
+				int ptr = 0;
+				while(field[ptr] != 0) {
+					if (! isgraph(field[ptr]) ) {
+						return 5;
+					}
+				}
+				if (fieldCounter == 4)
+					snprintf(tmpCpeVendor, FIELDSIZE, "%s", field);
+				if (fieldCounter == 5)
+					snprintf(tmpCpeProduct, FIELDSIZE, "%s", field);
+				if (fieldCounter == 6)
+					snprintf(tmpCpeVersion, FIELDSIZE, "%s", field);
+				if (fieldCounter == 7)
+					snprintf(tmpCpeUpdate, FIELDSIZE, "%s", field);
+				if (fieldCounter == 8)
+					snprintf(tmpCpeEdition, FIELDSIZE, "%s", field);
+				if (fieldCounter == 9)
+					snprintf(tmpCpeLanguage, FIELDSIZE, "%s", field);
+
+			}
+
+			bufferptr = bufferptr + swstrlen(field) + 1;
+			++fieldCounter;
+		}
+
+		// Build the CPE up
+		snprintf(cpeId, CPELINESIZE, "cpe:%s:%s:%s:%s:%s:%s:%s", tmpCpeId, tmpCpeVendor, tmpCpeProduct, tmpCpeVersion, tmpCpeUpdate, tmpCpeEdition, tmpCpeLanguage);
+
+		// Now load in the data in the database
 		if (ws->dbtype == sqlite)
 			dup += sqlite_dbimpl_store_cve_in_db(ws, cveId, cpeId, cvssNum);
 		else if (ws->dbtype == mysql)
