@@ -1,3 +1,9 @@
+** (2017-03-01) Sven Vermeulen
+	- Support sequences in CVE longer than 4 positions
+
+** (2016-09-19) Sven Vermeulen
+	- Use nvdcve-2.0-Modified.xml with capitalized M
+
 ** (2015-11-07) Release 3.6
 
 ** (2015-11-06) Sven Vermeulen
