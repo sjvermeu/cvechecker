@@ -1,2089 +1,385 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
-></TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"></HEAD
-><BODY
-CLASS="article"
-BGCOLOR="#FFFFFF"
-TEXT="#000000"
-LINK="#0000FF"
-VLINK="#840084"
-ALINK="#0000FF"
-><DIV
-CLASS="ARTICLE"
-><DIV
-CLASS="TOC"
-><DL
-><DT
-><B
->Table of Contents</B
-></DT
-><DT
->1. <A
-HREF="#AEN10"
->Introduction</A
-></DT
-><DT
->2. <A
-HREF="#AEN15"
->Installation</A
-></DT
-><DD
-><DL
-><DT
->2.1. <A
-HREF="#AEN17"
->Requirements</A
-></DT
-><DT
->2.2. <A
-HREF="#AEN34"
->Installation</A
-></DT
-><DT
->2.3. <A
-HREF="#AEN66"
->Initial Configuration</A
-></DT
-><DD
-><DL
-><DT
->2.3.1. <A
-HREF="#AEN83"
->Configuration File</A
-></DT
-><DT
->2.3.2. <A
-HREF="#AEN92"
->Initialize SQLite3 Database</A
-></DT
-><DT
->2.3.3. <A
-HREF="#AEN99"
->Initialize MySQL Database</A
-></DT
-><DT
->2.3.4. <A
-HREF="#AEN114"
->Load CVE and version matching rules</A
-></DT
-></DL
-></DD
-><DT
->2.4. <A
-HREF="#AEN127"
->Upgrades</A
-></DT
-></DL
-></DD
-><DT
->3. <A
-HREF="#AEN131"
->Regular Runs</A
-></DT
-><DD
-><DL
-><DT
->3.1. <A
-HREF="#AEN152"
->Pull Data</A
-></DT
-><DT
->3.2. <A
-HREF="#AEN158"
->Generate List of Files</A
-></DT
-><DT
->3.3. <A
-HREF="#AEN170"
->Gather List of Installed Software/Versions</A
-></DT
-><DD
-><DL
-><DT
->3.3.1. <A
-HREF="#AEN175"
->Integrating with a package manager</A
-></DT
-><DT
->3.3.2. <A
-HREF="#AEN188"
->Adding through standard input</A
-></DT
-></DL
-></DD
-><DT
->3.4. <A
-HREF="#AEN193"
->Output Matching CVE Entries</A
-></DT
-><DT
->3.5. <A
-HREF="#AEN208"
->(Optional) Generate A Report</A
-></DT
-></DL
-></DD
-><DT
->4. <A
-HREF="#AEN221"
->Detected Software</A
-></DT
-><DT
->5. <A
-HREF="#AEN232"
->Watch Lists</A
-></DT
-><DT
->6. <A
-HREF="#AEN239"
->Configuring cvechecker</A
-></DT
-><DD
-><DL
-><DT
->6.1. <A
-HREF="#AEN243"
->Configuration File Format</A
-></DT
-><DT
->6.2. <A
-HREF="#AEN282"
->MySQL Database Usage</A
-></DT
-><DD
-><DL
-><DT
->6.2.1. <A
-HREF="#AEN285"
->User Roles</A
-></DT
-><DT
->6.2.2. <A
-HREF="#AEN303"
->InnoDB or MyISAM?</A
-></DT
-></DL
-></DD
-></DL
-></DD
-><DT
->7. <A
-HREF="#AEN315"
->Software Matching Rules</A
-></DT
-><DD
-><DL
-><DT
->7.1. <A
-HREF="#AEN318"
->Syntax</A
-></DT
-><DT
->7.2. <A
-HREF="#AEN351"
->Validating 'versions.dat'</A
-></DT
-><DT
->7.3. <A
-HREF="#AEN360"
->Helping with version rules management</A
-></DT
-></DL
-></DD
-></DL
-></DIV
->
-  <FONT
-COLOR="RED"
->&#13;    <P
-><B
->CVE Checker User Guide</B
-></P
->
-
-    Sven Vermeulen
-
-    <SPAN
-CLASS="pubdate"
->2015/08/01</SPAN
->
-  </FONT
->
-
-  <DIV
-CLASS="section"
-><HR><H2
-CLASS="section"
-><A
-NAME="AEN10"
->1. Introduction</A
-></H2
->
-    
-
-    <P
->Welcome to the CVE checker user guide. The purpose of this document
-    is to guide you through the installation and usage of CVE checker. But
-    before we start with that, a little warning is in place...</P
->
-
-    <P
->CVE checker does not provide security for your system. It is nothing
-    more than a tool that attempts to identify installed software on your
-    system and match those against the online database of CVE entries. As the
-    identification of installed software depends on simple rules that are
-    added by the community, it is very likely that it only detects a small
-    portion of the installed software on your system (especially if you are
-    running software that isn't all that popular). And even if the tool
-    detects the software appropriately, it still requires that the CVE entry
-    mentions this software with the same vendor and product name as this tool
-    detects - if not, CVE checker will not be able to match the installed
-    software against the online CVE database.</P
->
-
-    <P
->Okay, now that that is out of the way, let's start with the CVE
-    checker installation.</P
->
-  </DIV
->
-
-  <DIV
-CLASS="section"
-><HR><H2
-CLASS="section"
-><A
-NAME="AEN15"
->2. Installation</A
-></H2
->
-    
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN17"
->2.1. Requirements</A
-></H3
->
-      
-
-      <P
->The cvechecker tool requires the following packages to be
-      installed:</P
->
-
-      <P
-></P
-><UL
-><LI
->&#13;          <P
->libxslt - needed for the XSLT transformations (the online CVE
-          database exists of XML files and we need to convert those to CSV so
-          that we can easily import it into our own, local database)</P
->
-        </LI
-><LI
->&#13;          <P
->libconfig - a C library that offers a simple way for
-          applications to read and handle configuration files</P
->
-        </LI
-><LI
->&#13;          <P
->a database or database client. Currently, cvechecker
-          supports:</P
->
-
-          <P
-></P
-><UL
-><LI
->&#13;              <P
->sqlite3 - a local, embedded yet powerful database</P
->
-            </LI
-><LI
->&#13;              <P
->mysql (through libmysql) - one of the more popular open
-              source databases</P
->
-            </LI
-></UL
->
-        </LI
-><LI
->&#13;          <P
->wget - a command-line tool to fetch online resources</P
->
-        </LI
-></UL
->
-    </DIV
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN34"
->2.2. Installation</A
-></H3
->
-      
-
-      <P
->If your distribution already offers cvechecker through its package
-      management system, I strongly advise that you use that. The installation
-      instructions in this section assume that you do the installation
-      manually (and should reflect the steps that the distribution package
-      management system does for you).</P
->
-
-      <P
->First, download the latest cvechecker package from <FONT
-COLOR="RED"
->http://cvechecker.sourceforge.net</FONT
->
-      (or <FONT
-COLOR="RED"
->http://sourceforge.net/projects/cvechecker/files/</FONT
->),
-      then extract it into a temporary directory:</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->tar xvzf cvechecker-1.O.tar.gz</B
-></PRE
->
-
-      <P
->You need to select the database you want to use. cvechecker
-      currently supports mysql and sqlite, and this support is enabled through
-      the <B
-CLASS="command"
->./configure --enable-sqlite3</B
-> or
-      <B
-CLASS="command"
->./configure --enable-mysql</B
-> options. You can select
-      both too (they are not mutually exclusive) but you need to select at
-      least one of them.</P
->
-
-      <P
->Inside the extracted folder, first run
-      <B
-CLASS="command"
->./configure</B
-> with the proper
-      <B
-CLASS="command"
->--enable-&#60;database&#62;</B
-> options, followed by
-      <B
-CLASS="command"
->make</B
-> and <B
-CLASS="command"
->make install</B
->. If you use
-      the default settings, it will install the files inside
-      <TT
-CLASS="filename"
->/usr/local</TT
->, so you might need root privileges to
-      perform the <B
-CLASS="command"
->make install</B
-> step.</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cd cvechecker-1.0</B
->
-~$ <B
-CLASS="command"
->./configure --enable-sqlite3</B
-> 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="SvenVermeulen sven.vermeulen@siphos.be" />
+  <title>CVE Checker User Guide</title>
+  <style type="text/css">code{white-space: pre;}</style>
+</head>
+<body>
+<div id="header">
+<h1 class="title">CVE Checker User Guide</h1>
+<h2 class="author">SvenVermeulen <a href="mailto:sven.vermeulen@siphos.be">sven.vermeulen@siphos.be</a></h2>
+</div>
+<div id="TOC">
+<ul>
+<li><a>Introduction</a></li>
+<li><a>Installation</a><ul>
+<li><a>Requirements</a></li>
+<li><a>Installation</a></li>
+<li><a>Initial Configuration</a><ul>
+<li><a>Configuration File</a></li>
+<li><a>Initialize SQLite3 Database</a></li>
+<li><a>Initialize MySQL Database</a></li>
+<li><a>Load CVE and version matching rules</a></li>
+</ul></li>
+<li><a>Upgrades</a></li>
+</ul></li>
+<li><a>Regular Runs</a><ul>
+<li><a>Pull Data</a></li>
+<li><a>Generate List of Files</a></li>
+<li><a>Gather List of Installed Software/Versions</a><ul>
+<li><a>Integrating with a package manager</a></li>
+<li><a>Adding through standard input</a></li>
+</ul></li>
+<li><a>Output Matching CVE Entries</a></li>
+<li><a>(Optional) Generate A Report</a></li>
+</ul></li>
+<li><a>Detected Software</a></li>
+<li><a>Watch Lists</a></li>
+<li><a>Configuring cvechecker</a><ul>
+<li><a>Configuration File Format</a></li>
+<li><a>MySQL Database Usage</a><ul>
+<li><a>User Roles</a></li>
+<li><a>InnoDB or MyISAM?</a></li>
+</ul></li>
+</ul></li>
+<li><a>Software Matching Rules</a><ul>
+<li><a>Syntax</a></li>
+<li><a>Validating 'versions.dat'</a></li>
+<li><a>Helping with version rules management</a></li>
+</ul></li>
+</ul>
+</div>
+<h1>Introduction</h1>
+<p>Welcome to the CVE checker user guide. The purpose of this document is to guide you through the installation and usage of CVE checker. But before we start with that, a little warning is in place...</p>
+<p>CVE checker does not provide security for your system. It is nothing more than a tool that attempts to identify installed software on your system and match those against the online database of CVE entries. As the identification of installed software depends on simple rules that are added by the community, it is very likely that it only detects a small portion of the installed software on your system (especially if you are running software that isn't all that popular). And even if the tool detects the software appropriately, it still requires that the CVE entry mentions this software with the same vendor and product name as this tool detects - if not, CVE checker will not be able to match the installed software against the online CVE database.</p>
+<p>Okay, now that that is out of the way, let's start with the CVE checker installation.</p>
+<h1>Installation</h1>
+<h2>Requirements</h2>
+<p>The cvechecker tool requires the following packages to be installed:</p>
+<ul>
+<li><p>libxslt - needed for the XSLT transformations (the online CVE database exists of XML files and we need to convert those to CSV so that we can easily import it into our own, local database)</p></li>
+<li><p>libconfig - a C library that offers a simple way for applications to read and handle configuration files</p></li>
+<li><p>a database or database client. Currently, cvechecker supports:</p>
+<ul>
+<li><p>sqlite3 - a local, embedded yet powerful database</p></li>
+<li><p>mysql (through libmysql) - one of the more popular open source databases</p></li>
+</ul></li>
+<li><p>wget - a command-line tool to fetch online resources</p></li>
+</ul>
+<h2>Installation</h2>
+<p>If your distribution already offers cvechecker through its package management system, I strongly advise that you use that. The installation instructions in this section assume that you do the installation manually (and should reflect the steps that the distribution package management system does for you).</p>
+<p>First, download the latest cvechecker package from <a href="#">http://cvechecker.sourceforge.net</a> (or <a href="#">http://sourceforge.net/projects/cvechecker/files/</a>), then extract it into a temporary directory:</p>
+<pre><code>~$ tar xvzf cvechecker-1.O.tar.gz</code></pre>
+<p>You need to select the database you want to use. cvechecker currently supports mysql and sqlite, and this support is enabled through the <code>./configure --enable-sqlite3</code> or <code>./configure --enable-mysql</code> options. You can select both too (they are not mutually exclusive) but you need to select at least one of them.</p>
+<p>Inside the extracted folder, first run <code>./configure</code> with the proper <code>--enable-&lt;database&gt;</code> options, followed by <code>make</code> and <code>make install</code>. If you use the default settings, it will install the files inside <code>/usr/local</code>, so you might need root privileges to perform the <code>make install</code> step.</p>
+<pre><code>~$ cd cvechecker-1.0
+~$ ./configure --enable-sqlite3 
 ...
-~$ <B
-CLASS="command"
->make</B
->
+~$ make
 ...
-~$ <B
-CLASS="command"
->sudo -i</B
->
-~# <B
-CLASS="command"
->make install</B
-></PRE
->
-
-     <P
->&#13;       If the <B
-CLASS="command"
->./configure</B
-> step fails (especially when using
-       the live code rather than a specific release), first run the following
-       command:
-     </P
->
-
-     <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->autoreconf --force --install</B
-></PRE
->
-
-      <P
->Finally, create a group called cvechecker and change the
-      permissions of the installed folders so that this group has write
-      privileges inside the directory. These steps are performed when
-      executing <B
-CLASS="command"
->make postinstall</B
-> (you almost definitely
-      need root privileges now):</P
->
-
-      <PRE
-CLASS="programlisting"
->~# <B
-CLASS="command"
->make postinstall</B
-></PRE
->
-    </DIV
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN66"
->2.3. Initial Configuration</A
-></H3
->
-      
-
-      <P
->With the software now installed, you need to perform an initial
-      configuration. This includes the setup of the databases, creation of the
-      user you are going to use to run cvechecker and initial pull of the CVE
-      entries from the Internet.</P
->
-
-      <P
->First, create a user that you will use to run cvechecker. The tool
-      does not require root privileges, so I recommend not to use root. I
-      personally use a dedicated user whose sole purpose is to, on a daily
-      basis, pull the latest updates from the Internet, generate a report and
-      mail that report to me. Make sure that this user is inside the
-      cvechecker group:</P
->
-
-      <PRE
-CLASS="programlisting"
->~# <B
-CLASS="command"
->gpasswd -a <TT
-CLASS="replaceable"
-><I
->youruser</I
-></TT
-> cvechecker</B
-></PRE
->
-
-      <P
->Log on as that user, make sure his primary group is cvechecker and
-      set the umask to 002 or higher (such as 007).</P
->
-
-      <PRE
-CLASS="programlisting"
->~# <B
-CLASS="command"
->su <TT
-CLASS="replaceable"
-><I
->youruser</I
-></TT
-> -</B
->
-~$ <B
-CLASS="command"
->newgrp cvechecker</B
->
-~$ <B
-CLASS="command"
->umask 007</B
-></PRE
->
-
-      <P
->Now, initialize the databases by running <B
-CLASS="command"
->cvechecker
-      -i</B
->. This will create the sqlite3 databases or, if MySQL is
-      selected, create the appropriate tables and indexes in the selected
-      MySQL database (the tool does not create a MySQL database
-      itself).</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvechecker -i</B
-></PRE
->
-
-      <DIV
-CLASS="section"
-><HR><H4
-CLASS="section"
-><A
-NAME="AEN83"
->2.3.1. Configuration File</A
-></H4
->
-        
-
-        <P
->The cvechecker command uses a configuration file which it looks
-        for in the location pointed to by the
-        <CODE
-CLASS="varname"
->CVECHECKER_CONFFILE</CODE
-> variable or, if that variable
-        is not set, the users' home directory
-        (<TT
-CLASS="filename"
->${HOME}/.cvechecker.rc</TT
->),
-        <TT
-CLASS="filename"
->/usr/local/etc/cvechecker.conf</TT
-> or
-        <TT
-CLASS="filename"
->/etc/cvechecker.conf</TT
->, in that order. The first
-        configuration file that parses correctly is used, the rest is ignored
-        (so there is no accumulation of configurations). Below, you'll find an
-        example configuration file which shows both the sqlite3 and mysql
-        support:</P
->
-
-        <PRE
-CLASS="programlisting"
->#
+~$ sudo -i
+~# make install</code></pre>
+<p>If the <code>./configure</code> step fails (especially when using the live code rather than a specific release), first run the following command:</p>
+<pre><code>~$ autoreconf --force --install</code></pre>
+<p>Finally, create a group called cvechecker and change the permissions of the installed folders so that this group has write privileges inside the directory. These steps are performed when executing <code>make postinstall</code> (you almost definitely need root privileges now):</p>
+<pre><code>~# make postinstall</code></pre>
+<h2>Initial Configuration</h2>
+<p>With the software now installed, you need to perform an initial configuration. This includes the setup of the databases, creation of the user you are going to use to run cvechecker and initial pull of the CVE entries from the Internet.</p>
+<p>First, create a user that you will use to run cvechecker. The tool does not require root privileges, so I recommend not to use root. I personally use a dedicated user whose sole purpose is to, on a daily basis, pull the latest updates from the Internet, generate a report and mail that report to me. Make sure that this user is inside the cvechecker group:</p>
+<pre><code>~# gpasswd -a youruser cvechecker</code></pre>
+<p>Log on as that user, make sure his primary group is cvechecker and set the umask to 002 or higher (such as 007).</p>
+<pre><code>~# su youruser -
+~$ newgrp cvechecker
+~$ umask 007</code></pre>
+<p>Now, initialize the databases by running <code>cvechecker
+      -i</code>. This will create the sqlite3 databases or, if MySQL is selected, create the appropriate tables and indexes in the selected MySQL database (the tool does not create a MySQL database itself).</p>
+<pre><code>~$ cvechecker -i</code></pre>
+<h3>Configuration File</h3>
+<p>The cvechecker command uses a configuration file which it looks for in the location pointed to by the <code>CVECHECKER_CONFFILE</code> variable or, if that variable is not set, the users' home directory (<code>${HOME}/.cvechecker.rc</code>), <code>/usr/local/etc/cvechecker.conf</code> or <code>/etc/cvechecker.conf</code>, in that order. The first configuration file that parses correctly is used, the rest is ignored (so there is no accumulation of configurations). Below, you'll find an example configuration file which shows both the sqlite3 and mysql support:</p>
+<pre><code>#
 # Generic settings
 #
-dbtype = "mysql";
-#dbtype = "sqlite3";
-cvecache = "/var/lib/cvechecker/cache";
-datadir = "/usr/share/cvechecker";
-stringcmd = "/usr/bin/strings -n 3 '@file@'";
-version_url = "https://raw.github.com/sjvermeu/cvechecker/master/versions.dat";
-#userkey = "servertag";
+dbtype = &quot;mysql&quot;;
+#dbtype = &quot;sqlite3&quot;;
+cvecache = &quot;/var/lib/cvechecker/cache&quot;;
+datadir = &quot;/usr/share/cvechecker&quot;;
+stringcmd = &quot;/usr/bin/strings -n 3 &#39;@file@&#39;&quot;;
+version_url = &quot;https://raw.github.com/sjvermeu/cvechecker/master/versions.dat&quot;;
+#userkey = &quot;servertag&quot;;
 
 #
 # For SQLite3
 #
 sqlite3: {
-  localdb = "/var/lib/cvechecker/local";
-  globaldb = "/var/lib/cvechecker/global.db";
+  localdb = &quot;/var/lib/cvechecker/local&quot;;
+  globaldb = &quot;/var/lib/cvechecker/global.db&quot;;
 };
 
 #
 # For MySQL
 #
 mysql: {
-  dbname = "cvechecker";
-  dbuser = "cvechecker_rw";
-  dbpass = "passwordforcvechecker_rw";
-  dbhost = "mysql.company.com";
-};</PRE
->
-
-        <P
->Most of the parameters (like cvecache, datadir, version_url and
-        even localdb and globaldb) will most likely be set correctly already
-        during the installation. However, it doesn't hurt to validate if the
-        locations mentioned are correct and that the user that will be used to
-        run cvechecker has the rights to write (to) files in the
-        locations.</P
->
-      </DIV
->
-
-      <DIV
-CLASS="section"
-><HR><H4
-CLASS="section"
-><A
-NAME="AEN92"
->2.3.2. Initialize SQLite3 Database</A
-></H4
->
-        
-
-        <P
->If you opt to use the sqlite3 databases, you need to initialize
-        those by running <B
-CLASS="command"
->cvechecker -i</B
->. Because cvechecker
-        uses a lot of data, it will create various database files to spread
-        the data due to performance reasons. These locations are mentioned in
-        the configuration file.</P
->
-
-        <PRE
-CLASS="programlisting"
->~# <B
-CLASS="command"
->cvechecker -i</B
-></PRE
->
-
-        <P
->This is all that is needed to initialize the SQLite3
-        databases.</P
->
-      </DIV
->
-
-      <DIV
-CLASS="section"
-><HR><H4
-CLASS="section"
-><A
-NAME="AEN99"
->2.3.3. Initialize MySQL Database</A
-></H4
->
-        
-
-        <P
->If you opt to use the MySQL database, you first need to create
-        the database in your MySQL server. Installing and configuring a MySQL
-        server is beyond the scope of this document. Once a database is
-        created (say "cvechecker"), you can either initialize it through
-        <B
-CLASS="command"
->cvechecker -i</B
-> (if the user you connect to the
-        database to has sufficient privileges to drop and create tables and
-        indexes) or use the dump file
-        <TT
-CLASS="filename"
->mysql_cvechecker.sql</TT
-> available in
-        /usr/share/cvechecker/.</P
->
-
-        <PRE
-CLASS="programlisting"
->~# <B
-CLASS="command"
->cvechecker -i</B
-></PRE
->
-
-        <P
->It is strongly advised that the user you
-        <SPAN
-CLASS="emphasis"
-><I
-CLASS="emphasis"
->use</I
-></SPAN
-> has limited rights. Only the initialization
-        requires additional rights. When you are using cvechecker, it is
-        recommended that two roles are used:</P
->
-
-        <P
-></P
-><UL
-><LI
->&#13;            <P
->A cvechecker administrative role that has the rights to load
-            new CVE and CPE data as well as version matching rules</P
->
-          </LI
-><LI
->&#13;            <P
->A cvechecker operational role that has the rights to insert
-            the matching data and read the CVE and version matching
-            rules</P
->
-          </LI
-></UL
->
-
-        <P
->We will talk about these roles later in this document.</P
->
-      </DIV
->
-
-      <DIV
-CLASS="section"
-><HR><H4
-CLASS="section"
-><A
-NAME="AEN114"
->2.3.4. Load CVE and version matching rules</A
-></H4
->
-        
-
-        <P
->Our last step is to load the upstream data in the
-        databases.</P
->
-
-        <P
->The upstream data consists out of</P
->
-
-        <P
-></P
-><UL
-><LI
->&#13;            <P
->CVE information (CVE identifiers together with the software
-            they are referring to) which is going to be pulled from
-            nvd.nist.gov, and</P
->
-          </LI
-><LI
->&#13;            <P
->version matching rules (regular expressions and other
-            information needed to deduce the correct software and version
-            given an application file or binary) which is going to be pulled
-            from the cvechecker source code repository</P
->
-          </LI
-></UL
->
-
-        <P
->These steps are automated in a tool called
-        <B
-CLASS="command"
->pullcves</B
->. This will take a very long time, so
-        please be patient (loading over half a million CVE entries in a
-        database is a time consuming - but one-time - activity). Future pulls
-        will not take this much time as they will not redownload the CVE
-        entries from all previous years (unless you ask it to).</P
->
-
-        <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->pullcves pull</B
-></PRE
->
-      </DIV
->
-    </DIV
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN127"
->2.4. Upgrades</A
-></H3
->
-      
-
-      <P
->cvechecker tries to detect if its back-end was created with an
-      earlier version of cvechecker and update the back-end accordingly. For
-      sqlite3 databases, this usually isn't a problem as the tool has the
-      rights to add tables and indexes when needed.</P
->
-
-      <P
->However, when using MySQL databases, it is very likely that the
-      user you use is not authorized to update the back-end. To fix this,
-      first run cvechecker on the administrative host (where a more privileged
-      MySQL account can be used). It will update the back-ends for all users
-      as well. When new(er) versions are made available, we will also add the
-      necessary upgrade SQL scripts to launch so that you do not have to run
-      cvechecker with a database owner account.</P
->
-    </DIV
->
-  </DIV
->
-
-  <DIV
-CLASS="section"
-><HR><H2
-CLASS="section"
-><A
-NAME="AEN131"
->3. Regular Runs</A
-></H2
->
-    
-
-    <P
->Whenever you want to perform a regular cvechecker run, you should
-    schedule five steps. If you use sqlite as the database backend, all steps
-    are to be scheduled on the same system. If you use MySQL however, it is
-    recommended to schedule the administrative tasks on a single system (the
-    "master" that is responsible for keeping the upstream data up-to-date) and
-    the operational tasks on all systems where you want to run cvechecker on
-    (and gather reports from).</P
->
-
-    <P
->The administrative tasks are:</P
->
-
-    <P
-></P
-><OL
-TYPE="1"
-><LI
->&#13;        <P
->pull in the latest CVE entries as well as software/version
-        detection rules</P
->
-      </LI
-></OL
->
-
-    <P
->The operational tasks are:</P
->
-
-    <P
-></P
-><OL
-TYPE="1"
-><LI
->&#13;        <P
->generate a list of files to scan</P
->
-      </LI
-><LI
->&#13;        <P
->gather installed software/version information</P
->
-      </LI
-><LI
->&#13;        <P
->output which CVE entries might affect your system</P
->
-      </LI
-><LI
->&#13;        <P
->generate a report informing you about the CVE entries</P
->
-      </LI
-></OL
->
-
-    <P
->All these steps should be performed by the user you use to run
-    cvechecker, so don't forget:</P
->
-
-    <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->newgrp cvechecker</B
->
-~$ <B
-CLASS="command"
->umask 007</B
-></PRE
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN152"
->3.1. Pull Data</A
-></H3
->
-      
-
-      <P
->To pull the necessary data from the Internet, run
-      <B
-CLASS="command"
->pullcves pull</B
->:</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->pullcves pull</B
-></PRE
->
-    </DIV
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN158"
->3.2. Generate List of Files</A
-></H3
->
-      
-
-      <P
->cvechecker uses a text file which sums up the files to scan. I
-      recommend that you provide it with a list of all executables files plus
-      /proc/version (on Linux). The latter allows cvechecker to verify if
-      there are kernel-related CVE entries for your Linux kernel.</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->find / -type f -perm -o+x &#62; scanlist.txt</B
->
-~$ <B
-CLASS="command"
->echo "/proc/version" &#62;&#62; scanlist.txt</B
-></PRE
->
-
-      <P
->It is strongly advised to either umount or exclude file systems on
-      which no useful files are located (or that belong to different operating
-      systems, like a mounted Windows partition). You can use the
-      <CODE
-CLASS="parameter"
->-mount</CODE
-> (or <CODE
-CLASS="parameter"
->-xdev</CODE
->) option
-      of <B
-CLASS="command"
->find</B
-> to stay within the selected device
-      (partition), or exclude directories (and their subdirectories), like
-      so:</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->find / -path /mnt -prune -o -path /media -prune -o -type f -perm -o+x &#62; scanlist.txt</B
-> </PRE
->
-    </DIV
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN170"
->3.3. Gather List of Installed Software/Versions</A
-></H3
->
-      
-
-      <P
->Import the generated scanlist.txt file in cvechecker. During the
-      import, cvechecker will output the software/versions it detected:</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvechecker -b scanlist.txt</B
-></PRE
->
-
-      <DIV
-CLASS="section"
-><HR><H4
-CLASS="section"
-><A
-NAME="AEN175"
->3.3.1. Integrating with a package manager</A
-></H4
->
-        
-
-        <P
->You can integrate cvechecker with your package manager, telling
-        cvechecker to only add (or remove) files part of an installed (or
-        uninstalled) package rather than having to feed a full file system
-        listing. To do so, tell your package manager to call
-        <B
-CLASS="command"
->cvechecker -d -b &#60;file&#62;</B
-> after each succesfull
-        installation, or <B
-CLASS="command"
->cvechecker -D -b &#60;file&#62;</B
->
-        before a desinstallation. The -d option tells cvechecker to add the
-        file content to the database (rather than replace) whereas -D tells
-        cvechecker to delete those entries in the database that are also in
-        the file.</P
->
-
-        <P
->A simple example for Gentoo would be to create a script
-        (/etc/portage/bashrc) which calls other scripts based on the ebuild
-        phase, such as
-        <TT
-CLASS="filename"
->/etc/portage/bashrc.d/package.postinst</TT
-> or
-        <TT
-CLASS="filename"
->/etc/portage/bashrc.d/package.prerm</TT
->. These
-        scripts can then call <B
-CLASS="command"
->qlist</B
-> to create a file
-        containing the package file content which is then passed on to
-        <B
-CLASS="command"
->cvechecker</B
->.</P
->
-
-        <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cat /etc/portage/bashrc</B
->
-if [ -x "/etc/portage/bashrc.d/package.${EBUILD_PHASE}" ];
+  dbname = &quot;cvechecker&quot;;
+  dbuser = &quot;cvechecker_rw&quot;;
+  dbpass = &quot;passwordforcvechecker_rw&quot;;
+  dbhost = &quot;mysql.company.com&quot;;
+};</code></pre>
+<p>Most of the parameters (like cvecache, datadir, version_url and even localdb and globaldb) will most likely be set correctly already during the installation. However, it doesn't hurt to validate if the locations mentioned are correct and that the user that will be used to run cvechecker has the rights to write (to) files in the locations.</p>
+<h3>Initialize SQLite3 Database</h3>
+<p>If you opt to use the sqlite3 databases, you need to initialize those by running <code>cvechecker -i</code>. Because cvechecker uses a lot of data, it will create various database files to spread the data due to performance reasons. These locations are mentioned in the configuration file.</p>
+<pre><code>~# cvechecker -i</code></pre>
+<p>This is all that is needed to initialize the SQLite3 databases.</p>
+<h3>Initialize MySQL Database</h3>
+<p>If you opt to use the MySQL database, you first need to create the database in your MySQL server. Installing and configuring a MySQL server is beyond the scope of this document. Once a database is created (say &quot;cvechecker&quot;), you can either initialize it through <code>cvechecker -i</code> (if the user you connect to the database to has sufficient privileges to drop and create tables and indexes) or use the dump file <code>mysql_cvechecker.sql</code> available in /usr/share/cvechecker/.</p>
+<pre><code>~# cvechecker -i</code></pre>
+<p>It is strongly advised that the user you <em>use</em> has limited rights. Only the initialization requires additional rights. When you are using cvechecker, it is recommended that two roles are used:</p>
+<ul>
+<li><p>A cvechecker administrative role that has the rights to load new CVE and CPE data as well as version matching rules</p></li>
+<li><p>A cvechecker operational role that has the rights to insert the matching data and read the CVE and version matching rules</p></li>
+</ul>
+<p>We will talk about these roles later in this document.</p>
+<h3>Load CVE and version matching rules</h3>
+<p>Our last step is to load the upstream data in the databases.</p>
+<p>The upstream data consists out of</p>
+<ul>
+<li><p>CVE information (CVE identifiers together with the software they are referring to) which is going to be pulled from nvd.nist.gov, and</p></li>
+<li><p>version matching rules (regular expressions and other information needed to deduce the correct software and version given an application file or binary) which is going to be pulled from the cvechecker source code repository</p></li>
+</ul>
+<p>These steps are automated in a tool called <code>pullcves</code>. This will take a very long time, so please be patient (loading over half a million CVE entries in a database is a time consuming - but one-time - activity). Future pulls will not take this much time as they will not redownload the CVE entries from all previous years (unless you ask it to).</p>
+<pre><code>~$ pullcves pull</code></pre>
+<h2>Upgrades</h2>
+<p>cvechecker tries to detect if its back-end was created with an earlier version of cvechecker and update the back-end accordingly. For sqlite3 databases, this usually isn't a problem as the tool has the rights to add tables and indexes when needed.</p>
+<p>However, when using MySQL databases, it is very likely that the user you use is not authorized to update the back-end. To fix this, first run cvechecker on the administrative host (where a more privileged MySQL account can be used). It will update the back-ends for all users as well. When new(er) versions are made available, we will also add the necessary upgrade SQL scripts to launch so that you do not have to run cvechecker with a database owner account.</p>
+<h1>Regular Runs</h1>
+<p>Whenever you want to perform a regular cvechecker run, you should schedule five steps. If you use sqlite as the database backend, all steps are to be scheduled on the same system. If you use MySQL however, it is recommended to schedule the administrative tasks on a single system (the &quot;master&quot; that is responsible for keeping the upstream data up-to-date) and the operational tasks on all systems where you want to run cvechecker on (and gather reports from).</p>
+<p>The administrative tasks are:</p>
+<ol style="list-style-type: decimal">
+<li><p>pull in the latest CVE entries as well as software/version detection rules</p></li>
+</ol>
+<p>The operational tasks are:</p>
+<ol style="list-style-type: decimal">
+<li><p>generate a list of files to scan</p></li>
+<li><p>gather installed software/version information</p></li>
+<li><p>output which CVE entries might affect your system</p></li>
+<li><p>generate a report informing you about the CVE entries</p></li>
+</ol>
+<p>All these steps should be performed by the user you use to run cvechecker, so don't forget:</p>
+<pre><code>~$ newgrp cvechecker
+~$ umask 007</code></pre>
+<h2>Pull Data</h2>
+<p>To pull the necessary data from the Internet, run <code>pullcves pull</code>:</p>
+<pre><code>~$ pullcves pull</code></pre>
+<h2>Generate List of Files</h2>
+<p>cvechecker uses a text file which sums up the files to scan. I recommend that you provide it with a list of all executables files plus /proc/version (on Linux). The latter allows cvechecker to verify if there are kernel-related CVE entries for your Linux kernel.</p>
+<pre><code>~$ find / -type f -perm -o+x &gt; scanlist.txt
+~$ echo &quot;/proc/version&quot; &gt;&gt; scanlist.txt</code></pre>
+<p>It is strongly advised to either umount or exclude file systems on which no useful files are located (or that belong to different operating systems, like a mounted Windows partition). You can use the <code>-mount</code> (or <code>-xdev</code>) option of <code>find</code> to stay within the selected device (partition), or exclude directories (and their subdirectories), like so:</p>
+<pre><code>~$ find / -path /mnt -prune -o -path /media -prune -o -type f -perm -o+x &gt; scanlist.txt </code></pre>
+<h2>Gather List of Installed Software/Versions</h2>
+<p>Import the generated scanlist.txt file in cvechecker. During the import, cvechecker will output the software/versions it detected:</p>
+<pre><code>~$ cvechecker -b scanlist.txt</code></pre>
+<h3>Integrating with a package manager</h3>
+<p>You can integrate cvechecker with your package manager, telling cvechecker to only add (or remove) files part of an installed (or uninstalled) package rather than having to feed a full file system listing. To do so, tell your package manager to call <code>cvechecker -d -b &lt;file&gt;</code> after each succesfull installation, or <code>cvechecker -D -b &lt;file&gt;</code> before a desinstallation. The -d option tells cvechecker to add the file content to the database (rather than replace) whereas -D tells cvechecker to delete those entries in the database that are also in the file.</p>
+<p>A simple example for Gentoo would be to create a script (/etc/portage/bashrc) which calls other scripts based on the ebuild phase, such as <code>/etc/portage/bashrc.d/package.postinst</code> or <code>/etc/portage/bashrc.d/package.prerm</code>. These scripts can then call <code>qlist</code> to create a file containing the package file content which is then passed on to <code>cvechecker</code>.</p>
+<pre><code>~$ cat /etc/portage/bashrc
+if [ -x &quot;/etc/portage/bashrc.d/package.${EBUILD_PHASE}&quot; ];
 then
-  source "/etc/portage/bashrc.d/package.${EBUILD_PHASE}"
+  source &quot;/etc/portage/bashrc.d/package.${EBUILD_PHASE}&quot;
 fi
 
-~$ <B
-CLASS="command"
->cat /etc/portage/bashrc.d/package.prerm</B
->
+~$ cat /etc/portage/bashrc.d/package.prerm
 TMPFILE=$(mktemp);
-[ ! -f "${TMPFILE}" ] &#38;&#38; die "Cannot create temporary file.";
-qlist ${CATEGORY}/${P} &#62; "${TMPFILE}";
-cvechecker -D -b "${TMPFILE}";
-rm "${TMPFILE}";</PRE
->
-      </DIV
->
-
-      <DIV
-CLASS="section"
-><HR><H4
-CLASS="section"
-><A
-NAME="AEN188"
->3.3.2. Adding through standard input</A
-></H4
->
-        
-
-        <P
->The cvechecker command will also accept standard input for the
-        --binlist (-b) option when the minus sign is used:</P
->
-
-        <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->find /usr/bin -type f | cvechecker -b -</B
->
+[ ! -f &quot;${TMPFILE}&quot; ] &amp;&amp; die &quot;Cannot create temporary file.&quot;;
+qlist ${CATEGORY}/${P} &gt; &quot;${TMPFILE}&quot;;
+cvechecker -D -b &quot;${TMPFILE}&quot;;
+rm &quot;${TMPFILE}&quot;;</code></pre>
+<h3>Adding through standard input</h3>
+<p>The cvechecker command will also accept standard input for the --binlist (-b) option when the minus sign is used:</p>
+<pre><code>~$ find /usr/bin -type f | cvechecker -b -
 Searching for known software titles...
- - Found match for /proc/version:    cpe:/o:linux:linux_kernel:3.10.5-hardened:::</PRE
->
-      </DIV
->
-    </DIV
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN193"
->3.4. Output Matching CVE Entries</A
-></H3
->
-      
-
-      <P
->Make cvechecker output the matching CVE entries. A standard output
-      might look like this:</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvechecker -r</B
->
-File "/usr/bin/kbxutil" (CPE = cpe:/a:gnupg:gnupg:2.0.15:::) on host localhost (key localhost)
+ - Found match for /proc/version:    cpe:/o:linux:linux_kernel:3.10.5-hardened:::</code></pre>
+<h2>Output Matching CVE Entries</h2>
+<p>Make cvechecker output the matching CVE entries. A standard output might look like this:</p>
+<pre><code>~$ cvechecker -r
+File &quot;/usr/bin/kbxutil&quot; (CPE = cpe:/a:gnupg:gnupg:2.0.15:::) on host localhost (key localhost)
   Potential vulnerability found (CVE-2010-2547)
   Full vulnerability match (incl. edition/language)
-File "/usr/bin/gpgsm" (CPE = cpe:/a:gnupg:gnupg:2.0.15:::) on host localhost (key localhost)
+File &quot;/usr/bin/gpgsm&quot; (CPE = cpe:/a:gnupg:gnupg:2.0.15:::) on host localhost (key localhost)
   Potential vulnerability found (CVE-2010-2547)
   Full vulnerability match (incl. edition/language)
-File "/usr/bin/watchgnupg" (CPE = cpe:/a:gnupg:gnupg:2.0.15:::) on host localhost (key localhost)
+File &quot;/usr/bin/watchgnupg&quot; (CPE = cpe:/a:gnupg:gnupg:2.0.15:::) on host localhost (key localhost)
   Potential vulnerability found (CVE-2010-2547)
-  Full vulnerability match (incl. edition/language)</PRE
->
-
-      <P
->However, if you would like to parse the output so that you can
-      generate a better-looking report, ask cvechecker to use CSV
-      output:</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvechecker -r -C</B
->
+  Full vulnerability match (incl. edition/language)</code></pre>
+<p>However, if you would like to parse the output so that you can generate a better-looking report, ask cvechecker to use CSV output:</p>
+<pre><code>~$ cvechecker -r -C
 Outputversion,File,CPE,CVE,Matchtype,Hostname,Userkey
 2,/usr/bin/kbxutil,cpe:/a:gnupg:gnupg:2.0.15:::,CVE-2010-2547,1,localhost,localhost
 2,/usr/bin/gpgsm,cpe:/a:gnupg:gnupg:2.0.15:::,CVE-2010-2547,1,localhost,localhost
-2,/usr/bin/watchgnupg,cpe:/a:gnupg:gnupg:2.0.15:::,CVE-2010-2547,1,localhost,localhost</PRE
->
-
-      <P
->The default behavior of <B
-CLASS="command"
->cvechecker</B
-> is to only
-      report on those CVEs who specifically target the software and version
-      you have installed. However, you might want to be informed about
-      software matches for CVEs that affect <SPAN
-CLASS="emphasis"
-><I
-CLASS="emphasis"
->higher</I
-></SPAN
->
-      versions than the versions installed on your system. Not all CVEs
-      contain a full list of all versions affected but rather mention only the
-      highest version vulnerable. The default reporting within
-      <B
-CLASS="command"
->cvechecker</B
-> wouldn't be triggered when this is the
-      case, but if you add <B
-CLASS="command"
->-H</B
-> or
-      <B
-CLASS="command"
->--reporthigher</B
->, <B
-CLASS="command"
->cvechecker</B
-> will
-      also report on higher versions.</P
->
-    </DIV
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN208"
->3.5. (Optional) Generate A Report</A
-></H3
->
-      
-
-      <P
->You can use the cvechecker output to generate a report. Within the
-      cvechecker distribution, sample reporting files are available that show
-      you a simple method. Of course, reporting is not part of this tools'
-      goals; the primary purpose of this step is to show you that the output
-      can indeed be used for reporting purposes. To facilitate (simple)
-      reporting, a cvereport script has been provided which uses the sample
-      reports currently. In the future, this will be enhanced with
-      distribution-specific checks.</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvereport -d /home/john/cvereport-20100902/ /home/john/cvechecker/acknowledgements.xml</B
-></PRE
->
-
-      <P
->The default report will use the default
-      <B
-CLASS="command"
->cvechecker</B
-> report. If you want to report using higher
-      version matches as well, use <B
-CLASS="command"
->-D</B
-> instead of
-      <B
-CLASS="command"
->-d</B
->.</P
->
-
-      <P
->Below is a sample acknowledgements XML file. Its use should be
-      self-explanatory:</P
->
-
-      <PRE
-CLASS="programlisting"
->&#60;?xml version="1.0" encoding="UTF-8"?&#62;
-&#60;acknowledgements&#62;
-  &#60;!-- I chose to use the CVE number as id for the resolution/comment text, but this is not mandatory --&#62;
-  &#60;resolution id="CVE-2008-4101"&#62;Has been solved by security update #17 (vim-1.7-b3)&#60;/resolution&#62;
-  &#60;comment id="CVE-2010-2547"&#62;Under investigation, bug opened on distributions bug site (#332329)&#60;/comment&#62;
-  &#60;!-- The @comment or @resolution should refer to one of the above descriptions. 
-         Its use however is optional (you don't need to give comments) --&#62;
-  &#60;file name="/usr/bin/kbxutil" cve="CVE-2010-2547" state="acknowledged" comment="CVE-2010-2547" /&#62;
-  &#60;file name="/usr/bin/vim" cve="CVE-2008-4101" state="irrelevant" resolution="CVE-2008-4101" /&#62;
-&#60;/acknowledgements&#62;</PRE
->
-
-      <P
->The final document (report.html) can then be mailed, published or
-      in any other way sent to you.</P
->
-
-      <P
->If the report shows new CVE entries matching your system,
-      investigate those CVE entries by first acknowledging and, if necessary,
-      either update the software on your system or mark the entry as
-      irrelevant.</P
->
-    </DIV
->
-  </DIV
->
-
-  <DIV
-CLASS="section"
-><HR><H2
-CLASS="section"
-><A
-NAME="AEN221"
->4. Detected Software</A
-></H2
->
-    
-
-    <P
->The tool also supports listing the detected software/version on your
-    system. This allows you to verify if the tool can detect the software you
-    want to track CVE reports of.</P
->
-
-    <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvechecker -s</B
->
-Detected vendor="wpa_supplicant", product="wpa_supplicant", version="0.6.10", update="", edition="", language="" on host="localhost", userkey="localhost"
-...</PRE
->
-
-    <P
->You can also request the list of files that were used by cvechecker
-    to identify the software:</P
->
-
-    <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvechecker -S</B
->
-Detected vendor="wpa_supplicant", product="wpa_supplicant", version="0.6.10", update="", edition="", language="" on host="localhost", userkey="localhost"
+2,/usr/bin/watchgnupg,cpe:/a:gnupg:gnupg:2.0.15:::,CVE-2010-2547,1,localhost,localhost</code></pre>
+<p>The default behavior of <code>cvechecker</code> is to only report on those CVEs who specifically target the software and version you have installed. However, you might want to be informed about software matches for CVEs that affect <em>higher</em> versions than the versions installed on your system. Not all CVEs contain a full list of all versions affected but rather mention only the highest version vulnerable. The default reporting within <code>cvechecker</code> wouldn't be triggered when this is the case, but if you add <code>-H</code> or <code>--reporthigher</code>, <code>cvechecker</code> will also report on higher versions.</p>
+<h2>(Optional) Generate A Report</h2>
+<p>You can use the cvechecker output to generate a report. Within the cvechecker distribution, sample reporting files are available that show you a simple method. Of course, reporting is not part of this tools' goals; the primary purpose of this step is to show you that the output can indeed be used for reporting purposes. To facilitate (simple) reporting, a cvereport script has been provided which uses the sample reports currently. In the future, this will be enhanced with distribution-specific checks.</p>
+<pre><code>~$ cvereport -d /home/john/cvereport-20100902/ /home/john/cvechecker/acknowledgements.xml</code></pre>
+<p>The default report will use the default <code>cvechecker</code> report. If you want to report using higher version matches as well, use <code>-D</code> instead of <code>-d</code>.</p>
+<p>Below is a sample acknowledgements XML file. Its use should be self-explanatory:</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;acknowledgements&gt;
+  &lt;!-- I chose to use the CVE number as id for the resolution/comment text, but this is not mandatory --&gt;
+  &lt;resolution id=&quot;CVE-2008-4101&quot;&gt;Has been solved by security update #17 (vim-1.7-b3)&lt;/resolution&gt;
+  &lt;comment id=&quot;CVE-2010-2547&quot;&gt;Under investigation, bug opened on distributions bug site (#332329)&lt;/comment&gt;
+  &lt;!-- The @comment or @resolution should refer to one of the above descriptions. 
+         Its use however is optional (you don&#39;t need to give comments) --&gt;
+  &lt;file name=&quot;/usr/bin/kbxutil&quot; cve=&quot;CVE-2010-2547&quot; state=&quot;acknowledged&quot; comment=&quot;CVE-2010-2547&quot; /&gt;
+  &lt;file name=&quot;/usr/bin/vim&quot; cve=&quot;CVE-2008-4101&quot; state=&quot;irrelevant&quot; resolution=&quot;CVE-2008-4101&quot; /&gt;
+&lt;/acknowledgements&gt;</code></pre>
+<p>The final document (report.html) can then be mailed, published or in any other way sent to you.</p>
+<p>If the report shows new CVE entries matching your system, investigate those CVE entries by first acknowledging and, if necessary, either update the software on your system or mark the entry as irrelevant.</p>
+<h1>Detected Software</h1>
+<p>The tool also supports listing the detected software/version on your system. This allows you to verify if the tool can detect the software you want to track CVE reports of.</p>
+<pre><code>~$ cvechecker -s
+Detected vendor=&quot;wpa_supplicant&quot;, product=&quot;wpa_supplicant&quot;, version=&quot;0.6.10&quot;, update=&quot;&quot;, edition=&quot;&quot;, language=&quot;&quot; on host=&quot;localhost&quot;, userkey=&quot;localhost&quot;
+...</code></pre>
+<p>You can also request the list of files that were used by cvechecker to identify the software:</p>
+<pre><code>~$ cvechecker -S
+Detected vendor=&quot;wpa_supplicant&quot;, product=&quot;wpa_supplicant&quot;, version=&quot;0.6.10&quot;, update=&quot;&quot;, edition=&quot;&quot;, language=&quot;&quot; on host=&quot;localhost&quot;, userkey=&quot;localhost&quot;
 Files that contributed to this detection:
   - /usr/sbin/wpa_supplicant
-  - /usr/bin/wpa_cli</PRE
->
-
-    <P
->These options also support the -C switch (to enable CSV-like output
-    for easier parsing);</P
->
-
-    <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvechecker -S -C</B
->
+  - /usr/bin/wpa_cli</code></pre>
+<p>These options also support the -C switch (to enable CSV-like output for easier parsing);</p>
+<pre><code>~$ cvechecker -S -C
 Outputversion,Vendor,Product,Version,Update,Edition,Language,Hostname,Userkey,Files
-2,wpa_supplicant,wpa_supplicant,0.6.10,,,,localhost,localhost,/usr/sbin/wpa_supplicant /usr/bin/wpa_cli </PRE
->
-  </DIV
->
-
-  <DIV
-CLASS="section"
-><HR><H2
-CLASS="section"
-><A
-NAME="AEN232"
->5. Watch Lists</A
-></H2
->
-    
-
-    <P
->With cvechecker, you can also "pretend" to have particular software
-    (or hardware or operating systems) installed on your system. By feeding
-    this so-called watchlist to cvechecker, it will add these titles to the
-    database and assume they are also installed on the system.</P
->
-
-    <P
->It is recommended to use the watch lists simultaneously with the
-    binary file listing. If you use it separately, don't forget to use the
-    delta options. Otherwise, all detected software versions will be cleared
-    from the database.</P
->
-
-    <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvechecker -b binlist.txt -w watchlist.txt</B
->
-~$ <B
-CLASS="command"
->cvechecker -w watchlist.txt --deltaonly</B
-></PRE
->
-  </DIV
->
-
-  <DIV
-CLASS="section"
-><HR><H2
-CLASS="section"
-><A
-NAME="AEN239"
->6. Configuring cvechecker</A
-></H2
->
-    
-
-    <P
->The cvechecker tool uses a configuration file to find out where to
-    store its intermediate and final data (such as downloaded XML files, CSV
-    files, database files).</P
->
-
-    <P
->The tool first looks for the configuration file pointed towards by
-    the CVECHECKER_CONFFILE variable. If that environment variable doesn't
-    exist, then .cvechecker.rc inside the users' home directory is looked for.
-    If it can't find it, it will look for /usr/local/etc/cvechecker.conf and,
-    if that file doesn't exist either, /etc/cvechecker.conf.</P
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN243"
->6.1. Configuration File Format</A
-></H3
->
-      
-
-      <P
->The cvechecker configuration file currently requires 6
-      configuration items:</P
->
-
-      <PRE
-CLASS="programlisting"
->#
+2,wpa_supplicant,wpa_supplicant,0.6.10,,,,localhost,localhost,/usr/sbin/wpa_supplicant /usr/bin/wpa_cli </code></pre>
+<h1>Watch Lists</h1>
+<p>With cvechecker, you can also &quot;pretend&quot; to have particular software (or hardware or operating systems) installed on your system. By feeding this so-called watchlist to cvechecker, it will add these titles to the database and assume they are also installed on the system.</p>
+<p>An example watchlist is given next. Right now, the cvechecker application requires at least 8 fields so a number of trailing field separators might be needed. The example shows a watchlist for two applications:</p>
+<pre><code>~$ cat watchlist.txt
+cpe:/a:dropbear_ssh_project:dropbear_ssh:2016.74:::
+cpe:/a:libexpat:expat:2.2.0:::</code></pre>
+<p>It is recommended to use the watch lists simultaneously with the binary file listing. If you use it separately, don't forget to use the delta options. Otherwise, all detected software versions will be cleared from the database.</p>
+<pre><code>~$ cvechecker -b binlist.txt -w watchlist.txt
+~$ cvechecker -w watchlist.txt --deltaonly</code></pre>
+<h1>Configuring cvechecker</h1>
+<p>The cvechecker tool uses a configuration file to find out where to store its intermediate and final data (such as downloaded XML files, CSV files, database files).</p>
+<p>The tool first looks for the configuration file pointed towards by the CVECHECKER_CONFFILE variable. If that environment variable doesn't exist, then .cvechecker.rc inside the users' home directory is looked for. If it can't find it, it will look for /usr/local/etc/cvechecker.conf and, if that file doesn't exist either, /etc/cvechecker.conf.</p>
+<h2>Configuration File Format</h2>
+<p>The cvechecker configuration file currently requires 6 configuration items:</p>
+<pre><code>#
 # Generic settings
 #
-dbtype = "mysql";
-#dbtype = "sqlite3";
-cvecache = "/var/lib/cvechecker/cache";
-datadir = "/usr/share/cvechecker";
-stringcmd = "/usr/bin/strings -n 3 '@file@'";
-version_url = "https://raw.github.com/sjvermeu/cvechecker/master/versions.dat";
-#userkey = "servertag";
+dbtype = &quot;mysql&quot;;
+#dbtype = &quot;sqlite3&quot;;
+cvecache = &quot;/var/lib/cvechecker/cache&quot;;
+datadir = &quot;/usr/share/cvechecker&quot;;
+stringcmd = &quot;/usr/bin/strings -n 3 &#39;@file@&#39;&quot;;
+version_url = &quot;https://raw.github.com/sjvermeu/cvechecker/master/versions.dat&quot;;
+#userkey = &quot;servertag&quot;;
 
 #
 # For SQLite3
 #
 sqlite3: {
-  localdb = "/var/lib/cvechecker/local";
-  globaldb = "/var/lib/cvechecker/global.db";
+  localdb = &quot;/var/lib/cvechecker/local&quot;;
+  globaldb = &quot;/var/lib/cvechecker/global.db&quot;;
 }
 
 #
 # For MySQL
 #
 mysql: {
-  dbname = "cvechecker";
-  dbuser = "cvechecker_rw";
-  dbpass = "passwordforcvechecker_rw";
-  dbhost = "mysql.company.com";
-};</PRE
->
-
-      <P
->These items describe the following resources:</P
->
-
-      <P
-></P
-><UL
-><LI
->&#13;          <P
->dbtype tells the cvechecker application which back-end to use.
-          Currently, "sqlite", "sqlite3" and "mysql" are supported (sqlite and
-          sqlite3 result in the same back-end)</P
->
-        </LI
-><LI
->&#13;          <P
->cvecache is a (cvechecker writeable) directory where pullcves
-          will download all XML files and store the transformed XML2CSV files
-          (containing the CVE entry data). Although it is not used anymore
-          after being imported into the local databases, pullcves relies on
-          the availability of the XML files to find out if it needs to
-          (re)download and import CVE entries. So if you want to clean out the
-          directory, make (empty) files named after the XML files so that
-          pullcves does not redownload and reimport the CVE entry data (not
-          that this will render the application unusable, but it takes a
-          while)</P
->
-        </LI
-><LI
->&#13;          <P
->datadir is a directory where cvechecker-related files are
-          stored, including the XSLT transformation files used to convert CVE
-          XML files in CSV files as well as the sample reporting files as used
-          in this document</P
->
-        </LI
-><LI
->&#13;          <P
->stringcmd is the command that cvechecker launches against a
-          file to get the files' content. Currently, this is the only
-          supported method for cvechecker to identify the
-          software/version.</P
->
-        </LI
-><LI
->&#13;          <P
->version_url is the location where pullcves can find the latest
-          software/version matching rules to identify installed software on
-          the system.</P
->
-        </LI
-><LI
->&#13;          <P
->userkey is an optional setting which is used for server-side
-          RDBMS support. When set, the data is stored with this particular key
-          (next to the systems' hostname) as owner. This allows for multiple
-          cvechecker runs on the same system (hostname + userkey) with
-          different usages, but also to map cvechecker runs in larger
-          organizations with that systems server tag/serial number/asset
-          tag.</P
->
-
-          <P
->If not set, userkey is set to the hostname of the system (so
-          data is owned by "hostname + hostname").</P
->
-        </LI
-><LI
->&#13;          <P
->sqlite3: combines all sqlite specific settings, which
-          are:</P
->
-
-          <P
-></P
-><UL
-><LI
->&#13;              <P
->localdb is a (cvechecker writeable) directory where
-              cvechecker will store its sqlite3 databases containing the CPE
-              data (identification information of software/versions) as well
-              as the local systems' matching file/software pairs and all
-              downloaded CVE entries</P
->
-            </LI
-><LI
->&#13;              <P
->globaldb is a (cvechecker writeable) sqlite3 database
-              containing the software/version matching rules and CPEs
-              associated with these rules</P
->
-            </LI
-></UL
->
-        </LI
-><LI
->&#13;          <P
->mysql: combines all mysql specific settings, which are:</P
->
-
-          <P
-></P
-><UL
-><LI
->&#13;              <P
->dbname is the name of the cvechecker database</P
->
-            </LI
-><LI
->&#13;              <P
->dbuser is the user that cvechecker uses to connect to the
-              database</P
->
-            </LI
-><LI
->&#13;              <P
->dbpass is the password that cvechecker uses to connect to
-              the database and authenticate itself</P
->
-            </LI
-><LI
->&#13;              <P
->dbhost is the hostname where the database resides</P
->
-            </LI
-></UL
->
-        </LI
-></UL
->
-
-      <DIV
-CLASS="warning"
-><P
-></P
-><TABLE
-CLASS="warning"
-WIDTH="100%"
-BORDER="0"
-><TR
-><TD
-WIDTH="25"
-ALIGN="CENTER"
-VALIGN="TOP"
-><IMG
-SRC="../images/warning.gif"
-HSPACE="5"
-ALT="Warning"></TD
-><TD
-ALIGN="LEFT"
-VALIGN="TOP"
->&#13;        <P
->If you need to change parameters, make sure that the file
-        containing the changed values contains all configuration directives
-        (and not just the changed one). cvechecker does not "fall back" to
-        other configuration files if a parameter is missing.</P
->
-      </TD
-></TR
-></TABLE
-></DIV
->
-    </DIV
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN282"
->6.2. MySQL Database Usage</A
-></H3
->
-      
-
-      <P
->When you use cvechecker with MySQL, then the following sections
-      might be of use to you...</P
->
-
-      <DIV
-CLASS="section"
-><HR><H4
-CLASS="section"
-><A
-NAME="AEN285"
->6.2.1. User Roles</A
-></H4
->
-        
-
-        <P
->When using MySQL database(s), it is recommended to use two
-        separate roles:</P
->
-
-        <P
-></P
-><UL
-><LI
->&#13;            <P
->The cvechecker administrative role should have the rights to
-            SELECT, INSERT, UPDATE and DELETE data from tb_versionmatch,
-            tb_cve, tb_cpe, tb_cpe_versions, tb_cpe_parents, tb_binmatch and
-            tb_systems</P
->
-          </LI
-><LI
->&#13;            <P
->The cvechecker operational role should have the rights
-            to</P
->
-
-            <P
-></P
-><UL
-><LI
->&#13;                <P
->SELECT, INSERT, UPDATE and DELETE data from
-                tb_binmatch</P
->
-              </LI
-><LI
->&#13;                <P
->SELECT and INSERT data into tb_cpe, tb_cpe_versions and
-                tb_cpe_parents</P
->
-              </LI
-><LI
->&#13;                <P
->SELECT data from tb_cve and tb_binmatch</P
->
-              </LI
-></UL
->
-
-            <P
->If the database supports row-level security, you can
-            configure the operational role on tb_binmatch with the additional
-            security setting of "WHERE HOSTNAME='hostname' AND
-            USERDEFKEY='userdefkey'" where hostname and userdefkey are the
-            clients' hostname and userdefined key (userkey) setting (which
-            defaults to the hostname again if no userkey is set).</P
->
-          </LI
-></UL
->
-
-        <P
->A third role "could" be created (which allows cvechecker to
-        (re)initialize its databases using <B
-CLASS="command"
->cvechecker -i</B
->)
-        but this should only be activated during the (re)initialization and
-        locked again when the change is finished.</P
->
-      </DIV
->
-
-      <DIV
-CLASS="section"
-><HR><H4
-CLASS="section"
-><A
-NAME="AEN303"
->6.2.2. InnoDB or MyISAM?</A
-></H4
->
-        
-
-        <P
->The cvechecker tool currently uses InnoDB tables. The main
-        (only) reason for this is that the tool uses foreign key definitions
-        to keep referential integrity within the database. However, untrained
-        administrators might find InnoDB a lot slower to work with than
-        MyISAM. It is perfectly possible to use MyISAM tables instead of
-        InnoDB (cvechecker does not use the cascading delete functionality
-        within foreign key definitions):</P
->
-
-        <P
-></P
-><OL
-TYPE="1"
-><LI
->&#13;            <P
->Change the mysql_cvechecker.sql file by removing all
-            references to FOREIGN KEY ... statements as well as
-            ENGINE=InnoDB.</P
->
-          </LI
-><LI
->&#13;            <P
->Load the (changed) SQL file in the MySQL database</P
->
-          </LI
-><LI
->&#13;            <P
->Do <SPAN
-CLASS="emphasis"
-><I
-CLASS="emphasis"
->not</I
-></SPAN
-> use cvechecker -i (as that runs
-            hardcoded SQL statements which will transition to InnoDB
-            again).</P
->
-          </LI
-></OL
->
-
-        <P
->If you want to convert when data is already present, the easiest
-        method in my opinion is to dump the information to a .sql file, change
-        the .sql file and load it back in. However, other methods exist as
-        well - which ones I leave as an excercise in Internet search engines
-        for those interested ;-)</P
->
-      </DIV
->
-    </DIV
->
-  </DIV
->
-
-  <DIV
-CLASS="section"
-><HR><H2
-CLASS="section"
-><A
-NAME="AEN315"
->7. Software Matching Rules</A
-></H2
->
-    
-
-    <P
->The software matching rules, as identified inside the versions.dat
-    file, is pulled in and imported in the cvechecker database by
-    pullcves.</P
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN318"
->7.1. Syntax</A
-></H3
->
-      
-
-      <P
->The syntax of the versions.dat file is as follows:</P
->
-
-      <PRE
-CLASS="programlisting"
->,[filestart],1,[fileexpression],[contentexpression],[ao],[vendor],[product],[version],[update],[edition],[language]</PRE
->
-
-      <P
->The first comma is also used to inform cvechecker about the used
-      column separator. If by any chance a field requires a comma as content,
-      another separator can be chosen - just start the line with the chosen
-      separator character.</P
->
-
-      <P
->The other fields have the following description:</P
->
-
-      <P
-></P
-><UL
-><LI
->&#13;          <P
->filestart is a substring used by cvechecker to quickly find
-          possible matches. A filename that starts with filestart will be
-          considered for further evaluation.</P
->
-        </LI
-><LI
->&#13;          <P
->1 is used to inform cvechecker about the used version matching
-          methodology. Currently only 1 is supported and means that it uses
-          the strings command output.</P
->
-        </LI
-><LI
->&#13;          <P
->fileexpression is a regular expression used by cvechecker to
-          find out if the file really needs to be scanned. Usually, the
-          expression is just the filename, but for some binaries (like
-          perl5.8.8) or libraries (like libconfig.so.1.2.8) having a matching
-          regular expression allows cvechecker to identify these files as
-          being part of a supported match-rule</P
->
-        </LI
-><LI
->&#13;          <P
->contentexpression is a regular expression used against the
-          strings command output to find (and obtain) the version, update,
-          edition and language of the software. It uses regular expression
-          groups to obtain the necessary information</P
->
-        </LI
-><LI
->&#13;          <P
->'a' or 'o' tells cvechecker if the detected software is an
-          application (a) or operating system (o)</P
->
-        </LI
-><LI
->&#13;          <P
->vendor tells cvechecker what the vendor is of the file</P
->
-        </LI
-><LI
->&#13;          <P
->product tells cvechecker what the product is to which the file
-          belongs</P
->
-        </LI
-><LI
->&#13;          <P
->version tells cvechecker what the detected version is of the
-          product</P
->
-        </LI
-><LI
->&#13;          <P
->update, if applicable, tells cvechecker the specific update of
-          the software</P
->
-        </LI
-><LI
->&#13;          <P
->edition, if applicable, tells cvechecker the specific edition
-          of the software</P
->
-        </LI
-><LI
->&#13;          <P
->language, if applicable, tells cvechecker the specific
-          language of the software</P
->
-        </LI
-></UL
->
-
-      <P
->The parts starting from the [ao] field are also known as the CPE
-      or Common Platform Enumeration. See <FONT
-COLOR="RED"
->http://cpe.mitre.org</FONT
-> for more
-      information.</P
->
-
-      <P
->Some example lines are:</P
->
-
-      <PRE
-CLASS="programlisting"
->,gzip,1,gzip,^([0-9]\.[0-9][0-9]*),a,gnu,gzip,\1,,,
+  dbname = &quot;cvechecker&quot;;
+  dbuser = &quot;cvechecker_rw&quot;;
+  dbpass = &quot;passwordforcvechecker_rw&quot;;
+  dbhost = &quot;mysql.company.com&quot;;
+};</code></pre>
+<p>These items describe the following resources:</p>
+<ul>
+<li><p>dbtype tells the cvechecker application which back-end to use. Currently, &quot;sqlite&quot;, &quot;sqlite3&quot; and &quot;mysql&quot; are supported (sqlite and sqlite3 result in the same back-end)</p></li>
+<li><p>cvecache is a (cvechecker writeable) directory where pullcves will download all XML files and store the transformed XML2CSV files (containing the CVE entry data). Although it is not used anymore after being imported into the local databases, pullcves relies on the availability of the XML files to find out if it needs to (re)download and import CVE entries. So if you want to clean out the directory, make (empty) files named after the XML files so that pullcves does not redownload and reimport the CVE entry data (not that this will render the application unusable, but it takes a while)</p></li>
+<li><p>datadir is a directory where cvechecker-related files are stored, including the XSLT transformation files used to convert CVE XML files in CSV files as well as the sample reporting files as used in this document</p></li>
+<li><p>stringcmd is the command that cvechecker launches against a file to get the files' content. Currently, this is the only supported method for cvechecker to identify the software/version.</p></li>
+<li><p>version_url is the location where pullcves can find the latest software/version matching rules to identify installed software on the system.</p></li>
+<li><p>userkey is an optional setting which is used for server-side RDBMS support. When set, the data is stored with this particular key (next to the systems' hostname) as owner. This allows for multiple cvechecker runs on the same system (hostname + userkey) with different usages, but also to map cvechecker runs in larger organizations with that systems server tag/serial number/asset tag.</p>
+<p>If not set, userkey is set to the hostname of the system (so data is owned by &quot;hostname + hostname&quot;).</p></li>
+<li><p>sqlite3: combines all sqlite specific settings, which are:</p>
+<ul>
+<li><p>localdb is a (cvechecker writeable) directory where cvechecker will store its sqlite3 databases containing the CPE data (identification information of software/versions) as well as the local systems' matching file/software pairs and all downloaded CVE entries</p></li>
+<li><p>globaldb is a (cvechecker writeable) sqlite3 database containing the software/version matching rules and CPEs associated with these rules</p></li>
+</ul></li>
+<li><p>mysql: combines all mysql specific settings, which are:</p>
+<ul>
+<li><p>dbname is the name of the cvechecker database</p></li>
+<li><p>dbuser is the user that cvechecker uses to connect to the database</p></li>
+<li><p>dbpass is the password that cvechecker uses to connect to the database and authenticate itself</p></li>
+<li><p>dbhost is the hostname where the database resides</p></li>
+</ul></li>
+</ul>
+<blockquote>
+<p><strong>Warning</strong></p>
+<p>If you need to change parameters, make sure that the file containing the changed values contains all configuration directives (and not just the changed one). cvechecker does not &quot;fall back&quot; to other configuration files if a parameter is missing.</p>
+</blockquote>
+<h2>MySQL Database Usage</h2>
+<p>When you use cvechecker with MySQL, then the following sections might be of use to you...</p>
+<h3>User Roles</h3>
+<p>When using MySQL database(s), it is recommended to use two separate roles:</p>
+<ul>
+<li><p>The cvechecker administrative role should have the rights to SELECT, INSERT, UPDATE and DELETE data from tb_versionmatch, tb_cve, tb_cpe, tb_cpe_versions, tb_cpe_parents, tb_binmatch and tb_systems</p></li>
+<li><p>The cvechecker operational role should have the rights to</p>
+<ul>
+<li><p>SELECT, INSERT, UPDATE and DELETE data from tb_binmatch</p></li>
+<li><p>SELECT and INSERT data into tb_cpe, tb_cpe_versions and tb_cpe_parents</p></li>
+<li><p>SELECT data from tb_cve and tb_binmatch</p></li>
+</ul>
+<p>If the database supports row-level security, you can configure the operational role on tb_binmatch with the additional security setting of &quot;WHERE HOSTNAME='hostname' AND USERDEFKEY='userdefkey'&quot; where hostname and userdefkey are the clients' hostname and userdefined key (userkey) setting (which defaults to the hostname again if no userkey is set).</p></li>
+</ul>
+<p>A third role &quot;could&quot; be created (which allows cvechecker to (re)initialize its databases using <code>cvechecker -i</code>) but this should only be activated during the (re)initialization and locked again when the change is finished.</p>
+<h3>InnoDB or MyISAM?</h3>
+<p>The cvechecker tool currently uses InnoDB tables. The main (only) reason for this is that the tool uses foreign key definitions to keep referential integrity within the database. However, untrained administrators might find InnoDB a lot slower to work with than MyISAM. It is perfectly possible to use MyISAM tables instead of InnoDB (cvechecker does not use the cascading delete functionality within foreign key definitions):</p>
+<ol style="list-style-type: decimal">
+<li><p>Change the mysql_cvechecker.sql file by removing all references to FOREIGN KEY ... statements as well as ENGINE=InnoDB.</p></li>
+<li><p>Load the (changed) SQL file in the MySQL database</p></li>
+<li><p>Do <em>not</em> use cvechecker -i (as that runs hardcoded SQL statements which will transition to InnoDB again).</p></li>
+</ol>
+<p>If you want to convert when data is already present, the easiest method in my opinion is to dump the information to a .sql file, change the .sql file and load it back in. However, other methods exist as well - which ones I leave as an excercise in Internet search engines for those interested ;-)</p>
+<h1>Software Matching Rules</h1>
+<p>The software matching rules, as identified inside the versions.dat file, is pulled in and imported in the cvechecker database by pullcves.</p>
+<h2>Syntax</h2>
+<p>The syntax of the versions.dat file is as follows:</p>
+<pre><code>,[filestart],1,[fileexpression],[contentexpression],[ao],[vendor],[product],[version],[update],[edition],[language]</code></pre>
+<p>The first comma is also used to inform cvechecker about the used column separator. If by any chance a field requires a comma as content, another separator can be chosen - just start the line with the chosen separator character.</p>
+<p>The other fields have the following description:</p>
+<ul>
+<li><p>filestart is a substring used by cvechecker to quickly find possible matches. A filename that starts with filestart will be considered for further evaluation.</p></li>
+<li><p>1 is used to inform cvechecker about the used version matching methodology. Currently only 1 is supported and means that it uses the strings command output.</p></li>
+<li><p>fileexpression is a regular expression used by cvechecker to find out if the file really needs to be scanned. Usually, the expression is just the filename, but for some binaries (like perl5.8.8) or libraries (like libconfig.so.1.2.8) having a matching regular expression allows cvechecker to identify these files as being part of a supported match-rule</p></li>
+<li><p>contentexpression is a regular expression used against the strings command output to find (and obtain) the version, update, edition and language of the software. It uses regular expression groups to obtain the necessary information</p></li>
+<li><p>'a' or 'o' tells cvechecker if the detected software is an application (a) or operating system (o)</p></li>
+<li><p>vendor tells cvechecker what the vendor is of the file</p></li>
+<li><p>product tells cvechecker what the product is to which the file belongs</p></li>
+<li><p>version tells cvechecker what the detected version is of the product</p></li>
+<li><p>update, if applicable, tells cvechecker the specific update of the software</p></li>
+<li><p>edition, if applicable, tells cvechecker the specific edition of the software</p></li>
+<li><p>language, if applicable, tells cvechecker the specific language of the software</p></li>
+</ul>
+<p>The parts starting from the [ao] field are also known as the CPE or Common Platform Enumeration. See <a href="#">http://cpe.mitre.org</a> for more information.</p>
+<p>Some example lines are:</p>
+<pre><code>,gzip,1,gzip,^([0-9]\.[0-9][0-9]*),a,gnu,gzip,\1,,,
 ,vim,1,vim,VIM - Vi IMproved ([0-9\.]+) ,a,vim,vim,\1,,,
-,ncftp,1,ncftp,^.*NcFTP ([0-9\.]+)/([0-9]+) .*,a,ncftp_software,ncftp,\1,\2,,</PRE
->
-    </DIV
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN351"
->7.2. Validating 'versions.dat'</A
-></H3
->
-      
-
-      <P
->To validate the matching rules, you can ask cvechecker to tell you
-      if, and what CPE data it detects from a specific file:</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvechecker -f /usr/bin/vim</B
->
-  - Found match for /urs/bin/vim:    cpe:/a:vim:vim:7.2:::</PRE
->
-
-      <P
->In the above case, it detected for the /usr/bin/vim file vim
-      (product) from vim (vendor) versino 7.2. It was not able to deduce any
-      specific releases/edition/language (but that is not mandatory
-      anyway).</P
->
-
-      <P
->If you want to add additional rules, make sure that the dat-file
-      you will be importing contains the previous rules as well - cvechecker
-      will drop all previous rules while importing new ones.</P
->
-
-      <PRE
-CLASS="programlisting"
->~$ <B
-CLASS="command"
->cvechecker -l /usr/local/var/cvechecker/cache/versions.dat</B
->
-Loading in new version data file...</PRE
->
-    </DIV
->
-
-    <DIV
-CLASS="section"
-><HR><H3
-CLASS="section"
-><A
-NAME="AEN360"
->7.3. Helping with version rules management</A
-></H3
->
-      
-
-      <P
->The version matching rules are at the core of the
-      <B
-CLASS="command"
->cvechecker</B
-> tool. Without them, the tool is not able
-      to detect much of anything on your system. To allow you to contribute to
-      the version matching rules, the project also contains a tool called
-      <B
-CLASS="command"
->cverules</B
->.</P
->
-
-      <P
->The <B
-CLASS="command"
->cverules</B
-> command, which currently only
-      supports Gentoo systems but should be easily portable towards other
-      distributions or even platforms, will attempt to generate version
-      matching rules for cvechecker that are currently not part of the project
-      but which should give additional matches on your system.</P
->
-
-      <P
->For instance, if cvechecker currently doesn't know how to detect
-      OpenLDAP versions, but you have OpenLDAP on your system, then
-      <B
-CLASS="command"
->cverules</B
-> might be able to deduce a (generic put
-      working) expression for the version matching rules which will allow
-      cvechecker to identify OpenLDAP. If you then send the output of the
-      <B
-CLASS="command"
->cverules</B
-> to the cvechecker project, then these
-      additional rules will be added to the version matching rules so that
-      your next <B
-CLASS="command"
->pullcves pull</B
-> will pull in these additional
-      rules.</P
->
-    </DIV
->
-  </DIV
->
-</DIV
-></BODY
-></HTML
->
+,ncftp,1,ncftp,^.*NcFTP ([0-9\.]+)/([0-9]+) .*,a,ncftp_software,ncftp,\1,\2,,</code></pre>
+<h2>Validating 'versions.dat'</h2>
+<p>To validate the matching rules, you can ask cvechecker to tell you if, and what CPE data it detects from a specific file:</p>
+<pre><code>~$ cvechecker -f /usr/bin/vim
+  - Found match for /urs/bin/vim:    cpe:/a:vim:vim:7.2:::</code></pre>
+<p>In the above case, it detected for the /usr/bin/vim file vim (product) from vim (vendor) versino 7.2. It was not able to deduce any specific releases/edition/language (but that is not mandatory anyway).</p>
+<p>If you want to add additional rules, make sure that the dat-file you will be importing contains the previous rules as well - cvechecker will drop all previous rules while importing new ones.</p>
+<pre><code>~$ cvechecker -l /usr/local/var/cvechecker/cache/versions.dat
+Loading in new version data file...</code></pre>
+<h2>Helping with version rules management</h2>
+<p>The version matching rules are at the core of the <code>cvechecker</code> tool. Without them, the tool is not able to detect much of anything on your system. To allow you to contribute to the version matching rules, the project also contains a tool called <code>cverules</code>.</p>
+<p>The <code>cverules</code> command, which currently only supports Gentoo systems but should be easily portable towards other distributions or even platforms, will attempt to generate version matching rules for cvechecker that are currently not part of the project but which should give additional matches on your system.</p>
+<p>For instance, if cvechecker currently doesn't know how to detect OpenLDAP versions, but you have OpenLDAP on your system, then <code>cverules</code> might be able to deduce a (generic put working) expression for the version matching rules which will allow cvechecker to identify OpenLDAP. If you then send the output of the <code>cverules</code> to the cvechecker project, then these additional rules will be added to the version matching rules so that your next <code>pullcves pull</code> will pull in these additional rules.</p>
+</body>
+</html>

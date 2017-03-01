@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <article version="5.0" xmlns="http://docbook.org/ns/docbook"
-         xmlns:xlink="http://www.w3.org/1999/xlink"
-         xmlns:xi="http://www.w3.org/2001/XInclude"
-         xmlns:svg="http://www.w3.org/2000/svg"
-         xmlns:m="http://www.w3.org/1998/Math/MathML"
-         xmlns:html="http://www.w3.org/1999/xhtml"
-         xmlns:db="http://docbook.org/ns/docbook">
+	 xml:lang="en">
   <info>
     <title>CVE Checker User Guide</title>
 
@@ -15,7 +10,7 @@
       <email>sven.vermeulen@siphos.be</email>
     </author>
 
-    <pubdate>2015/08/01</pubdate>
+    <pubdate>2017/03/01</pubdate>
   </info>
 
   <section>
@@ -93,10 +88,10 @@
       manually (and should reflect the steps that the distribution package
       management system does for you).</para>
 
-      <para>First, download the latest cvechecker package from <uri
-      xlink:href="http://cvechecker.sourceforge.net">http://cvechecker.sourceforge.net</uri>
-      (or <uri
-      xlink:href="http://sourceforge.net/projects/cvechecker/files/">http://sourceforge.net/projects/cvechecker/files/</uri>),
+      <para>First, download the latest cvechecker package from <link
+      xl:href="http://cvechecker.sourceforge.net">http://cvechecker.sourceforge.net</link>
+      (or <link
+      xl:href="http://sourceforge.net/projects/cvechecker/files/">http://sourceforge.net/projects/cvechecker/files/</link>),
       then extract it into a temporary directory:</para>
 
       <programlisting>~$ <command>tar xvzf cvechecker-1.O.tar.gz</command></programlisting>
@@ -581,6 +576,14 @@ Outputversion,Vendor,Product,Version,Update,Edition,Language,Hostname,Userkey,Fi
     this so-called watchlist to cvechecker, it will add these titles to the
     database and assume they are also installed on the system.</para>
 
+    <para>An example watchlist is given next. Right now, the cvechecker application
+    requires at least 8 fields so a number of trailing field separators might be needed.
+    The example shows a watchlist for two applications:</para>
+
+    <programlisting>~$ <command>cat watchlist.txt</command>
+cpe:/a:dropbear_ssh_project:dropbear_ssh:2016.74:::
+cpe:/a:libexpat:expat:2.2.0:::</programlisting>
+
     <para>It is recommended to use the watch lists simultaneously with the
     binary file listing. If you use it separately, don't forget to use the
     delta options. Otherwise, all detected software versions will be cleared
@@ -926,8 +929,8 @@ mysql: {
       </itemizedlist>
 
       <para>The parts starting from the [ao] field are also known as the CPE
-      or Common Platform Enumeration. See <uri
-      xlink:href="http://cpe.mitre.org">http://cpe.mitre.org</uri> for more
+      or Common Platform Enumeration. See <link
+      xl:href="http://cpe.mitre.org">http://cpe.mitre.org</link> for more
       information.</para>
 
       <para>Some example lines are:</para>
