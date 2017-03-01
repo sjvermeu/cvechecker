@@ -5,3 +5,10 @@ Copy into a temporary directory, then:
 
   ~$ ./configure
   ~$ make distcheck
+
+How to update documentation
+===========================
+
+Userguide:
+
+  ~$ pandoc -f docbook -t html --toc -s userguide.xml -o userguide.html
