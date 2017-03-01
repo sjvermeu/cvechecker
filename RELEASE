@@ -1,0 +1,7 @@
+How to create a release
+=======================
+
+Copy into a temporary directory, then:
+
+  ~$ ./configure
+  ~$ make distcheck
