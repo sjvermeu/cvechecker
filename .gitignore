@@ -9,3 +9,5 @@ aclocal.m4
 config.*
 compile
 configure
+src/.vimrc
+src/tags
