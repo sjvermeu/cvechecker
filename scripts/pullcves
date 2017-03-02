@@ -93,19 +93,19 @@ then
   printf "ok (downloaded)\n";
   test -f nvdcve-2.0-Modified.xml.1 && mv nvdcve-2.0-Modified.xml.1 nvdcve-2.0-Modified.xml;
   printf "Converting nvdcve-2.0-Modified.xml to CSV... ";
-  if [ -f ${CVECACHE}/nvdcve-2.0-modified.csv ];
+  if [ -f ${CVECACHE}/nvdcve-2.0-Modified.csv ];
   then
-    mv ${CVECACHE}/nvdcve-2.0-modified.csv ${CVECACHE}/nvdcve-2.0-modified.csv.old;
+    mv ${CVECACHE}/nvdcve-2.0-Modified.csv ${CVECACHE}/nvdcve-2.0-Modified.csv.old;
   else
-    touch ${CVECACHE}/nvdcve-2.0-modified.csv.old;
+    touch ${CVECACHE}/nvdcve-2.0-Modified.csv.old;
   fi
-  xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-Modified.xml > ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted;
+  xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-Modified.xml > ${CVECACHE}/nvdcve-2.0-Modified.csv.unsorted;
   printf "ok\nGathering differences with last pull... ";
-  sort ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted > ${CVECACHE}/nvdcve-2.0-modified.csv;
-  rm ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted;
-  diff ${CVECACHE}/nvdcve-2.0-modified.csv.old ${CVECACHE}/nvdcve-2.0-modified.csv | grep '^> ' | sed -e 's:^> ::g' > ${CVECACHE}/nvdcve-2.0-modified.delta;
-  printf "ok\nLoading in nvdcve-2.0-modified.csv differences in cvechecker.\n";
-  cvechecker -c ${CVECACHE}/nvdcve-2.0-modified.delta || die "Could not import nvdcve-2.0-modified.delta";
+  sort ${CVECACHE}/nvdcve-2.0-Modified.csv.unsorted > ${CVECACHE}/nvdcve-2.0-Modified.csv;
+  rm ${CVECACHE}/nvdcve-2.0-Modified.csv.unsorted;
+  diff ${CVECACHE}/nvdcve-2.0-Modified.csv.old ${CVECACHE}/nvdcve-2.0-Modified.csv | grep '^> ' | sed -e 's:^> ::g' > ${CVECACHE}/nvdcve-2.0-Modified.delta;
+  printf "ok\nLoading in nvdcve-2.0-Modified.csv differences in cvechecker.\n";
+  cvechecker -c ${CVECACHE}/nvdcve-2.0-Modified.delta || die "Could not import nvdcve-2.0-Modified.delta";
   DLCVE=1;
 else
   printf "ok (not downloaded, same file)\n";
