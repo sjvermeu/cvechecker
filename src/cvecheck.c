@@ -1311,7 +1311,6 @@ int load_cve(struct workstate * ws) {
 	int linenum  = 1;
 	struct arguments * arg = ws->arg;
 	char field[BUFFERSIZE];
-	int pos = 0;
 	int fieldCounter = 0;
 	char tmpCpeId[3];
 	char tmpCpeVendor[FIELDSIZE];
