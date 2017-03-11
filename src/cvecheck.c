@@ -1041,7 +1041,7 @@ int process_binfile(char * line, struct workstate * ws) {
 	};
 
 
-	return 0;
+	return rc;
 };
 
 /**
@@ -1243,10 +1243,12 @@ int get_installed_software(struct workstate * ws) {
 		if (line[l_line-1] == 0x0A)
 			line[l_line-1] = '\0';
 		if (ws->arg->deletedeltaonly) {
-			delete_binfile(line, ws);
+			rc = delete_binfile(line, ws);
 		} else {
-			process_binfile(line, ws);
+			rc = process_binfile(line, ws);
 		};
+		if (rc)
+			return rc;
 		zero_string(line, FILENAMESIZE);
 		linenum++;
 	};
@@ -1359,7 +1361,7 @@ int load_cve(struct workstate * ws) {
 		bufferptr = buffer;
 
 		// Split based on ':' character
-		while (sscanf(bufferptr, "[^:]%s", field, &pos) == 1) {
+		while (sscanf(bufferptr, "[^:]%s", field) == 1) {
 			if (fieldCounter == 0) {
 				// Should be "CVE-####-####+" (CVE identifier)
 				char sCVE[BUFFERSIZE];
