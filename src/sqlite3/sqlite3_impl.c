@@ -673,14 +673,14 @@ int sqlite_dbimpl_add_cpe_to_database(struct workstate * ws, struct cpe_data cpe
 };
 
 int file_already_processed(struct workstate * ws) {
-         int rc = 0;
+        int countResult = 0;
         char stmt[SQLLINESIZE];
 
         sprintf(stmt, "select count(*) from tb_binmatch where basedir = \"%s\" and filename = \"%s\";", ws->currentdir, ws->currentfile);
 
-        rc = get_int_value(ws->localdb[0], stmt, ws);
+        countResult = get_int_value(ws->localdb[0], stmt, ws);
 
-        if (ws->rc != 0) {
+        if (countResult != 0) {
                 return 1;
         };
 
