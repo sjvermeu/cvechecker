@@ -1338,7 +1338,6 @@ int load_cve(struct workstate * ws) {
 	zero_string(buffer, BUFFERSIZE);
 	// buffer will contain a single line from the CSV file
 	while (fgets(buffer, sizeof(buffer), cvelist) != 0) {
-		int cvelength = 0;
 		zero_string(tmpCpeId, 3);
 		zero_string(tmpCpeVendor, FIELDSIZE);
 		zero_string(tmpCpeProduct, FIELDSIZE);
