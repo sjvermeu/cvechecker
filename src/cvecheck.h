@@ -85,7 +85,7 @@ int match_binary(char * file, struct workstate * ws);
 int process_binfile(char * line, struct workstate * ws);
 
 // delete_binfile - Delete the binary file from the database
-void delete_binfile(char * line, struct workstate * ws);
+int delete_binfile(char * line, struct workstate * ws);
 
 // clear_versiondatabase - Purse the local database
 int clear_versiondatabase(struct workstate * ws);
