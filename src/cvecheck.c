@@ -1,6 +1,6 @@
 #include "cvecheck.h"
 /*
- * Copyright 2010 Sven Vermeulen.
+ * Copyright 2010-2017 Sven Vermeulen.
  * Subject to the GNU Public License, version 3.
  */
  
@@ -16,8 +16,8 @@ void cpe_to_string(char * buffer, int buffsize, struct cpe_data cpe) {
 
 	zero_string(buffer, buffsize);
 
-	rc = snprintf(buffer, buffsize-1, "cpe:/%c:%s:%s:%s:%s:%s:%s", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
-	if ((rc == 0) || (rc == buffsize-1)) {
+	rc = snprintf(buffer, buffsize, "cpe:/%c:%s:%s:%s:%s:%s:%s", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+	if ((rc == 0) || (rc == buffsize)) {
 		/* 
 		 * No bytes written, or buffer full -> doesn't seem right.  Return null
 		 */
