@@ -941,7 +941,7 @@ int delete_cpe(char * line, struct workstate * ws) {
 /**
  * Delete the given binary file from the database
  */
-void delete_binfile(char * line, struct workstate * ws) {
+int delete_binfile(char * line, struct workstate * ws) {
 	char * basedir;
 	char * filename;
 	char * slashpos;
@@ -952,7 +952,7 @@ void delete_binfile(char * line, struct workstate * ws) {
 
 	if ((basedir == NULL) || (filename == NULL)) {
 		fprintf(stderr, "Failed to allocate memory\n");
-		exit(EXIT_FAILURE);
+		return 1;
 	};
 
 	slashpos = strrchr(line, '/');
@@ -960,7 +960,7 @@ void delete_binfile(char * line, struct workstate * ws) {
 		fprintf(stderr, "Failed to find basedir for file %s\n", line);
 		free(basedir);
 		free(filename);
-		exit(EXIT_FAILURE);
+		return 2;
 	}
 
 	fieldwidth = swstrlen(line) - swstrlen(slashpos);
@@ -980,6 +980,8 @@ void delete_binfile(char * line, struct workstate * ws) {
 
 	free(basedir);
 	free(filename);
+
+	return 0;
 };
 
 /**
