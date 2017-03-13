@@ -1338,7 +1338,7 @@ int load_cve(struct workstate * ws) {
 
 	zero_string(buffer, BUFFERSIZE);
 	// buffer will contain a single line from the CSV file
-	while (fgets(buffer, sizeof(buffer), cvelist) != 0) {
+	while (fgets(buffer, BUFFERSIZE, cvelist) != 0) {
 		zero_string(tmpCpeId, 3);
 		zero_string(tmpCpeVendor, FIELDSIZE);
 		zero_string(tmpCpeProduct, FIELDSIZE);
@@ -1358,27 +1358,54 @@ int load_cve(struct workstate * ws) {
 			linenum++;
 		};
 
+		// Reset trailing newline (if available)
+		if ((bufferptr = strchr(buffer, '\n')) != NULL)
+			*bufferptr = '\0';
+
 		bufferptr = buffer;
 		fieldCounter = 0;
 
 		// Split based on ':' character
 		while (sscanf(bufferptr, "%[^:]s", field) == 1) {
+			int fieldLength = swstrlen(field);	// Capture field length up front as strtok_r modifies the string
+
 			if (fieldCounter == 0) {
 				// Should be "CVE-####-####+" (CVE identifier)
-				char sCVE[BUFFERSIZE];
+				char * sCVE;
+				char * token;
+				char * substring;
 				unsigned int iYear;
 				unsigned int iID;
-				if (sscanf(field, "%s-%u-%u", sCVE, &iYear, &iID) != 3) {
-					// Not all three fields were correctly assigned
-					fprintf(stderr, " ! Error while reading in CVE entries: CVE field in line %d did not match expected format\n", linenum);
-					return 6;
-				}
-				if (swstrlen(field) >= CVELINESIZE) {
-					// Length of this field is beyond the size that we expect
-					fprintf(stderr, " ! Error while reading in CVE entries: CVE field length in line %d is larger than expected\n", linenum);
-					return 7;
-				}
-				strncpy(cveId, field, CVELINESIZE);
+
+				// Tokenize based on - delimiter.
+				// Token 1 = CVE (literal)
+				sCVE = strtok_r(field, "-", &token);
+				if (sCVE == NULL) {
+					// NULL obtained
+					fprintf(stderr, " ! Error while reading in CVE entries: CVE field in line %d failed to obtain CVE string\n", linenum);
+					return 1;
+				};
+
+				// Token 2 = CVE year (integer)
+				substring = strtok_r(NULL, "-", &token);
+				if (substring == NULL) {
+					// NULL obtained
+					fprintf(stderr, " ! Error while reading in CVE entries: CVE year in line %d failed to be parsed\n", linenum);
+					return 1;
+				};
+				iYear = atoi(substring);				
+
+				// Token 3 = CVE sequence (integer)
+				substring = strtok_r(NULL, "-", &token);
+				if (substring == NULL) {
+					// NULL obtained
+					fprintf(stderr, " ! Error while reading in CVE entries: CVE sequence in line %d failed to be parsed\n", linenum);
+					return 1;
+				};
+				iID = atoi(substring);
+
+				// Rewrite the string (now we know for sure it is correct format)
+				snprintf(cveId, CVELINESIZE, "CVE-%d-%d", iYear, iID);
 
 			} else if (fieldCounter == 1) {
 				// Should be [0-9]+.[0-9]+ (score)
@@ -1387,7 +1414,7 @@ int load_cve(struct workstate * ws) {
 				if (sscanf(field, "%u.%u", &iPre, &iPost) != 2) {
 					// Not both fields were correctly assigned
 					fprintf(stderr, " ! Error while reading in CVE entries: CVSS score in line %d did not match expected format\n", linenum);
-					return 2;
+					return 1;
 				}
 				snprintf(cvssNum, 6, "%u.%u", iPre, iPost);
 
@@ -1395,7 +1422,7 @@ int load_cve(struct workstate * ws) {
 				// Should be "cpe"
 				if (strncmp(field, "cpe", 3) != 0) {
 					fprintf(stderr, " ! Error while reading in CVE entries: expected 'cpe' string did not occur in line %d\n", linenum);
-					return 3;
+					return 1;
 				}
 			} else if (fieldCounter == 3) {
 				// Should be "/a", "/o" or "/h" (app, operating system or hardware)
@@ -1404,7 +1431,7 @@ int load_cve(struct workstate * ws) {
 					(strncmp(field, "/o", 2) != 0) &&
 					(strncmp(field, "/h", 2) != 0) ) {
 					fprintf(stderr, " ! Error while reading in CVE entries: CPE type in line %d is not one of a/o/h\n", linenum);
-					return 4;
+					return 1;
 				}
 				snprintf(tmpCpeId, 3, "%s", field);
 
@@ -1414,8 +1441,9 @@ int load_cve(struct workstate * ws) {
 				while(field[ptr] != 0) {
 					if (! isgraph(field[ptr]) ) {
 						fprintf(stderr, " ! Error while reading in CVE entries: information in the CPE of line %d is not readable\n", linenum);
-						return 5;
+						return 1;
 					}
+					ptr++;
 				}
 				if (fieldCounter == 4)
 					snprintf(tmpCpeVendor, FIELDSIZE, "%s", field);
@@ -1432,7 +1460,7 @@ int load_cve(struct workstate * ws) {
 
 			}
 
-			bufferptr = bufferptr + swstrlen(field) + 1;
+			bufferptr = bufferptr + fieldLength + 1;
 			++fieldCounter;
 		}
 
