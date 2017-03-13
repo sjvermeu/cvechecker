@@ -1359,6 +1359,7 @@ int load_cve(struct workstate * ws) {
 		};
 
 		bufferptr = buffer;
+		fieldCounter = 0;
 
 		// Split based on ':' character
 		while (sscanf(bufferptr, "%[^:]s", field) == 1) {
