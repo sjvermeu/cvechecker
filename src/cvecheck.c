@@ -1569,7 +1569,11 @@ int main(int argc, char ** argv) {
 
 	// Administrative task
 	if (arguments.loadcve)
-		load_cve(&workstate);
+		rc = load_cve(&workstate);
+	
+	if (rc)
+		exit(EXIT_FAILURE);
+
 	// Operational task
 	if (arguments.hassinglefile)
 		match_binary(arguments.singlefile, &workstate);
