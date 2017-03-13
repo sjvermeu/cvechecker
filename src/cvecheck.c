@@ -1361,7 +1361,7 @@ int load_cve(struct workstate * ws) {
 		bufferptr = buffer;
 
 		// Split based on ':' character
-		while (sscanf(bufferptr, "[^:]%s", field) == 1) {
+		while (sscanf(bufferptr, "%[^:]s", field) == 1) {
 			if (fieldCounter == 0) {
 				// Should be "CVE-####-####+" (CVE identifier)
 				char sCVE[BUFFERSIZE];
