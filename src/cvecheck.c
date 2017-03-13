@@ -1370,11 +1370,13 @@ int load_cve(struct workstate * ws) {
 				unsigned int iID;
 				if (sscanf(field, "%s-%u-%u", sCVE, &iYear, &iID) != 3) {
 					// Not all three fields were correctly assigned
-					return 1;
+					fprintf(stderr, " ! Error while reading in CVE entries: CVE field in line %d did not match expected format\n", linenum);
+					return 6;
 				}
 				if (swstrlen(field) >= CVELINESIZE) {
 					// Length of this field is beyond the size that we expect
-					return 1;
+					fprintf(stderr, " ! Error while reading in CVE entries: CVE field length in line %d is larger than expected\n", linenum);
+					return 7;
 				}
 				strncpy(cveId, field, CVELINESIZE);
 
@@ -1384,6 +1386,7 @@ int load_cve(struct workstate * ws) {
 				unsigned int iPost;
 				if (sscanf(field, "%u.%u", &iPre, &iPost) != 2) {
 					// Not both fields were correctly assigned
+					fprintf(stderr, " ! Error while reading in CVE entries: CVSS score in line %d did not match expected format\n", linenum);
 					return 2;
 				}
 				snprintf(cvssNum, 6, "%u.%u", iPre, iPost);
@@ -1391,6 +1394,7 @@ int load_cve(struct workstate * ws) {
 			} else if (fieldCounter == 2) {
 				// Should be "cpe"
 				if (strncmp(field, "cpe", 3) != 0) {
+					fprintf(stderr, " ! Error while reading in CVE entries: expected 'cpe' string did not occur in line %d\n", linenum);
 					return 3;
 				}
 			} else if (fieldCounter == 3) {
@@ -1399,6 +1403,7 @@ int load_cve(struct workstate * ws) {
 					(strncmp(field, "/a", 2) != 0) &&
 					(strncmp(field, "/o", 2) != 0) &&
 					(strncmp(field, "/h", 2) != 0) ) {
+					fprintf(stderr, " ! Error while reading in CVE entries: CPE type in line %d is not one of a/o/h\n", linenum);
 					return 4;
 				}
 				snprintf(tmpCpeId, 3, "%s", field);
@@ -1408,6 +1413,7 @@ int load_cve(struct workstate * ws) {
 				int ptr = 0;
 				while(field[ptr] != 0) {
 					if (! isgraph(field[ptr]) ) {
+						fprintf(stderr, " ! Error while reading in CVE entries: information in the CPE of line %d is not readable\n", linenum);
 						return 5;
 					}
 				}
