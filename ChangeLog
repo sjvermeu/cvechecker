@@ -1,3 +1,9 @@
+** (2017-03-27) Release 3.8
+
+** (2017-03-13) Sven Vermeulen
+	- Fix bug about CVE data not being taken (seen as already existing
+	  while it is not)
+
 ** (2017-03-01) Release 3.7
 
 ** (2017-03-01) Sven Vermeulen
