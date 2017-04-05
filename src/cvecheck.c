@@ -1173,15 +1173,11 @@ int load_watch_list(struct workstate * ws) {
 			rc = delete_cpe(line, ws);
 			if (rc) {
 				fprintf(stderr, " ! An error occurred while interpreting CPE on line %d\n", linenum-1);
-				zero_string(line, CPELINESIZE);
-				continue;
 			};
 		} else {
 			rc = add_cpe(line, ws);
 			if (rc) {
 				fprintf(stderr, " ! An error occurred while interpreting CPE on line %d\n", linenum-1);
-				zero_string(line, CPELINESIZE);
-				continue;
 			};
 		};
 		zero_string(line, CPELINESIZE);
