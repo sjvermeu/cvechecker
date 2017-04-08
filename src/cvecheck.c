@@ -34,7 +34,10 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 
 	int fieldwidth = 0;
 
-	cpos = strstr(buffer, "cpe:/")+5;
+	cpos = strstr(buffer, "cpe:/");
+	if (cpos == NULL)
+		return;
+	cpos += 5;
 	nextpos = strchr(cpos, ':');
 
 	if (nextpos == 0)
@@ -1170,15 +1173,11 @@ int load_watch_list(struct workstate * ws) {
 			rc = delete_cpe(line, ws);
 			if (rc) {
 				fprintf(stderr, " ! An error occurred while interpreting CPE on line %d\n", linenum-1);
-				zero_string(line, CPELINESIZE);
-				continue;
 			};
 		} else {
 			rc = add_cpe(line, ws);
 			if (rc) {
 				fprintf(stderr, " ! An error occurred while interpreting CPE on line %d\n", linenum-1);
-				zero_string(line, CPELINESIZE);
-				continue;
 			};
 		};
 		zero_string(line, CPELINESIZE);
