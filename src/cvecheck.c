@@ -1365,9 +1365,9 @@ int load_cve(struct workstate * ws) {
 		fieldCounter = 0;
 
 		// Split based on ':' character
+		int invalid_line = 0;
 		while (sscanf(bufferptr, "%[^:]s", field) == 1) {
 			int fieldLength = swstrlen(field);	// Capture field length up front as strtok_r modifies the string
-
 			if (fieldCounter == 0) {
 				// Should be "CVE-####-####+" (CVE identifier)
 				char * sCVE;
@@ -1430,7 +1430,8 @@ int load_cve(struct workstate * ws) {
 					(strncmp(field, "/o", 2) != 0) &&
 					(strncmp(field, "/h", 2) != 0) ) {
 					fprintf(stderr, " ! Error while reading in CVE entries: CPE type in line %d is not one of a/o/h\n", linenum);
-					return 1;
+					invalid_line = 1;
+					break;
 				}
 				snprintf(tmpCpeId, 3, "%s", field);
 
@@ -1462,7 +1463,8 @@ int load_cve(struct workstate * ws) {
 			bufferptr = bufferptr + fieldLength + 1;
 			++fieldCounter;
 		}
-
+		if (invalid_line)
+			continue;
 		// Build the CPE up
 		snprintf(cpeId, CPELINESIZE, "cpe:%s:%s:%s:%s:%s:%s:%s", tmpCpeId, tmpCpeVendor, tmpCpeProduct, tmpCpeVersion, tmpCpeUpdate, tmpCpeEdition, tmpCpeLanguage);
 
