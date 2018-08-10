@@ -997,6 +997,13 @@ int add_cpe(char * line, struct workstate * ws) {
 	char * cdir = (char *) calloc(13, sizeof(char));
 	char * clin = (char *) calloc(BUFFERSIZE*6+7, sizeof(char));
 
+	if ((strlen(line) == 0) || (line[0] == '#'))
+	{
+	  free(cdir);
+	  free(clin);
+	  return 0;
+	}
+
 	string_to_cpe(&cpe, line);
 	cpe_to_string(buffer, BUFFERSIZE, cpe);
 
