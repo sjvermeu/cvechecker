@@ -847,10 +847,19 @@ int sqlite_dbimpl_process_binary(struct workstate * ws) {
 
 void find_cve_for_cpe(struct workstate * ws, char part, int length, int cpeid, const char * inset) {
   int rc = 0;
+  int count;
   sqlite3_stmt * cve_stmt;
   char stmt[SQLLINESIZE];
 
+  sprintf(stmt, "select count(*) from tb_cve");
+  count = get_int_value(ws->localdb[0], stmt, ws);
+  if (count == 0) {
+    fprintf(stderr, "Local CVE Databse is empty \n");
+    exit(EXIT_FAILURE);
+   }; 
+
   sprintf(stmt, "select distinct a.basedir as basedir, a.filename as filename, b.year as year, b.sequence as sequence, b.cpe as cpeid, b.cvss as cvss from tb_binmatch a, tb_cve b where b.cpe in %s and a.cpe = %d and a.cpepart = b.cpepart and a.cpevendorlength = b.cpevendorlength;", inset, cpeid);
+
   PREPARE_SQLITE(rc, ws->localdb[0], stmt, cve_stmt)
 
   while ((rc = sqlite3_step(cve_stmt)) == SQLITE_ROW) {
