@@ -21,7 +21,7 @@
 #define LARGEFIELDSIZE 512
 #define FILENAMESIZE 256
 #define BUFFERSIZE 256
-#define CVELINESIZE 16
+#define CVELINESIZE 24 
 #define CPELINESIZE (7 + FIELDSIZE*6 + 5)
 #define VERSIONLINESIZE (FILENAMESIZE*2 + 5 + CPELINESIZE)
 // Normally, around 1800 ought to be enough (largest SELECT statement with assumption of largest values)
