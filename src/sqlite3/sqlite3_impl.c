@@ -854,7 +854,7 @@ void find_cve_for_cpe(struct workstate * ws, char part, int length, int cpeid, c
   sprintf(stmt, "select count(*) from tb_cve");
   count = get_int_value(ws->localdb[0], stmt, ws);
   if (count == 0) {
-    fprintf(stderr, "Local CVE Databse is empty \n");
+    fprintf(stderr, "Local CVE Database is empty!\n");
     exit(EXIT_FAILURE);
    }; 
 
