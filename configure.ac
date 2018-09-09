@@ -1,4 +1,4 @@
-AC_INIT([cvechecker], [3.8], [sven.vermeulen@siphos.be])
+AC_INIT([cvechecker], [3.9], [sven.vermeulen@siphos.be])
 AC_PREREQ([2.69])
 AM_INIT_AUTOMAKE([subdir-objects foreign])
 AC_CONFIG_SRCDIR([config.h.in])
