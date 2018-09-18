@@ -1,142 +1,142 @@
 #!/bin/sh
 
-if [ $# -ne 1 ];
+if [ $# -ne 1 ]
 then
-  echo "Usage: $0 pull";
-  echo "       $0 cleancache";
-  exit 1;
+  echo "Usage: $0 pull"
+  echo "       $0 cleancache"
+  exit 1
 fi
 
 die() {
   echo "*** $*"
-  exit 1;
+  exit 1
 }
 
-CONFFILE="";
-if [ -n "${CVECHECKER_CONFFILE}" ];
+CONFFILE=""
+if [ -n "${CVECHECKER_CONFFILE}" ]
 then
-  if [ -f "${CVECHECKER_CONFFILE}" ];
+  if [ -f "${CVECHECKER_CONFFILE}" ]
   then
-    CONFFILE="${CVECHECKER_CONFFILE}";
+    CONFFILE="${CVECHECKER_CONFFILE}"
   else
-    die "File ${CVECHECKER_CONFILE} specified in CVECHECKER_CONFFILE environment variable does not exist.";
+    die "File ${CVECHECKER_CONFILE} specified in CVECHECKER_CONFFILE environment variable does not exist."
   fi
-elif [ -f ~/.cvechecker.rc ];
+elif [ -f ~/.cvechecker.rc ]
 then
-  CONFFILE=~/.cvechecker.rc;
-elif [ -f /usr/local/etc/cvechecker.conf ];
+  CONFFILE=~/.cvechecker.rc
+elif [ -f /usr/local/etc/cvechecker.conf ]
 then
-  CONFFILE=/usr/local/etc/cvechecker.conf;
-elif [ -f /etc/cvechecker.conf ];
+  CONFFILE=/usr/local/etc/cvechecker.conf
+elif [ -f /etc/cvechecker.conf ]
 then
-  CONFFILE=/etc/cvechecker.conf;
+  CONFFILE=/etc/cvechecker.conf
 fi
 
-if [ ! -f "${CONFFILE}" ];
+if [ ! -f "${CONFFILE}" ]
 then
-  die "Configuration file ${CONFFILE} does not exist.";
+  die "Configuration file ${CONFFILE} does not exist."
 fi
 
-xsltproc -V > /dev/null 2>&1;
-if [ $? -ne 0 ];
+xsltproc -V > /dev/null 2>&1
+if [ $? -ne 0 ]
 then
   echo "This script requires xsltproc to be available on the system and reachable in a directory mentioned in the PATH variable."
-  exit 1;
+  exit 1
 fi
 
-wget -V > /dev/null 2>&1;
-if [ $? -ne 0 ];
+wget -V > /dev/null 2>&1
+if [ $? -ne 0 ]
 then
   echo "This script requires wget to be available on the system and reachable in a directory mentioned in the PATH variable."
-  exit 1;
+  exit 1
 fi
 
-DATADIR=$(awk -F'=' '/^datadir/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}');
-CVECACHE=$(awk -F'=' '/^cvecache/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}');
-DLLOCATION=$(awk -F'=' '/^version_url/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}');
-WGETCMD="wget --no-check-certificate";
-DLCVE=0;
-DLDAT=0;
-COMMAND=$1;
-CKSUM=0;
+DATADIR=$(awk -F'=' '/^datadir/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}')
+CVECACHE=$(awk -F'=' '/^cvecache/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}')
+DLLOCATION=$(awk -F'=' '/^version_url/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}')
+WGETCMD="wget --no-check-certificate"
+DLCVE=0
+DLDAT=0
+COMMAND=$1
+CKSUM=0
 
-if [ "${COMMAND}" = "pull" ];
+if [ "${COMMAND}" = "pull" ]
 then
 
-for YEAR in $(seq -w 02 `date +%y`);
+for YEAR in $(seq -w 02 `date +%y`)
 do
-  if [ ! -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml ];
+  if [ ! -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml ]
   then
-    printf "Downloading nvdcve-2.0-20${YEAR}.xml... ";
-    ${WGETCMD} -q -O ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-20${YEAR}.xml.gz;
-    gunzip -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz > ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml && rm ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz;
-    printf "ok\nConverting nvdcve-2.0-20${YEAR}.xml to CSV... ";
-    xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml > ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv;
-    printf "ok\nLoading in nvdcve-2.0-20${YEAR}.csv in cvechecker.\n";
-    cvechecker -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv || die "Could not import nvdcve-2.0-20${YEAR}.csv";
+    printf "Downloading nvdcve-2.0-20${YEAR}.xml... "
+    ${WGETCMD} -q -O ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-20${YEAR}.xml.gz
+    gunzip -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz > ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml && rm ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz
+    printf "ok\nConverting nvdcve-2.0-20${YEAR}.xml to CSV... "
+    xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml > ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv
+    printf "ok\nLoading in nvdcve-2.0-20${YEAR}.csv in cvechecker.\n"
+    cvechecker -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv || die "Could not import nvdcve-2.0-20${YEAR}.csv"
   fi
 done
 
-cd ${CVECACHE};
-if [ ! -f nvdcve-2.0-Modified.xml ];
+cd ${CVECACHE}
+if [ ! -f nvdcve-2.0-Modified.xml ]
 then
   CKSUM="1"
 else
-  CKSUM=$(cksum nvdcve-2.0-Modified.xml 2>/dev/null);
+  CKSUM=$(cksum nvdcve-2.0-Modified.xml 2>/dev/null)
 fi
-printf "Downloading nvdcve-2.0-Modified.xml... ";
-${WGETCMD} -q -N http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-Modified.xml.gz;
-gunzip -c nvdcve-2.0-Modified.xml.gz > nvdcve-2.0-Modified.xml && rm nvdcve-2.0-Modified.xml.gz;
-CKSUM2=$(cksum nvdcve-2.0-Modified.xml 2>/dev/null);
-if [ "${CKSUM2}" != "${CKSUM}" ] || [ -f nvdcve-2.0-Modified.xml.1 ];
+printf "Downloading nvdcve-2.0-Modified.xml... "
+${WGETCMD} -q -N http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-Modified.xml.gz
+gunzip -c nvdcve-2.0-Modified.xml.gz > nvdcve-2.0-Modified.xml && rm nvdcve-2.0-Modified.xml.gz
+CKSUM2=$(cksum nvdcve-2.0-Modified.xml 2>/dev/null)
+if [ "${CKSUM2}" != "${CKSUM}" ] || [ -f nvdcve-2.0-Modified.xml.1 ]
 then
-  printf "ok (downloaded)\n";
-  test -f nvdcve-2.0-Modified.xml.1 && mv nvdcve-2.0-Modified.xml.1 nvdcve-2.0-Modified.xml;
-  printf "Converting nvdcve-2.0-Modified.xml to CSV... ";
-  if [ -f ${CVECACHE}/nvdcve-2.0-modified.csv ];
+  printf "ok (downloaded)\n"
+  test -f nvdcve-2.0-Modified.xml.1 && mv nvdcve-2.0-Modified.xml.1 nvdcve-2.0-Modified.xml
+  printf "Converting nvdcve-2.0-Modified.xml to CSV... "
+  if [ -f ${CVECACHE}/nvdcve-2.0-modified.csv ]
   then
-    mv ${CVECACHE}/nvdcve-2.0-modified.csv ${CVECACHE}/nvdcve-2.0-modified.csv.old;
+    mv ${CVECACHE}/nvdcve-2.0-modified.csv ${CVECACHE}/nvdcve-2.0-modified.csv.old
   else
-    touch ${CVECACHE}/nvdcve-2.0-modified.csv.old;
+    touch ${CVECACHE}/nvdcve-2.0-modified.csv.old
   fi
-  xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-Modified.xml > ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted;
-  printf "ok\nGathering differences with last pull... ";
-  sort ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted > ${CVECACHE}/nvdcve-2.0-modified.csv;
-  rm ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted;
-  diff ${CVECACHE}/nvdcve-2.0-modified.csv.old ${CVECACHE}/nvdcve-2.0-modified.csv | grep '^> ' | sed -e 's:^> ::g' > ${CVECACHE}/nvdcve-2.0-modified.delta;
-  printf "ok\nLoading in nvdcve-2.0-modified.csv differences in cvechecker.\n";
-  cvechecker -c ${CVECACHE}/nvdcve-2.0-modified.delta || die "Could not import nvdcve-2.0-modified.delta";
-  DLCVE=1;
+  xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-Modified.xml > ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted
+  printf "ok\nGathering differences with last pull... "
+  sort ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted > ${CVECACHE}/nvdcve-2.0-modified.csv
+  rm ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted
+  diff ${CVECACHE}/nvdcve-2.0-modified.csv.old ${CVECACHE}/nvdcve-2.0-modified.csv | grep '^> ' | sed -e 's:^> ::g' > ${CVECACHE}/nvdcve-2.0-modified.delta
+  printf "ok\nLoading in nvdcve-2.0-modified.csv differences in cvechecker.\n"
+  cvechecker -c ${CVECACHE}/nvdcve-2.0-modified.delta || die "Could not import nvdcve-2.0-modified.delta"
+  DLCVE=1
 else
-  printf "ok (not downloaded, same file)\n";
+  printf "ok (not downloaded, same file)\n"
 fi
 
-CKSUM=$(cksum versions.dat 2>/dev/null);
-printf "Downloading versions.dat... ";
-${WGETCMD} -q -N ${DLLOCATION};
-CKSUM2=$(cksum versions.dat 2>/dev/null);
-if [ "${CKSUM}" != "${CKSUM2}" ] || [ -f versions.dat.1 ];
+CKSUM=$(cksum versions.dat 2>/dev/null)
+printf "Downloading versions.dat... "
+${WGETCMD} -q -N ${DLLOCATION}
+CKSUM2=$(cksum versions.dat 2>/dev/null)
+if [ "${CKSUM}" != "${CKSUM2}" ] || [ -f versions.dat.1 ]
 then
-  printf "ok (downloaded)\n";
-  test -f versions.dat.1 && mv versions.dat.1 versions.dat;
-  printf "Loading in versions.dat in cvechecker.\n";
-  cvechecker -l ${CVECACHE}/versions.dat || die "Could not load versions.dat";
-  DLDAT=1;
+  printf "ok (downloaded)\n"
+  test -f versions.dat.1 && mv versions.dat.1 versions.dat
+  printf "Loading in versions.dat in cvechecker.\n"
+  cvechecker -l ${CVECACHE}/versions.dat || die "Could not load versions.dat"
+  DLDAT=1
 else
-  printf "ok (not downloaded, same file)\n";
+  printf "ok (not downloaded, same file)\n"
 fi
 
-exit $((${DLCVE} + ${DLDAT}*2));
+exit $((${DLCVE} + ${DLDAT}*2))
 
-elif [ "${COMMAND}" = "cleancache" ];
+elif [ "${COMMAND}" = "cleancache" ]
 then
-  rm ${CVECACHE}/*.xml;
-  rm ${CVECACHE}/*.csv;
-  rm ${CVECACHE}/*.old 2>/dev/null;
-  rm ${CVECACHE}/*.unsorted 2>/dev/null;
-  rm ${CVECACHE}/*.delta 2>/dev/null;
-  rm ${CVECACHE}/versions.dat 2>/dev/null;
+  rm ${CVECACHE}/*.xml
+  rm ${CVECACHE}/*.csv
+  rm ${CVECACHE}/*.old 2>/dev/null
+  rm ${CVECACHE}/*.unsorted 2>/dev/null
+  rm ${CVECACHE}/*.delta 2>/dev/null
+  rm ${CVECACHE}/versions.dat 2>/dev/null
 else
   echo "Sorry, command \"${COMMAND}\" is not supported."
-  exit 1;
+  exit 1
 fi
