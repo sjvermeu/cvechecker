@@ -65,33 +65,30 @@ then
 
 for YEAR in $(seq -w 02 `date +%y`)
 do
-  if [ ! -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml ]
+  if [ ! -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz ]
   then
     printf "Downloading nvdcve-2.0-20${YEAR}.xml... "
     ${WGETCMD} -q -O ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz https://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-20${YEAR}.xml.gz
-    gunzip -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz > ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml && rm ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz
     printf "ok\nConverting nvdcve-2.0-20${YEAR}.xml to CSV... "
-    xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml > ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv
+    zcat ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz | xsltproc ${DATADIR}/nvdcve2simple.xsl - > ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv
     printf "ok\nLoading in nvdcve-2.0-20${YEAR}.csv in cvechecker.\n"
     cvechecker -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv || die "Could not import nvdcve-2.0-20${YEAR}.csv"
   fi
 done
 
 cd ${CVECACHE}
-if [ ! -f nvdcve-2.0-Modified.xml ]
+if [ ! -f nvdcve-2.0-Modified.xml.gz ]
 then
   CKSUM="1"
 else
-  CKSUM=$(cksum nvdcve-2.0-Modified.xml 2>/dev/null)
+  CKSUM=$(cksum nvdcve-2.0-Modified.xml.gz 2>/dev/null)
 fi
 printf "Downloading nvdcve-2.0-Modified.xml... "
-${WGETCMD} -q -N https://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-Modified.xml.gz
-gunzip -c nvdcve-2.0-Modified.xml.gz > nvdcve-2.0-Modified.xml && rm nvdcve-2.0-Modified.xml.gz
-CKSUM2=$(cksum nvdcve-2.0-Modified.xml 2>/dev/null)
-if [ "${CKSUM2}" != "${CKSUM}" ] || [ -f nvdcve-2.0-Modified.xml.1 ]
+${WGETCMD} -q -N -O nvdcve-2.0-Modified.xml.gz https://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-Modified.xml.gz
+CKSUM2=$(cksum nvdcve-2.0-Modified.xml.gz 2>/dev/null)
+if [ "${CKSUM2}" != "${CKSUM}" ]
 then
   printf "ok (downloaded)\n"
-  test -f nvdcve-2.0-Modified.xml.1 && mv nvdcve-2.0-Modified.xml.1 nvdcve-2.0-Modified.xml
   printf "Converting nvdcve-2.0-Modified.xml to CSV... "
   if [ -f ${CVECACHE}/nvdcve-2.0-modified.csv ]
   then
@@ -99,7 +96,7 @@ then
   else
     touch ${CVECACHE}/nvdcve-2.0-modified.csv.old
   fi
-  xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-Modified.xml > ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted
+  zcat nvdcve-2.0-Modified.xml.gz | xsltproc ${DATADIR}/nvdcve2simple.xsl - > ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted
   printf "ok\nGathering differences with last pull... "
   sort ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted > ${CVECACHE}/nvdcve-2.0-modified.csv
   rm ${CVECACHE}/nvdcve-2.0-modified.csv.unsorted
@@ -130,7 +127,7 @@ exit $((${DLCVE} + ${DLDAT}*2))
 
 elif [ "${COMMAND}" = "cleancache" ]
 then
-  rm ${CVECACHE}/*.xml
+  rm ${CVECACHE}/*.xml.gz
   rm ${CVECACHE}/*.csv
   rm ${CVECACHE}/*.old 2>/dev/null
   rm ${CVECACHE}/*.unsorted 2>/dev/null
