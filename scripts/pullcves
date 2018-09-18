@@ -68,7 +68,7 @@ do
   if [ ! -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml ]
   then
     printf "Downloading nvdcve-2.0-20${YEAR}.xml... "
-    ${WGETCMD} -q -O ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-20${YEAR}.xml.gz
+    ${WGETCMD} -q -O ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz https://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-20${YEAR}.xml.gz
     gunzip -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz > ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml && rm ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz
     printf "ok\nConverting nvdcve-2.0-20${YEAR}.xml to CSV... "
     xsltproc ${DATADIR}/nvdcve2simple.xsl ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml > ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv
@@ -85,7 +85,7 @@ else
   CKSUM=$(cksum nvdcve-2.0-Modified.xml 2>/dev/null)
 fi
 printf "Downloading nvdcve-2.0-Modified.xml... "
-${WGETCMD} -q -N http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-Modified.xml.gz
+${WGETCMD} -q -N https://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-Modified.xml.gz
 gunzip -c nvdcve-2.0-Modified.xml.gz > nvdcve-2.0-Modified.xml && rm nvdcve-2.0-Modified.xml.gz
 CKSUM2=$(cksum nvdcve-2.0-Modified.xml 2>/dev/null)
 if [ "${CKSUM2}" != "${CKSUM}" ] || [ -f nvdcve-2.0-Modified.xml.1 ]
