@@ -69,7 +69,13 @@ do
   then
     printf "Downloading nvdcve-2.0-20${YEAR}.xml... "
     ${WGETCMD} -q -O ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz https://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-20${YEAR}.xml.gz
-    printf "ok\nConverting nvdcve-2.0-20${YEAR}.xml to CSV... "
+    printf "ok\n"
+    # force next step
+    rm -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv
+  fi
+  if [ ! -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv -o ! -s ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv ]
+  then
+    printf "Converting nvdcve-2.0-20${YEAR}.xml to CSV... "
     zcat ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz | xsltproc ${DATADIR}/nvdcve2simple.xsl - > ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv
     printf "ok\nLoading in nvdcve-2.0-20${YEAR}.csv in cvechecker.\n"
     cvechecker -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv || die "Could not import nvdcve-2.0-20${YEAR}.csv"
