@@ -121,12 +121,12 @@ then
   printf "ok (downloaded)\n"
   printf "Loading in versions.dat in cvechecker.\n"
   cvechecker -l ${CVECACHE}/versions.dat || die "Could not load versions.dat"
-  DLDAT=1
+  DLDAT=2
 else
   printf "ok (not downloaded, same file)\n"
 fi
 
-exit $((${DLCVE} + ${DLDAT}*2))
+exit $((${DLCVE} + ${DLDAT}))
 
 elif [ "${COMMAND}" = "cleancache" ]
 then
