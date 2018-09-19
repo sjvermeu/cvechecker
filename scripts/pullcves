@@ -104,7 +104,7 @@ then
   fi
   zcat nvdcve-2.0-Modified.xml.gz | xsltproc ${DATADIR}/nvdcve2simple.xsl - | sort > ${CVECACHE}/nvdcve-2.0-modified.csv
   printf "ok\nGathering differences with last pull... "
-  diff ${CVECACHE}/nvdcve-2.0-modified.csv.old ${CVECACHE}/nvdcve-2.0-modified.csv | grep '^> ' | sed -e 's:^> ::g' > ${CVECACHE}/nvdcve-2.0-modified.delta
+  diff ${CVECACHE}/nvdcve-2.0-modified.csv.old ${CVECACHE}/nvdcve-2.0-modified.csv | sed -ne '/^>/s:^> ::p' > ${CVECACHE}/nvdcve-2.0-modified.delta
   printf "ok\nLoading in nvdcve-2.0-modified.csv differences in cvechecker.\n"
   cvechecker -c ${CVECACHE}/nvdcve-2.0-modified.delta || die "Could not import nvdcve-2.0-modified.delta"
   DLCVE=1
