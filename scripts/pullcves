@@ -114,12 +114,11 @@ fi
 
 CKSUM=$(cksum versions.dat 2>/dev/null)
 printf "Downloading versions.dat... "
-${WGETCMD} -q -N ${DLLOCATION}
+${WGETCMD} -q -N -O versions.dat ${DLLOCATION}
 CKSUM2=$(cksum versions.dat 2>/dev/null)
-if [ "${CKSUM}" != "${CKSUM2}" ] || [ -f versions.dat.1 ]
+if [ "${CKSUM}" != "${CKSUM2}" ]
 then
   printf "ok (downloaded)\n"
-  test -f versions.dat.1 && mv versions.dat.1 versions.dat
   printf "Loading in versions.dat in cvechecker.\n"
   cvechecker -l ${CVECACHE}/versions.dat || die "Could not load versions.dat"
   DLDAT=1
