@@ -64,7 +64,10 @@ then
   WGET_TRIES=2
 fi
 
-WGETCMD="wget --timeout=${WGET_TIMEOUT} --tries=${WGET_TRIES} --quiet"
+if [ -z "${WGETCMD}" ]
+then
+  WGETCMD="wget --timeout=${WGET_TIMEOUT} --tries=${WGET_TRIES} --quiet"
+fi
 
 DATADIR=$(awk -F'=' '/^datadir/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}')
 CVECACHE=$(awk -F'=' '/^cvecache/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}')
@@ -143,7 +146,7 @@ fi
 
 CKSUM=$(cksum versions.dat 2>/dev/null)
 printf "Downloading versions.dat... "
-${WGETCMD} -q -N -O versions.dat ${DLLOCATION}
+${WGETCMD} -N -O versions.dat ${DLLOCATION}
 CKSUM2=$(cksum versions.dat 2>/dev/null)
 if [ "${CKSUM}" != "${CKSUM2}" ]
 then
