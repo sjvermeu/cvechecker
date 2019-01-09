@@ -44,15 +44,29 @@ then
   exit 1
 fi
 
-if [ -z "${WGETCMD}" ]
-then
-  WGETCMD="wget"
-fi
-${WGETCMD} -V > /dev/null 2>&1
+wget -V > /dev/null 2>&1
 if [ $? -ne 0 ]
 then
   echo "This script requires wget to be available on the system and reachable in a directory mentioned in the PATH variable."
   exit 1
+fi
+
+if [ -z "${WGET_TIMEOUT}" ]
+then
+  # timeout in seconds for wget. Does not affect the
+  # download time once download has been initiated.
+  WGET_TIMEOUT=60
+fi
+
+if [ -z "${WGET_TRIES}" ]
+then
+  # amount of wget tries after timeout
+  WGET_TRIES=2
+fi
+
+if [ -z "${WGETCMD}" ]
+then
+  WGETCMD="wget --timeout=${WGET_TIMEOUT} --tries=${WGET_TRIES} --quiet"
 fi
 
 DATADIR=$(awk -F'=' '/^datadir/ {print $2}' ${CONFFILE} | awk -F'"' '{print $2}')
@@ -62,6 +76,7 @@ DLCVE=0
 DLDAT=0
 COMMAND=$1
 CKSUM=0
+URLBASE="https://static.nvd.nist.gov/feeds/xml/cve"
 
 if [ "${COMMAND}" = "pull" ]
 then
@@ -71,7 +86,14 @@ do
   if [ ! -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz ]
   then
     printf "Downloading nvdcve-2.0-20${YEAR}.xml... "
-    ${WGETCMD} -q -O ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz https://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-20${YEAR}.xml.gz
+    ${WGETCMD} -O ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz ${URLBASE}/nvdcve-2.0-20${YEAR}.xml.gz
+    ret=$?
+    if [ ${ret} -ne 0 ]
+    then
+      echo "Error: wget returned with ${ret}. Continue with next year.."
+      continue
+    fi
+
     printf "ok\n"
     # force next step
     rm -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv
@@ -93,7 +115,14 @@ else
   CKSUM=$(cksum nvdcve-2.0-Modified.xml.gz 2>/dev/null)
 fi
 printf "Downloading nvdcve-2.0-Modified.xml... "
-${WGETCMD} -q -N -O nvdcve-2.0-Modified.xml.gz https://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-Modified.xml.gz
+${WGETCMD} -N -O nvdcve-2.0-Modified.xml.gz ${URLBASE}/nvdcve-2.0-Modified.xml.gz
+ret=$?
+if [ ${ret} -ne 0 ]
+then
+  echo "Error: wget returned with ${ret}. Continue with next year.."
+  continue
+fi
+
 CKSUM2=$(cksum nvdcve-2.0-Modified.xml.gz 2>/dev/null)
 if [ "${CKSUM2}" != "${CKSUM}" ]
 then
@@ -117,7 +146,7 @@ fi
 
 CKSUM=$(cksum versions.dat 2>/dev/null)
 printf "Downloading versions.dat... "
-${WGETCMD} -q -N -O versions.dat ${DLLOCATION}
+${WGETCMD} -N -O versions.dat ${DLLOCATION}
 CKSUM2=$(cksum versions.dat 2>/dev/null)
 if [ "${CKSUM}" != "${CKSUM2}" ]
 then
