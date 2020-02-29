@@ -1414,15 +1414,20 @@ int load_cve(struct workstate * ws) {
 				snprintf(cveId, CVELINESIZE, "CVE-%d-%d", iYear, iID);
 
 			} else if (fieldCounter == 1) {
-				// Should be [0-9]+.[0-9]+ (score)
+				// Should be [0-9]+.[0-9]+ or (due to jq interpretation) [0-9]+ (score) 
 				unsigned int iPre;
 				unsigned int iPost;
 				if (sscanf(field, "%u.%u", &iPre, &iPost) != 2) {
-					// Not both fields were correctly assigned
-					fprintf(stderr, " ! Error while reading in CVE entries: CVSS score in line %d did not match expected format\n", linenum);
-					return 1;
+					if (sscanf(field, "%u", &iPre) != 1) {
+						// Not both fields were correctly assigned
+						fprintf(stderr, " ! Error while reading in CVE entries: CVSS score in line %d did not match expected format\n", linenum);
+						return 1;
+					} else {
+						snprintf(cvssNum, 6, "%u.0", iPre);
+					}
+				} else {
+					snprintf(cvssNum, 6, "%u.%u", iPre, iPost);
 				}
-				snprintf(cvssNum, 6, "%u.%u", iPre, iPost);
 
 			} else if (fieldCounter == 2) {
 				// Should be "cpe"
