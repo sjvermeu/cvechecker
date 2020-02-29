@@ -51,6 +51,13 @@ then
   exit 1
 fi
 
+jq -V > /dev/null 2>&1
+if [ $? -ne 0 ]
+then
+  echo "This script requires jq to be available on the system and reachable in a directory mentioned in the PATH variable."
+  exit 1
+fi
+
 if [ -z "${WGET_TIMEOUT}" ]
 then
   # timeout in seconds for wget. Does not affect the
@@ -76,17 +83,17 @@ DLCVE=0
 DLDAT=0
 COMMAND=$1
 CKSUM=0
-URLBASE="https://static.nvd.nist.gov/feeds/xml/cve"
+URLBASE="https://nvd.nist.gov/feeds/json/cve/1.1/"
 
 if [ "${COMMAND}" = "pull" ]
 then
 
 for YEAR in $(seq -w 02 `date +%y`)
 do
-  if [ ! -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz ]
+  if [ ! -f ${CVECACHE}/nvdcve-1.1-20${YEAR}.json.gz ]
   then
-    printf "Downloading nvdcve-2.0-20${YEAR}.xml... "
-    ${WGETCMD} -O ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz ${URLBASE}/nvdcve-2.0-20${YEAR}.xml.gz
+    printf "Downloading nvdcve-1.1-20${YEAR}.json.gz... "
+    ${WGETCMD} -O ${CVECACHE}/nvdcve-1.1-20${YEAR}.json.gz ${URLBASE}/nvdcve-1.1-20${YEAR}.json.gz
     ret=$?
     if [ ${ret} -ne 0 ]
     then
@@ -96,49 +103,61 @@ do
 
     printf "ok\n"
     # force next step
-    rm -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv
+    rm -f ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv
   fi
-  if [ ! -f ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv -o ! -s ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv ]
+  if [ ! -f ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv -o ! -s ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv ]
   then
-    printf "Converting nvdcve-2.0-20${YEAR}.xml to CSV... "
-    zcat ${CVECACHE}/nvdcve-2.0-20${YEAR}.xml.gz | xsltproc ${DATADIR}/nvdcve2simple.xsl - > ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv
-    printf "ok\nLoading in nvdcve-2.0-20${YEAR}.csv in cvechecker.\n"
-    cvechecker -c ${CVECACHE}/nvdcve-2.0-20${YEAR}.csv || die "Could not import nvdcve-2.0-20${YEAR}.csv"
+    printf "Converting nvdcve-1.1-20${YEAR}.json to CSV... "
+    zcat ${CVECACHE}/nvdcve-1.1-20${YEAR}.json.gz > ${CVECACHE}/nvdcve-1.1-20${YEAR}.json
+    jq -r '.CVE_Items[] as $entry | $entry.configurations | .. | .cpe23Uri? as $cpe | [$entry.cve.CVE_data_meta.ID, $entry.impact.baseMetricV2.cvssV2.baseScore?, $entry.impact.baseMetricV3.cvssV3.baseScore?] + [$cpe] | @csv' ${CVECACHE}/nvdcve-1.1-20${YEAR}.json | awk -F',' '{print $1":"$2$3":"$4}' > ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv
+    # Remove quotes if present as current cvechecker code does not deal with it properly
+    sed -e 's:"::g' -e 's|cpe:2.3:|cpe:/|g' ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv > ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv.temp;
+    awk -F':' '{if (NF>3) {print $0;}}' ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv.temp > ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv
+    rm -f ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv.temp;
+    printf "ok\nLoading in nvdcve-1.1-20${YEAR}.csv in cvechecker.\n"
+    cvechecker -c ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv || die "Could not import nvdcve-1.1-20${YEAR}.csv"
   fi
 done
 
 cd ${CVECACHE}
-if [ ! -f nvdcve-2.0-Modified.xml.gz ]
+if [ ! -f nvdcve-1.1-Modified.json.gz ]
 then
   CKSUM="1"
 else
-  CKSUM=$(cksum nvdcve-2.0-Modified.xml.gz 2>/dev/null)
+  CKSUM=$(cksum nvdcve-1.1-Modified.json.gz 2>/dev/null)
 fi
-printf "Downloading nvdcve-2.0-Modified.xml... "
-${WGETCMD} -N -O nvdcve-2.0-Modified.xml.gz ${URLBASE}/nvdcve-2.0-Modified.xml.gz
+printf "Downloading nvdcve-1.1-Modified.json.gz... "
+${WGETCMD} -N -O nvdcve-1.1-Modified.json.gz ${URLBASE}/nvdcve-1.1-Modified.json.gz
 ret=$?
 if [ ${ret} -ne 0 ]
 then
-  echo "Error: wget returned with ${ret}. Continue with next year.."
+  echo "Error: wget returned with ${ret}."
   continue
 fi
 
-CKSUM2=$(cksum nvdcve-2.0-Modified.xml.gz 2>/dev/null)
+CKSUM2=$(cksum nvdcve-1.1-Modified.json.gz 2>/dev/null)
 if [ "${CKSUM2}" != "${CKSUM}" ]
 then
   printf "ok (downloaded)\n"
-  printf "Converting nvdcve-2.0-Modified.xml to CSV... "
-  if [ -f ${CVECACHE}/nvdcve-2.0-modified.csv ]
+  printf "Converting nvdcve-1.1-Modified.json to CSV... "
+  if [ -f ${CVECACHE}/nvdcve-1.1-modified.csv ]
   then
-    mv ${CVECACHE}/nvdcve-2.0-modified.csv ${CVECACHE}/nvdcve-2.0-modified.csv.old
+    mv ${CVECACHE}/nvdcve-1.1-modified.csv ${CVECACHE}/nvdcve-1.1-modified.csv.old
   else
-    touch ${CVECACHE}/nvdcve-2.0-modified.csv.old
+    touch ${CVECACHE}/nvdcve-1.1-modified.csv.old
   fi
-  zcat nvdcve-2.0-Modified.xml.gz | xsltproc ${DATADIR}/nvdcve2simple.xsl - | sort > ${CVECACHE}/nvdcve-2.0-modified.csv
+  zcat nvdcve-1.1-Modified.json.gz > ${CVECACHE}/nvdcve-1.1-Modified.json
+  jq -r '.CVE_Items[] as $entry | $entry.configurations | .. | .cpe23Uri? as $cpe | [$entry.cve.CVE_data_meta.ID, $entry.impact.baseMetricV2.cvssV2.baseScore?, $entry.impact.baseMetricV3.cvssV3.baseScore?] + [$cpe] | @csv' ${CVECACHE}/nvdcve-1.1-Modified.json | awk -F',' '{print $1":"$2$3":"$4}' > ${CVECACHE}/nvdcve-1.1-modified.csv
+  # Remove quotes if present as current cvechecker code does not deal with it properly
+  sed -e 's:"::g' -e 's|cpe:2.3:|cpe:/|g' ${CVECACHE}/nvdcve-1.1-modified.csv > ${CVECACHE}/nvdcve-1.1-modified.csv.temp;
+  awk -F':' '{if (NF>3) {print $0;}}' ${CVECACHE}/nvdcve-1.1-modified.csv.temp > ${CVECACHE}/nvdcve-1.1-modified.csv;
+  rm -f ${CVECACHE}/nvdcve-1.1-modified.csv.temp;
+  
   printf "ok\nGathering differences with last pull... "
-  diff ${CVECACHE}/nvdcve-2.0-modified.csv.old ${CVECACHE}/nvdcve-2.0-modified.csv | sed -ne '/^>/s:^> ::p' > ${CVECACHE}/nvdcve-2.0-modified.delta
-  printf "ok\nLoading in nvdcve-2.0-modified.csv differences in cvechecker.\n"
-  cvechecker -c ${CVECACHE}/nvdcve-2.0-modified.delta || die "Could not import nvdcve-2.0-modified.delta"
+  diff ${CVECACHE}/nvdcve-1.1-modified.csv.old ${CVECACHE}/nvdcve-1.1-modified.csv | sed -ne '/^>/s:^> ::p' > ${CVECACHE}/nvdcve-1.1-modified.delta
+
+  printf "ok\nLoading in nvdcve-1.1-modified.csv differences in cvechecker.\n"
+  cvechecker -c ${CVECACHE}/nvdcve-1.1-modified.delta || die "Could not import nvdcve-1.1-modified.delta"
   DLCVE=1
 else
   printf "ok (not downloaded, same file)\n"
