@@ -116,9 +116,7 @@ do
     # information later.
     jq -r '.CVE_Items[] as $entry | $entry.configurations | .. | .cpe23Uri? as $cpe | [$entry.cve.CVE_data_meta.ID, $entry.impact.baseMetricV2.cvssV2.baseScore?, $entry.impact.baseMetricV3.cvssV3.baseScore?] + [$cpe] | @csv' ${CVECACHE}/nvdcve-1.1-20${YEAR}.json | awk -F',' '{print $1":"$2$3":"$4}' > ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv
     # Remove quotes if present as current cvechecker code does not deal with it properly
-    #sed -e 's:"::g' -e 's|cpe:2.3:|cpe:/|g' ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv > ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv.temp;
-    #awk -F':' '{if (NF>3) {print $0;}}' ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv.temp > ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv
-    #rm -f ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv.temp;
+    sed -i -e 's:"::g' ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv 
     printf "ok\nLoading in nvdcve-1.1-20${YEAR}.csv in cvechecker.\n"
     cvechecker -c ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv || die "Could not import nvdcve-1.1-20${YEAR}.csv"
   fi
@@ -154,9 +152,7 @@ then
   zcat nvdcve-1.1-Modified.json.gz > ${CVECACHE}/nvdcve-1.1-Modified.json
   jq -r '.CVE_Items[] as $entry | $entry.configurations | .. | .cpe23Uri? as $cpe | [$entry.cve.CVE_data_meta.ID, $entry.impact.baseMetricV2.cvssV2.baseScore?, $entry.impact.baseMetricV3.cvssV3.baseScore?] + [$cpe] | @csv' ${CVECACHE}/nvdcve-1.1-Modified.json | awk -F',' '{print $1":"$2$3":"$4}' > ${CVECACHE}/nvdcve-1.1-modified.csv
   # Remove quotes if present as current cvechecker code does not deal with it properly
-  sed -e 's:"::g' -e 's|cpe:2.3:|cpe:/|g' ${CVECACHE}/nvdcve-1.1-modified.csv > ${CVECACHE}/nvdcve-1.1-modified.csv.temp;
-  awk -F':' '{if (NF>3) {print $0;}}' ${CVECACHE}/nvdcve-1.1-modified.csv.temp > ${CVECACHE}/nvdcve-1.1-modified.csv;
-  rm -f ${CVECACHE}/nvdcve-1.1-modified.csv.temp;
+  sed -i -e 's:"::g' ${CVECACHE}/nvdcve-1.1-modified.csv
   
   printf "ok\nGathering differences with last pull... "
   diff ${CVECACHE}/nvdcve-1.1-modified.csv.old ${CVECACHE}/nvdcve-1.1-modified.csv | sed -ne '/^>/s:^> ::p' > ${CVECACHE}/nvdcve-1.1-modified.delta
