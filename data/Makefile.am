@@ -1,9 +1,9 @@
 EXTRA_DIST = \
-             acknowledgements.xml  nvdcve2simple.xsl  report.xsl csv2xml.awk cvereport.xsl report.css mysql_cvechecker.sql
+             acknowledgements.xml  report.xsl csv2xml.awk cvereport.xsl report.css mysql_cvechecker.sql
 exampledir = $(datarootdir)/doc/@PACKAGE@
 example_DATA = acknowledgements.xml
 cvecheckerdir = $(datarootdir)/cvechecker
-cvechecker_DATA = nvdcve2simple.xsl cvereport.xsl report.css csv2xml.awk mysql_cvechecker.sql
+cvechecker_DATA = cvereport.xsl report.css csv2xml.awk mysql_cvechecker.sql
 
 install-data-local:
 	@mkdir_p@ "$(DESTDIR)${localstatedir}/cvechecker" \
