@@ -7,7 +7,7 @@
 
     <manvolnum>1</manvolnum>
 
-    <refmiscinfo class="source">August 17, 2013</refmiscinfo>
+    <refmiscinfo class="source">June 27, 2020</refmiscinfo>
 
     <refmiscinfo class="manual">pullcves Manual</refmiscinfo>
   </refmeta>
@@ -40,10 +40,10 @@
     and store them in the local cvechecker databases. It will also download
     the latest version matching rules from the Internet and load them up in
     the cvechecker database. It uses the <command>wget</command> tool for the
-    downloads and <command>xsltproc</command> for the XML conversions.</para>
+    downloads and <command>jq</command> for the JSON conversions.</para>
 
     <para>If <command>cleancache</command> is used, it will clean its internal
-    cache. This will effectively remove the downloaded XML (and generated CSV)
+    cache. This will effectively remove the downloaded JSON (and generated CSV)
     files, causing the next <command>pull</command> to redownload and reimport
     everything.</para>
 
