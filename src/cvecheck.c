@@ -1,6 +1,6 @@
 #include "cvecheck.h"
 /*
- * Copyright 2010-2017 Sven Vermeulen.
+ * Copyright 2010-2020 Sven Vermeulen.
  * Subject to the GNU Public License, version 3.
  */
  
@@ -16,7 +16,7 @@ void cpe_to_string(char * buffer, int buffsize, struct cpe_data cpe) {
 
 	zero_string(buffer, buffsize);
 
-	rc = snprintf(buffer, buffsize, "cpe:/%c:%s:%s:%s:%s:%s:%s", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+	rc = snprintf(buffer, buffsize, "cpe:2.3:%c:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
 	if ((rc == 0) || (rc == buffsize)) {
 		/* 
 		 * No bytes written, or buffer full -> doesn't seem right.  Return null
@@ -34,15 +34,16 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 
 	int fieldwidth = 0;
 
-	cpos = strstr(buffer, "cpe:/");
+	cpos = strstr(buffer, "cpe:2.3:");
 	if (cpos == NULL)
 		return;
-	cpos += 5;
+	cpos += 8;
 	nextpos = strchr(cpos, ':');
 
 	if (nextpos == 0)
 		return;
 
+    // Store CPE part value
 	cpe->part = cpos[0];
 
 	// Iterations start here ;-)
@@ -52,111 +53,199 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 	if (nextpos == 0)
 		return;
 
-	fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
+    // Store CPE vendor value
+	fieldwidth = swstrlen(cpos) - swstrlen(nextpos) + 1;
 	// The length of the fields is always at most FIELDSIZE.
-	if (fieldwidth >= FIELDSIZE)
-		fieldwidth = FIELDSIZE - 1;
-	strncpy(cpe->vendor, cpos, fieldwidth);
-	cpe->vendor[fieldwidth] = '\0';
+	if (fieldwidth > FIELDSIZE)
+		fieldwidth = FIELDSIZE;
+	strlcpy(cpe->vendor, cpos, fieldwidth);
 
+    // Store CPE product value
 	cpos = nextpos+1;
 	nextpos = strchr(cpos, ':');
 	if (nextpos != NULL) {
-		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
-		if (fieldwidth >= FIELDSIZE)
-			fieldwidth = FIELDSIZE - 1;
-		strncpy(cpe->product, cpos, fieldwidth);
-		cpe->product[fieldwidth] = '\0';
+		fieldwidth = swstrlen(cpos) - swstrlen(nextpos) + 1;
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->product, cpos, fieldwidth);
 	} else {
 		fieldwidth = swstrlen(cpos);
-		if (fieldwidth >= FIELDSIZE)
-			fieldwidth = FIELDSIZE - 1;
-		strncpy(cpe->product, cpos, fieldwidth);
-		cpe->product[fieldwidth] = '\0';
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->product, cpos, fieldwidth);
 		cpe->version[0] = '\0';
 		cpe->update[0] = '\0';
 		cpe->edition[0] = '\0';
 		cpe->language[0] = '\0';
+		cpe->swedition[0] = '\0';
+		cpe->targetsw[0] = '\0';
+		cpe->targethw[0] = '\0';
+		cpe->other[0] = '\0';
 
 		return;
 
 	}
 
+    // Store CPE version value
 	cpos = nextpos+1;
 	nextpos = strchr(cpos, ':');
 	if (nextpos != NULL) {
-		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
-		if (fieldwidth >= FIELDSIZE)
-			fieldwidth = FIELDSIZE - 1;
-		strncpy(cpe->version, cpos, fieldwidth);
-		cpe->version[fieldwidth] = '\0';
+		fieldwidth = swstrlen(cpos) - swstrlen(nextpos) + 1;
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->version, cpos, fieldwidth);
 	} else {
 		fieldwidth = swstrlen(cpos);
-		if (fieldwidth >= FIELDSIZE)
-			fieldwidth = FIELDSIZE - 1;
-		strncpy(cpe->version, cpos, fieldwidth);
-		cpe->version[fieldwidth] = '\0';
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->version, cpos, fieldwidth);
 		cpe->update[0] = '\0';
 		cpe->edition[0] = '\0';
 		cpe->language[0] = '\0';
+		cpe->swedition[0] = '\0';
+		cpe->targetsw[0] = '\0';
+		cpe->targethw[0] = '\0';
+		cpe->other[0] = '\0';
 
 		return;
 	}
 
+    // Store CPE update value
 	cpos = nextpos+1;
 	nextpos = strchr(cpos, ':');
 	if (nextpos != NULL) {
-		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
-		if (fieldwidth >= FIELDSIZE)
-			fieldwidth = FIELDSIZE - 1;
-		strncpy(cpe->update, cpos, fieldwidth);
-		cpe->update[fieldwidth] = '\0';
+		fieldwidth = swstrlen(cpos) - swstrlen(nextpos) + 1;
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->update, cpos, fieldwidth);
 	} else {
 		fieldwidth = swstrlen(cpos);
-		if (fieldwidth >= FIELDSIZE)
-			fieldwidth = FIELDSIZE - 1;
-		strncpy(cpe->update, cpos, fieldwidth);
-		cpe->update[fieldwidth] = '\0';
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->update, cpos, fieldwidth);
 		cpe->edition[0] = '\0';
 		cpe->language[0] = '\0';
+		cpe->swedition[0] = '\0';
+		cpe->targetsw[0] = '\0';
+		cpe->targethw[0] = '\0';
+		cpe->other[0] = '\0';
 
 		return;
 	}
 
+    // Store CPE edition value
 	cpos = nextpos+1;
 	nextpos = strchr(cpos, ':');
 	if (nextpos != NULL) {
-		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
-		if (fieldwidth >= FIELDSIZE)
-			fieldwidth = FIELDSIZE - 1;
-		strncpy(cpe->edition, cpos, fieldwidth);
-		cpe->edition[fieldwidth] = '\0';
+		fieldwidth = swstrlen(cpos) - swstrlen(nextpos) + 1;
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->edition, cpos, fieldwidth);
 	} else {
 		fieldwidth = swstrlen(cpos);
-		if (fieldwidth >= FIELDSIZE)
-			fieldwidth = FIELDSIZE - 1;
-		strncpy(cpe->edition, cpos, fieldwidth);
-		cpe->edition[fieldwidth] = '\0';
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->edition, cpos, fieldwidth);
 		cpe->language[0] = '\0';
+		cpe->swedition[0] = '\0';
+		cpe->targetsw[0] = '\0';
+		cpe->targethw[0] = '\0';
+		cpe->other[0] = '\0';
 		
 		return;
 	}
 
+    // Store CPE language value
 	cpos = nextpos+1;
 	nextpos = strchr(cpos, ':');
 	if (nextpos != NULL) {
-		fieldwidth = swstrlen(cpos) - swstrlen(nextpos);
-		if (fieldwidth >= FIELDSIZE)
-			fieldwidth = FIELDSIZE - 1;
-		strncpy(cpe->language, cpos, fieldwidth);
-		cpe->language[fieldwidth] = '\0';
+		fieldwidth = swstrlen(cpos) - swstrlen(nextpos) + 1;
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->language, cpos, fieldwidth);
 	} else {
 		fieldwidth = swstrlen(cpos);
-		if (fieldwidth >= FIELDSIZE)
-			fieldwidth = FIELDSIZE - 1;
-		strncpy(cpe->language, cpos, fieldwidth);
-		cpe->language[fieldwidth] = '\0';
-		cpe->language[0] = '\0';
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->language, cpos, fieldwidth);
+		cpe->swedition[0] = '\0';
+		cpe->targetsw[0] = '\0';
+		cpe->targethw[0] = '\0';
+		cpe->other[0] = '\0';
+		
+		return;
+	}
+
+    // Store CPE sw_edition value
+	cpos = nextpos+1;
+	nextpos = strchr(cpos, ':');
+	if (nextpos != NULL) {
+		fieldwidth = swstrlen(cpos) - swstrlen(nextpos) + 1;
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->swedition, cpos, fieldwidth);
+	} else {
+		fieldwidth = swstrlen(cpos);
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->swedition, cpos, fieldwidth);
+		cpe->targetsw[0] = '\0';
+		cpe->targethw[0] = '\0';
+		cpe->other[0] = '\0';
+		
+		return;
+	}
+
+    // Store CPE target_sw value
+	cpos = nextpos+1;
+	nextpos = strchr(cpos, ':');
+	if (nextpos != NULL) {
+		fieldwidth = swstrlen(cpos) - swstrlen(nextpos) + 1;
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->targetsw, cpos, fieldwidth);
+	} else {
+		fieldwidth = swstrlen(cpos);
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->targetsw, cpos, fieldwidth);
+		cpe->targethw[0] = '\0';
+		cpe->other[0] = '\0';
+		
+		return;
+	}
+
+    // Store CPE target_hw value
+	cpos = nextpos+1;
+	nextpos = strchr(cpos, ':');
+	if (nextpos != NULL) {
+		fieldwidth = swstrlen(cpos) - swstrlen(nextpos) + 1;
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->targethw, cpos, fieldwidth);
+	} else {
+		fieldwidth = swstrlen(cpos);
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->targethw, cpos, fieldwidth);
+		cpe->other[0] = '\0';
+		
+		return;
+	}
+
+    // Store CPE other value
+	cpos = nextpos+1;
+	nextpos = strchr(cpos, ':');
+	if (nextpos != NULL) {
+		fieldwidth = swstrlen(cpos) - swstrlen(nextpos) + 1;
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->other, cpos, fieldwidth);
+	} else {
+		fieldwidth = swstrlen(cpos);
+		if (fieldwidth > FIELDSIZE)
+			fieldwidth = FIELDSIZE;
+		strlcpy(cpe->other, cpos, fieldwidth);
 		
 		return;
 	}
@@ -184,6 +273,19 @@ int copy_cpe(struct cpe_data * target, struct cpe_data * source) {
   ptr = (struct cpe_data *) strcpy(target->language, "");
   if ((struct cpe_data *) ptr != (struct cpe_data *) target->language)
     return 6;
+  ptr = (struct cpe_data *) strcpy(target->swedition, "");
+  if ((struct cpe_data *) ptr != (struct cpe_data *) target->swedition)
+    return 7;
+  ptr = (struct cpe_data *) strcpy(target->targetsw, "");
+  if ((struct cpe_data *) ptr != (struct cpe_data *) target->targetsw)
+    return 8;
+  ptr = (struct cpe_data *) strcpy(target->targethw, "");
+  if ((struct cpe_data *) ptr != (struct cpe_data *) target->targethw)
+    return 9;
+  ptr = (struct cpe_data *) strcpy(target->other, "");
+  if ((struct cpe_data *) ptr != (struct cpe_data *) target->other)
+    return 10;
+
   return 0;
 };
 
@@ -210,13 +312,11 @@ int cve_to_vars(int * year, int * sequence, char * cveId) {
 	s_start = strlen(start);
 	s_end   = strlen(end);
 
-	strncpy(buffer, start, s_start-s_end);
-	buffer[s_start-s_end] = '\0';
+	strlcpy(buffer, start, s_start-s_end+1);
 
 	*year = atoi(buffer);
 
-	strncpy(buffer, end+1, strlen(end+1));
-	buffer[strlen(end+1)] = '\0';
+	strlcpy(buffer, end+1, strlen(end+1)+1);
 
 	*sequence = atoi(buffer);
 
@@ -350,7 +450,7 @@ int initialize_configfile(struct workstate * ws) {
 	//Check for configuration file in home directory
 	homeloc = getenv("HOME");
 	if (homeloc != NULL) {
-		strncpy(configfile, homeloc, FILENAMESIZE-16);
+		strlcpy(configfile, homeloc, FILENAMESIZE-16);
 		strcat(configfile, "/.cvechecker.rc");
 		if(initialize_configuration(ws, configfile) == 0) {
 			free(configfile);
@@ -446,15 +546,15 @@ int initialize_workstate(struct workstate * ws, struct arguments * arg) {
 	if (confkey == NULL) {
 		// No userkey defined - that's okay, not mandatory. We default
 		// to hostname then
-		strncpy(ws->userdefkey, ws->hostname, FIELDSIZE);
+		strlcpy(ws->userdefkey, ws->hostname, FIELDSIZE);
 	} else {
 		rc = strlen(config_setting_get_string(confkey));
 		if (rc > FIELDSIZE-1) {
 			fprintf(stderr, "Configuration file directive \'userkey\' cannot exceed %d characters.\n", FIELDSIZE-1);
 			fprintf(stderr, "Defaulting to hostname as user key.\n");
-			strncpy(ws->userdefkey, ws->hostname, FIELDSIZE);
+			strlcpy(ws->userdefkey, ws->hostname, FIELDSIZE);
 		} else {
-			strncpy(ws->userdefkey, config_setting_get_string(confkey), FIELDSIZE);
+			strlcpy(ws->userdefkey, config_setting_get_string(confkey), FIELDSIZE);
 		}
 	};
 	
@@ -591,10 +691,8 @@ int match_binary(char * file, struct workstate * ws) {
 	}
 
 	fieldwidth = swstrlen(file) - swstrlen(slashpos);
-	strncpy(basedir, file, fieldwidth);
-	basedir[fieldwidth] = '\0';
-	strncpy(filename, slashpos+1, strlen(slashpos)-1);
-	filename[swstrlen(slashpos)-1] = '\0';
+	strlcpy(basedir, file, fieldwidth+1);
+	strlcpy(filename, slashpos+1, FILENAMESIZE);
 	ws->currentdir=basedir;
 	ws->currentfile=filename;
 
@@ -661,18 +759,18 @@ void clear_resultlist(struct workstate * ws) {
 /**
  * Show the installed software
  */
-void show_installed_software(struct workstate * ws, const char * vendor, const char * product, const char * version, const char * update, const char * edition, const char * language, int numfiles, const char ** files) {
+void show_installed_software(struct workstate * ws, const char * vendor, const char * product, const char * version, const char * update, const char * edition, const char * language, const char * swedition, const char * targetsw, const char * targethw, const char * other, int numfiles, const char ** files) {
 	struct arguments * arg = ws->arg;
 	int filecounter = numfiles;
 
 	if (arg->docsvoutput) {
-		fprintf(stdout, "2,%s,%s,%s,%s,%s,%s,%s,%s,", vendor, product, version, update, edition, language, ws->hostname, ws->userdefkey);
+		fprintf(stdout, "2,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s", vendor, product, version, update, edition, language, swedition, targetsw, targethw, other, ws->hostname, ws->userdefkey);
 		while (filecounter > 0) {
 			fprintf(stdout, "%s ", files[--filecounter]);
 		};
 		fprintf(stdout, "\n");
 	} else {
-		fprintf(stdout, "Detected vendor=\"%s\", product=\"%s\", version=\"%s\", update=\"%s\", edition=\"%s\", language=\"%s\" on host=\"%s\", userkey=\"%s\"\n", vendor, product, version, update, edition, language, ws->hostname, ws->userdefkey);
+		fprintf(stdout, "Detected vendor=\"%s\", product=\"%s\", version=\"%s\", update=\"%s\", edition=\"%s\", language=\"%s\", sw_edition=\"%s\", target_sw=\"%s\", target_hw=\"%s\", other=\"%s\" on host=\"%s\", userkey=\"%s\"\n", vendor, product, version, update, edition, language, swedition, targetsw, targethw, other, ws->hostname, ws->userdefkey);
 		if (filecounter > 0) {
 			fprintf(stdout, "Files that contributed to this detection:\n");
 			while (filecounter > 0) {
@@ -698,71 +796,68 @@ int process_versiondata(char * line, struct workstate * ws) {
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		fprintf(stderr, "Error in first field (filepart), could not find field delimiter\n");
+		fprintf(stderr, "Error in 1st field (filepart), could not find field delimiter\n");
 		return 1;
 	};
 	temppos = swstrlen(line+startpos)-swstrlen(ptr);
 	if (temppos == 0) {
-		fprintf(stderr, "Error in first field (filepart), field cannot be empty\n");
+		fprintf(stderr, "Error in 1st field (filepart), field cannot be empty\n");
 		return 2;
 	};
 	if (temppos >= FILENAMESIZE) {
-		fprintf(stderr, "Error in first field (filepart), field cannot be larger than %u bytes\n", FILENAMESIZE-1);
+		fprintf(stderr, "Error in 1st field (filepart), field cannot be larger than %u bytes\n", FILENAMESIZE-1);
 		return 3;
 	};
-	strncpy(vg.filepart, line+startpos, temppos);
-	vg.filepart[temppos] = '\0';
+	strlcpy(vg.filepart, line+startpos, temppos+1);
 	startpos += temppos+1;
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		fprintf(stderr, "Error in second field (gathertype), could not find field delimiter\n");
+		fprintf(stderr, "Error in 2nd field (gathertype), could not find field delimiter\n");
 		return 1;
 	};
 	temppos = swstrlen(line+startpos)-swstrlen(ptr);
 	if (temppos == 0) {
-		fprintf(stderr, "Error in second field (gathertype), field cannot be empty\n");
+		fprintf(stderr, "Error in 2nd field (gathertype), field cannot be empty\n");
 		return 2;
 	};
 	if (temppos != 1) {
-		fprintf(stderr, "Error in second field (gathertype), field should be one character long\n");
+		fprintf(stderr, "Error in 2nd field (gathertype), field should be one character long\n");
 		return 3;
 	};
-	strncpy(buffer, line+startpos, temppos);
-	buffer[temppos] = '\0';
+	strlcpy(buffer, line+startpos, temppos+1);
 	vg.gathertype = atoi(buffer);
 	startpos += temppos+1;
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		fprintf(stderr, "Error in third field (filematch), could not find field delimiter\n");
+		fprintf(stderr, "Error in 3rd field (filematch), could not find field delimiter\n");
 		return 1;
 	};
 	temppos = swstrlen(line+startpos)-swstrlen(ptr);
 	if (temppos == 0) {
-		fprintf(stderr, "Error in third field (filematch), field cannot be empty\n");
+		fprintf(stderr, "Error in 3rd field (filematch), field cannot be empty\n");
 		return 2;
 	};
 	if (temppos >= FILENAMESIZE) {
-		fprintf(stderr, "Error in third field (filematch), field cannot be larger than %u characters\n", FILENAMESIZE-1);
+		fprintf(stderr, "Error in 3rd field (filematch), field cannot be larger than %u characters\n", FILENAMESIZE-1);
 		return 3;
 	};
-	strncpy(vg.filematch, line+startpos, temppos);
-	vg.filematch[temppos] = '\0';
+	strlcpy(vg.filematch, line+startpos, temppos+1);
 	startpos += temppos+1;
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		fprintf(stderr, "Error in fourth field (contentmatch), could not find field delimiter\n");
+		fprintf(stderr, "Error in 4th field (contentmatch), could not find field delimiter\n");
 		return 1;
 	};
 	temppos = swstrlen(line+startpos)-swstrlen(ptr);
 	if (temppos == 0) {
-		fprintf(stderr, "Error in fourth field (contentmatch), field cannot be empty\n");
+		fprintf(stderr, "Error in 4th field (contentmatch), field cannot be empty\n");
 		return 2;
 	};
 	if (temppos >= LARGEFIELDSIZE) {
-		fprintf(stderr, "Error in fourth field (contentmatch), field cannot be larger than %u characters\n", LARGEFIELDSIZE-1);
+		fprintf(stderr, "Error in 4th field (contentmatch), field cannot be larger than %u characters\n", LARGEFIELDSIZE-1);
 		return 3;
 	};
 	ctrpos = startpos;
@@ -771,7 +866,7 @@ int process_versiondata(char * line, struct workstate * ws) {
 	  if ((ctrptr != NULL) && (ctrptr <= line+temppos)) {
 	    ctrpos = swstrlen(line+startpos)-swstrlen(ctrptr);
             if (line[ctrpos-1] != '\\') {
-              fprintf(stderr, "Error in fourth field (contentmatch), field cannot contain unquoted \" characters\n");
+              fprintf(stderr, "Error in 4th field (contentmatch), field cannot contain unquoted \" characters\n");
 	      return 4;
 	    };
 	  } else {
@@ -779,22 +874,21 @@ int process_versiondata(char * line, struct workstate * ws) {
 	  };
 	  ctrpos++;
 	};
-	strncpy(vg.versionexpression, line+startpos, temppos);
-	vg.versionexpression[temppos] = '\0';
+	strlcpy(vg.versionexpression, line+startpos, temppos+1);
 	startpos += temppos+1;
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		fprintf(stderr, "Error in fifth field (cpe part), could not find field delimiter\n");
+		fprintf(stderr, "Error in 5th field (cpe part), could not find field delimiter\n");
 		return 1;
 	};
 	temppos = swstrlen(line+startpos)-swstrlen(ptr);
 	if (temppos == 0) {
-		fprintf(stderr, "Error in fifth field (cpe part), field cannot be empty\n");
+		fprintf(stderr, "Error in 5th field (cpe part), field cannot be empty\n");
 		return 2;
 	};
 	if ((line[startpos] != 'a') && (line[startpos] != 'h') && (line[startpos] != 'o')) {
-		fprintf(stderr, "Error in fifth field (cpe part), field should be one of (a,h,o)\n");
+		fprintf(stderr, "Error in 5th field (cpe part), field should be one of (a,h,o)\n");
 		return 3;
 	};
 	cpe.part = line[startpos];
@@ -802,99 +896,145 @@ int process_versiondata(char * line, struct workstate * ws) {
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		fprintf(stderr, "Error in sixth field (cpe vendor), could not find field delimiter\n");
+		fprintf(stderr, "Error in 6th field (cpe vendor), could not find field delimiter\n");
 		return 1;
 	};
 	temppos = swstrlen(line+startpos)-swstrlen(ptr);
 	if (temppos == 0) {
-		fprintf(stderr, "Error in sixth field (cpe vendor), field cannot be empty\n");
+		fprintf(stderr, "Error in 6th field (cpe vendor), field cannot be empty\n");
 		return 2;
 	};
 	if (temppos >= FIELDSIZE) {
-		fprintf(stderr, "Error in sixth field (cpe vendor), field cannot be larger than %d characters\n", FIELDSIZE-1);
+		fprintf(stderr, "Error in 6th field (cpe vendor), field cannot be larger than %d characters\n", FIELDSIZE-1);
 		return 3;
 	};
-	strncpy(cpe.vendor, line+startpos, temppos);
-	cpe.vendor[temppos] = '\0';
+	strlcpy(cpe.vendor, line+startpos, temppos+1);
 	startpos += temppos+1;
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		fprintf(stderr, "Error in seventh field (cpe product), could not find field delimiter\n");
+		fprintf(stderr, "Error in 7th field (cpe product), could not find field delimiter\n");
 		return 1;
 	};
 	temppos = swstrlen(line+startpos)-swstrlen(ptr);
 	if (temppos == 0) {
-		fprintf(stderr, "Error in seventh field (cpe product), field cannot be empty\n");
+		fprintf(stderr, "Error in 7th field (cpe product), field cannot be empty\n");
 		return 2;
 	};
 	if (temppos >= FIELDSIZE) {
-		fprintf(stderr, "Error in seventh field (cpe product), field cannot be larger than %d characters\n", FIELDSIZE-1);
+		fprintf(stderr, "Error in 7th field (cpe product), field cannot be larger than %d characters\n", FIELDSIZE-1);
 		return 3;
 	};
-	strncpy(cpe.product, line+startpos, temppos);
-	cpe.product[temppos] = '\0';
+	strlcpy(cpe.product, line+startpos, temppos+1);
 	startpos += temppos+1;
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		fprintf(stderr, "Error in eighth field (cpe version), could not find field delimiter\n");
+		fprintf(stderr, "Error in 8th field (cpe version), could not find field delimiter\n");
 		return 1;
 	};
 	temppos = swstrlen(line+startpos)-swstrlen(ptr);
 	if (temppos == 0) {
-		fprintf(stderr, "Error in eighth field (cpe version), field cannot be empty\n");
+		fprintf(stderr, "Error in 8th field (cpe version), field cannot be empty\n");
 		return 2;
 	};
 	if (temppos >= FIELDSIZE) {
-		fprintf(stderr, "Error in eighth field (cpe version), field cannot be larger than %d characters\n", FIELDSIZE-1);
+		fprintf(stderr, "Error in 8th field (cpe version), field cannot be larger than %d characters\n", FIELDSIZE-1);
 		return 3;
 	};
-	strncpy(cpe.version, line+startpos, temppos);
-	cpe.version[temppos] = '\0';
+	strlcpy(cpe.version, line+startpos, temppos+1);
 	startpos += temppos+1;
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		fprintf(stderr, "Error in ninth field (cpe update), could not find field delimiter\n");
+		fprintf(stderr, "Error in 9th field (cpe update), could not find field delimiter\n");
 		return 1;
 	};
 	temppos = swstrlen(line+startpos)-swstrlen(ptr);
 	if (temppos >= 64) {
-		fprintf(stderr, "Error in ninth field (cpe update), field cannot be larger than 63 characters\n");
+		fprintf(stderr, "Error in 9th field (cpe update), field cannot be larger than 63 characters\n");
 		return 3;
 	};
-	strncpy(cpe.update, line+startpos, temppos);
-	cpe.update[temppos] = '\0';
+	strlcpy(cpe.update, line+startpos, temppos+1);
 	startpos += temppos+1;
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		fprintf(stderr, "Error in tenth field (cpe edition), could not find field delimiter\n");
+		fprintf(stderr, "Error in 10th field (cpe edition), could not find field delimiter\n");
 		return 1;
 	};
 	temppos = swstrlen(line+startpos)-swstrlen(ptr);
 	if (temppos >= FIELDSIZE) {
-		fprintf(stderr, "Error in tenth field (cpe edition), field cannot be larger than %d characters\n", FIELDSIZE-1);
+		fprintf(stderr, "Error in 10th field (cpe edition), field cannot be larger than %d characters\n", FIELDSIZE-1);
 		return 3;
 	};
-	strncpy(cpe.edition, line+startpos, temppos);
-	cpe.edition[temppos] = '\0';
+	strlcpy(cpe.edition, line+startpos, temppos+1);
 	startpos += temppos+1;
 
 	ptr = strchr(line+startpos, line[0]);
 	if (ptr == NULL) {
-		cpe.language[0] = '\0';
+		fprintf(stderr, "Error in 11th field (cpe language), could not find field delimiter\n");
+		return 1;
+	};
+	temppos = swstrlen(line+startpos)-swstrlen(ptr);
+	if (temppos >= FIELDSIZE) {
+		fprintf(stderr, "Error in 11th field (cpe language), field cannot be larger than %d characters\n", FIELDSIZE-1);
+		return 3;
+	};
+	strlcpy(cpe.language, line+startpos, temppos+1);
+	startpos += temppos+1;
+
+	ptr = strchr(line+startpos, line[0]);
+	if (ptr == NULL) {
+		fprintf(stderr, "Error in 12th field (cpe sw_edition), could not find field delimiter\n");
+		return 1;
+	};
+	temppos = swstrlen(line+startpos)-swstrlen(ptr);
+	if (temppos >= FIELDSIZE) {
+		fprintf(stderr, "Error in 12th field (cpe sw_edition), field cannot be larger than %d characters\n", FIELDSIZE-1);
+		return 3;
+	};
+	strlcpy(cpe.swedition, line+startpos, temppos+1);
+	startpos += temppos+1;
+
+	ptr = strchr(line+startpos, line[0]);
+	if (ptr == NULL) {
+		fprintf(stderr, "Error in 13th field (cpe target_sw), could not find field delimiter\n");
+		return 1;
+	};
+	temppos = swstrlen(line+startpos)-swstrlen(ptr);
+	if (temppos >= FIELDSIZE) {
+		fprintf(stderr, "Error in 13th field (cpe target_sw), field cannot be larger than %d characters\n", FIELDSIZE-1);
+		return 3;
+	};
+	strlcpy(cpe.targetsw, line+startpos, temppos+1);
+	startpos += temppos+1;
+
+	ptr = strchr(line+startpos, line[0]);
+	if (ptr == NULL) {
+		fprintf(stderr, "Error in 14th field (cpe target_hw), could not find field delimiter\n");
+		return 1;
+	};
+	temppos = swstrlen(line+startpos)-swstrlen(ptr);
+	if (temppos >= FIELDSIZE) {
+		fprintf(stderr, "Error in 14th field (cpe target_hw), field cannot be larger than %d characters\n", FIELDSIZE-1);
+		return 3;
+	};
+	strlcpy(cpe.targethw, line+startpos, temppos+1);
+	startpos += temppos+1;
+
+	ptr = strchr(line+startpos, line[0]);
+	if (ptr == NULL) {
+		cpe.other[0] = '\0';
 	} else {
 		temppos = swstrlen(line+startpos)-swstrlen(ptr);
-		if (temppos >= 64) {
-			fprintf(stderr, "Error in eleventh field (cpe language), field cannot be larger than 63 characters\n");
+		if (temppos >= FIELDSIZE) {
+			fprintf(stderr, "Error in 15th field (cpe other), field cannot be larger than %d characters\n", FIELDSIZE-1);
 			return 3;
 		};
-		strncpy(cpe.language, line+startpos, temppos);
-		cpe.language[temppos] = '\0';
-		if (cpe.language[temppos-1] == 10) // newline, drop it
-			cpe.language[temppos-1] = '\0';
+		strlcpy(cpe.other, line+startpos, temppos+1);
+		if (cpe.other[temppos-1] == 10) // newline, drop it
+			cpe.other[temppos-1] = '\0';
 	}
 
 	if (ws->dbtype == sqlite)
@@ -967,10 +1107,8 @@ int delete_binfile(char * line, struct workstate * ws) {
 	}
 
 	fieldwidth = swstrlen(line) - swstrlen(slashpos);
-	strncpy(basedir, line, fieldwidth);
-	basedir[fieldwidth] = '\0';
-	strncpy(filename, slashpos+1, strlen(slashpos)-1);
-	filename[swstrlen(slashpos)-1] = '\0';
+	strlcpy(basedir, line, fieldwidth+1);
+	strlcpy(filename, slashpos+1, strlen(slashpos));
 	ws->currentdir=basedir;
 	ws->currentfile=filename;
 
@@ -1266,7 +1404,7 @@ int get_installed_software(struct workstate * ws) {
 
 void report_installed(struct workstate * ws, int showfiles) {
 	if (ws->arg->docsvoutput)
-		fprintf(stdout, "Outputversion,Vendor,Product,Version,Update,Edition,Language,Hostname,Userkey,Files\n");
+		fprintf(stdout, "Outputversion,Vendor,Product,Version,Update,Edition,Language,SwEdition,TargetSw,TargetHw,Other,Hostname,Userkey,Files\n");
 	if (ws->dbtype == sqlite)
 		sqlite_dbimpl_report_installed(ws, showfiles);
 	else if (ws->dbtype == mysql)
@@ -1325,6 +1463,10 @@ int load_cve(struct workstate * ws) {
 	char tmpCpeUpdate[FIELDSIZE];
 	char tmpCpeEdition[FIELDSIZE];
 	char tmpCpeLanguage[FIELDSIZE];
+	char tmpCpeSwEdition[FIELDSIZE];
+	char tmpCpeTargetSw[FIELDSIZE];
+	char tmpCpeTargetHw[FIELDSIZE];
+	char tmpCpeOther[FIELDSIZE];
 
 	fprintf(stdout, "Loading CVE data from %s into database\n", arg->cvedata);
 
@@ -1352,6 +1494,10 @@ int load_cve(struct workstate * ws) {
 		zero_string(tmpCpeUpdate, FIELDSIZE);
 		zero_string(tmpCpeEdition, FIELDSIZE);
 		zero_string(tmpCpeLanguage, FIELDSIZE);
+		zero_string(tmpCpeSwEdition, FIELDSIZE);
+		zero_string(tmpCpeTargetSw, FIELDSIZE);
+		zero_string(tmpCpeTargetHw, FIELDSIZE);
+		zero_string(tmpCpeOther, FIELDSIZE);
 
 		// Overflow?
 		if (buffer[BUFFERSIZE-1] != '\0') {
@@ -1435,20 +1581,27 @@ int load_cve(struct workstate * ws) {
 					fprintf(stderr, " ! Error while reading in CVE entries: expected 'cpe' string did not occur in line %d\n", linenum);
 					return 1;
 				}
-			} else if (fieldCounter == 3) {
-				// Should be "/a", "/o" or "/h" (app, operating system or hardware)
+		    } else if (fieldCounter == 3) {
+			    // Should be "2.3" (CPE version)
+				if (strncmp(field, "2.3", 3) != 0) {
+				    fprintf(stderr, " ! Error while reading in CVE entries: CPE meta-version in line %d is not 2.3!", linenum);
+					invalid_line = 1;
+					break;
+				}
+			} else if (fieldCounter == 4) {
+				// Should be "a", "o" or "h" (app, operating system or hardware)
 				if (
-					(strncmp(field, "/a", 2) != 0) &&
-					(strncmp(field, "/o", 2) != 0) &&
-					(strncmp(field, "/h", 2) != 0) ) {
+					(strncmp(field, "a", 1) != 0) &&
+					(strncmp(field, "o", 1) != 0) &&
+					(strncmp(field, "h", 1) != 0) ) {
 					fprintf(stderr, " ! Error while reading in CVE entries: CPE type in line %d is not one of a/o/h\n", linenum);
 					invalid_line = 1;
 					break;
 				}
-				snprintf(tmpCpeId, 3, "%s", field);
+				snprintf(tmpCpeId, 2, "%s", field);
 
-			} else if (fieldCounter >= 4) {
-				// Should be a string (vendor, software title, version, edition or language)
+			} else if (fieldCounter >= 5) {
+				// Should be a string (vendor, software title, version, edition, language, sw_edition, target_sw, target_hw or other)
 				int ptr = 0;
 				while(field[ptr] != 0) {
 					if (! isgraph(field[ptr]) ) {
@@ -1457,18 +1610,26 @@ int load_cve(struct workstate * ws) {
 					}
 					ptr++;
 				}
-				if (fieldCounter == 4)
-					snprintf(tmpCpeVendor, FIELDSIZE, "%s", field);
 				if (fieldCounter == 5)
-					snprintf(tmpCpeProduct, FIELDSIZE, "%s", field);
+					snprintf(tmpCpeVendor, FIELDSIZE, "%s", field);
 				if (fieldCounter == 6)
-					snprintf(tmpCpeVersion, FIELDSIZE, "%s", field);
+					snprintf(tmpCpeProduct, FIELDSIZE, "%s", field);
 				if (fieldCounter == 7)
-					snprintf(tmpCpeUpdate, FIELDSIZE, "%s", field);
+					snprintf(tmpCpeVersion, FIELDSIZE, "%s", field);
 				if (fieldCounter == 8)
-					snprintf(tmpCpeEdition, FIELDSIZE, "%s", field);
+					snprintf(tmpCpeUpdate, FIELDSIZE, "%s", field);
 				if (fieldCounter == 9)
+					snprintf(tmpCpeEdition, FIELDSIZE, "%s", field);
+				if (fieldCounter == 10)
 					snprintf(tmpCpeLanguage, FIELDSIZE, "%s", field);
+				if (fieldCounter == 11)
+					snprintf(tmpCpeSwEdition, FIELDSIZE, "%s", field);
+				if (fieldCounter == 12)
+					snprintf(tmpCpeTargetSw, FIELDSIZE, "%s", field);
+				if (fieldCounter == 13)
+					snprintf(tmpCpeTargetHw, FIELDSIZE, "%s", field);
+				if (fieldCounter == 14)
+					snprintf(tmpCpeOther, FIELDSIZE, "%s", field);
 
 			}
 
@@ -1477,8 +1638,11 @@ int load_cve(struct workstate * ws) {
 		}
 		if (invalid_line)
 			continue;
+		if ((swstrlen(tmpCpeVendor) == 0) || (swstrlen(tmpCpeProduct) == 0) || (swstrlen(tmpCpeVersion) == 0))
+			continue;
+
 		// Build the CPE up
-		snprintf(cpeId, CPELINESIZE, "cpe:%s:%s:%s:%s:%s:%s:%s", tmpCpeId, tmpCpeVendor, tmpCpeProduct, tmpCpeVersion, tmpCpeUpdate, tmpCpeEdition, tmpCpeLanguage);
+		snprintf(cpeId, CPELINESIZE, "cpe:2.3:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s", tmpCpeId, tmpCpeVendor, tmpCpeProduct, tmpCpeVersion, tmpCpeUpdate, tmpCpeEdition, tmpCpeLanguage, tmpCpeSwEdition, tmpCpeTargetSw, tmpCpeTargetHw, tmpCpeOther);
 
 		// Now load in the data in the database
 		if (ws->dbtype == sqlite)

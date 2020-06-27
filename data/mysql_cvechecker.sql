@@ -52,6 +52,10 @@ CREATE TABLE `tb_cpe` (
   `cpeupdate` varchar(128) DEFAULT NULL,
   `cpeedition` varchar(128) DEFAULT NULL,
   `cpelanguage` varchar(128) DEFAULT NULL,
+  `cpeswedition` varchar(128) DEFAULT NULL,
+  `cpetargetsw` varchar(128) DEFAULT NULL,
+  `cpetargethw` varchar(128) DEFAULT NULL,
+  `cpeother` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`cpeid`),
   KEY `cpeidx` (`cpevendor`,`cpeproduct`)
 ) ENGINE=InnoDB AUTO_INCREMENT=104557 DEFAULT CHARSET=utf8;

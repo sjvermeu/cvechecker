@@ -1,7 +1,7 @@
 #include "stringscmd.h"
 
 /*
- * Copyright 2010 Sven Vermeulen.
+ * Copyright 2010-2020 Sven Vermeulen.
  * Subject to the GNU Public License, version 3.
  */
  
@@ -26,32 +26,60 @@ int search_and_substitute_group(regex_t * preg, regmatch_t * pmatch, char * data
 	};
 
 	if (strstr(cpe->version, buffer) != NULL) {
-		strncpy(buffer2, cpe->version, strlen(cpe->version) - strlen(strstr(cpe->version, buffer)));
+		memcpy(buffer2, cpe->version, strlen(cpe->version) - strlen(strstr(cpe->version, buffer)));
 		strncat(buffer2, data + pmatch[groupid].rm_so, width);
 		strncat(buffer2, strstr(cpe->version, buffer) + numchars, strlen(cpe->version) - strlen(strstr(cpe->version, buffer)) + numchars);
 		zero_string(cpe->version, FIELDSIZE);
-		strncpy(cpe->version, buffer2, strlen(buffer2));
+		strlcpy(cpe->version, buffer2, FIELDSIZE);
 	};
 	if (strstr(cpe->update, buffer) != NULL) {
-		strncpy(buffer2, cpe->update, strlen(cpe->update) - strlen(strstr(cpe->update, buffer)));
+		memcpy(buffer2, cpe->update, strlen(cpe->update) - strlen(strstr(cpe->update, buffer)));
 		strncat(buffer2, data + pmatch[groupid].rm_so, width);
 		strncat(buffer2, strstr(cpe->update, buffer) + numchars, strlen(cpe->update) - strlen(strstr(cpe->update, buffer)) + numchars);
 		zero_string(cpe->update, FIELDSIZE);
-		strncpy(cpe->update, buffer2, strlen(buffer2));
+		strlcpy(cpe->update, buffer2, FIELDSIZE);
 	};
 	if (strstr(cpe->edition, buffer) != NULL) {
-		strncpy(buffer2, cpe->edition, strlen(cpe->edition) - strlen(strstr(cpe->edition, buffer)));
+		memcpy(buffer2, cpe->edition, strlen(cpe->edition) - strlen(strstr(cpe->edition, buffer)));
 		strncat(buffer2, data + pmatch[groupid].rm_so, width);
 		strncat(buffer2, strstr(cpe->edition, buffer) + numchars, strlen(cpe->edition) - strlen(strstr(cpe->edition, buffer)) + numchars);
 		zero_string(cpe->edition, FIELDSIZE);
-		strncpy(cpe->edition, buffer2, strlen(buffer2));
+		strlcpy(cpe->edition, buffer2, FIELDSIZE);
 	};
 	if (strstr(cpe->language, buffer) != NULL) {
-		strncpy(buffer2, cpe->language, strlen(cpe->language) - strlen(strstr(cpe->language, buffer)));
+		memcpy(buffer2, cpe->language, strlen(cpe->language) - strlen(strstr(cpe->language, buffer)));
 		strncat(buffer2, data + pmatch[groupid].rm_so, width);
 		strncat(buffer2, strstr(cpe->language, buffer) + numchars, strlen(cpe->language) - strlen(strstr(cpe->language, buffer)) + numchars);
 		zero_string(cpe->language, FIELDSIZE);
-		strncpy(cpe->language, buffer2, strlen(buffer2));
+		strlcpy(cpe->language, buffer2, FIELDSIZE);
+	};
+	if (strstr(cpe->swedition, buffer) != NULL) {
+		memcpy(buffer2, cpe->swedition, strlen(cpe->swedition) - strlen(strstr(cpe->swedition, buffer)));
+		strncat(buffer2, data + pmatch[groupid].rm_so, width);
+		strncat(buffer2, strstr(cpe->swedition, buffer) + numchars, strlen(cpe->swedition) - strlen(strstr(cpe->swedition, buffer)) + numchars);
+		zero_string(cpe->swedition, FIELDSIZE);
+		strlcpy(cpe->swedition, buffer2, FIELDSIZE);
+	};
+	if (strstr(cpe->targetsw, buffer) != NULL) {
+		memcpy(buffer2, cpe->targetsw, strlen(cpe->targetsw) - strlen(strstr(cpe->targetsw, buffer)));
+		strncat(buffer2, data + pmatch[groupid].rm_so, width);
+		strncat(buffer2, strstr(cpe->targetsw, buffer) + numchars, strlen(cpe->targetsw) - strlen(strstr(cpe->targetsw, buffer)) + numchars);
+		zero_string(cpe->targetsw, FIELDSIZE);
+		strlcpy(cpe->targetsw, buffer2, FIELDSIZE);
+	};
+	if (strstr(cpe->targethw, buffer) != NULL) {
+		memcpy(buffer2, cpe->targethw, strlen(cpe->targethw) - strlen(strstr(cpe->targethw, buffer)));
+		strncat(buffer2, data + pmatch[groupid].rm_so, width);
+		strncat(buffer2, strstr(cpe->targethw, buffer) + numchars, strlen(cpe->targethw) - strlen(strstr(cpe->targethw, buffer)) + numchars);
+		zero_string(cpe->targethw, FIELDSIZE);
+		strlcpy(cpe->targethw, buffer2, FIELDSIZE);
+	};
+	if (strstr(cpe->other, buffer) != NULL) {
+		memcpy(buffer2, cpe->other, strlen(cpe->other) - strlen(strstr(cpe->other, buffer)));
+		strncat(buffer2, data + pmatch[groupid].rm_so, width);
+		strncat(buffer2, strstr(cpe->other, buffer) + numchars, strlen(cpe->other) - strlen(strstr(cpe->other, buffer)) + numchars);
+		zero_string(cpe->other, FIELDSIZE);
+		strlcpy(cpe->other, buffer2, FIELDSIZE);
 	};
 
 	return 0;

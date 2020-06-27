@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <libconfig.h>
+#include <string.h>
+#include <bsd/string.h>
 
 #ifdef _USE_SQLITE3
 #include <sqlite3.h>
@@ -10,7 +12,7 @@
 #endif
 
 /*
- * Copyright 2010-2013 Sven Vermeulen.
+ * Copyright 2010-2020 Sven Vermeulen.
  * Subject to the GNU Public License, version 3.
  */
  
@@ -22,7 +24,7 @@
 #define FILENAMESIZE 256
 #define BUFFERSIZE 256
 #define CVELINESIZE 24 
-#define CPELINESIZE (7 + FIELDSIZE*6 + 5)
+#define CPELINESIZE (7 + FIELDSIZE*11 + 5)
 #define VERSIONLINESIZE (FILENAMESIZE*2 + 5 + CPELINESIZE)
 // Normally, around 1800 ought to be enough (largest SELECT statement with assumption of largest values)
 #define SQLLINESIZE 4096
@@ -62,6 +64,10 @@ struct cpe_data {
 	char update[FIELDSIZE];
 	char edition[FIELDSIZE];
 	char language[FIELDSIZE];
+	char swedition[FIELDSIZE];
+	char targetsw[FIELDSIZE];
+	char targethw[FIELDSIZE];
+	char other[FIELDSIZE];
 };
 
 struct workstate {
@@ -113,7 +119,7 @@ int cve_to_vars(int * year, int * sequence, char * cveId);
 void show_potential_vulnerabilities(struct workstate * ws, int cveyear, int cvenum, int cvssScore, const char * filename, struct cpe_data cpe, int versiononly);
 
 // show_installed_software - Show the installed software
-void show_installed_software(struct workstate * ws, const char * vendor, const char * product, const char * version, const char * update, const char * edition, const char * language, int numfiles, const char ** files);
+void show_installed_software(struct workstate * ws, const char * vendor, const char * product, const char * version, const char * update, const char * edition, const char * language, const char * swedition, const char * targetsw, const char * targethw, const char * other, int numfiles, const char ** files);
 
 // clear_resultlist - Clear workstate result list
 void clear_resultlist(struct workstate * ws);

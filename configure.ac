@@ -31,17 +31,20 @@ AC_CHECK_HEADERS([stdlib.h],,[AC_MSG_ERROR([stdlib.h header missing])])
 AC_CHECK_HEADERS([string.h],,[AC_MSG_ERROR([string.h header missing])])
 AC_CHECK_HEADERS([unistd.h],,[AC_MSG_ERROR([unistd.h header missing])])
 AC_CHECK_HEADERS([argp.h],,[AC_MSG_ERROR([argp.h header missing (part of GNU coreutils)])])
+AC_CHECK_HEADERS([string.h],,[AC_MSG_ERROR([string.h header missing])])
 
 # Checks for library functions.
-AC_CHECK_FUNCS([gethostname memset regcomp strchr strrchr strstr])
+AC_CHECK_FUNCS([gethostname memset regcomp strchr strrchr strstr strlcpy],,
+  [PKG_CHECK_MODULES([BSD], [libbsd])])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 
 AC_MSG_WARN([Please make sure pkg-config is installed and autoreconf run])
+PKG_CHECK_MODULES([BSD], [libbsd])
 PKG_CHECK_MODULES([CONFIG], [libconfig >= 1.3])
 CFLAGS="$CFLAGS $CONFIG_CFLAGS"
-LIBS="$LIBS $CONFIG_LIBS"
+LIBS="$LIBS $CONFIG_LIBS $BSD_LIBS"
 ## --with configs
 # mysql
 AC_ARG_ENABLE(mysql, [  --enable-mysql	Enable MySQL support])

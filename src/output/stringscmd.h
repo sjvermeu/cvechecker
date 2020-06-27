@@ -1,6 +1,7 @@
 #include <regex.h>
 #include <stdio.h>
 #include <string.h>
+#include <bsd/string.h>
 #include "../cvecheck_common.h"
 #include "../swstring.h"
 

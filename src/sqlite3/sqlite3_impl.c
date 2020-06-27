@@ -1,7 +1,7 @@
 #include "sqlite3_impl.h"
 
 /*
- * Copyright 2010 Sven Vermeulen.
+ * Copyright 2010-2020 Sven Vermeulen.
  * Subject to the GNU Public License, version 3.
  */
  
@@ -58,6 +58,22 @@ int get_cpe_dataresult(void * cbobj, int argc, char **argv, char **azColName) {
                 }
                 if (strcmp(azColName[i], "cpelanguage") == 0) {
                         strncpy(ws->cpebuffer.language, argv[i], FIELDSIZE);
+                        continue;
+                };
+                if (strcmp(azColName[i], "cpeswedition") == 0) {
+                        strncpy(ws->cpebuffer.swedition, argv[i], FIELDSIZE);
+                        continue;
+                };
+                if (strcmp(azColName[i], "cpetargetsw") == 0) {
+                        strncpy(ws->cpebuffer.targetsw, argv[i], FIELDSIZE);
+                        continue;
+                };
+                if (strcmp(azColName[i], "cpetargethw") == 0) {
+                        strncpy(ws->cpebuffer.targethw, argv[i], FIELDSIZE);
+                        continue;
+                };
+                if (strcmp(azColName[i], "cpeother") == 0) {
+                        strncpy(ws->cpebuffer.other, argv[i], FIELDSIZE);
                         continue;
                 };
         };
@@ -151,7 +167,7 @@ int get_cpelist(void * cbobj, int argc, char **argv, char **azColName) {
         };
         
         zero_string(stmt, SQLLINESIZE);
-        sprintf(stmt, "select cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage from tb_cpe_%c_%d where cpeid = %d;", part, length, cpeid);
+        sprintf(stmt, "select cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother from tb_cpe_%c_%d where cpeid = %d;", part, length, cpeid);
         i = get_cpe_data(get_local_db(ws, part, length), stmt, ws);
         if (i != 0)
                 return i;
@@ -170,7 +186,7 @@ int get_cpelist(void * cbobj, int argc, char **argv, char **azColName) {
                 sprintf(stmt, "SELECT basedir, filename FROM tb_binmatch WHERE cpepart = \'%c\' AND cpevendorlength = %d AND cpe = %d;", part, length, cpeid);
 		EXEC_SQLITE_RETURNFAIL(i, ws->localdb[0], stmt, get_filelist)
         };
-        show_installed_software(ws, cpedata.vendor, cpedata.product, cpedata.version, cpedata.update, cpedata.edition, cpedata.language, ws->numresults, (const char **) ws->resultlist);
+        show_installed_software(ws, cpedata.vendor, cpedata.product, cpedata.version, cpedata.update, cpedata.edition, cpedata.language, cpedata.swedition, cpedata.targetsw, cpedata.targethw, cpedata.other, ws->numresults, (const char **) ws->resultlist);
 
         if (showfiles) {
                 clear_resultlist(ws);
@@ -264,218 +280,6 @@ int sqlite_dbimpl_clear_versiondata(struct workstate * ws) {
         rc = run_statement(ws, ws->matchdb, stmt);
 
 	return rc;
-};
-
-/**
- * Run updates on the database (due to cvechecker upgrades or 
- * fixes)
- */
-int run_upgrade_fixes(struct workstate * ws) {
-  int rc = 0;
-  int errState = 0;
-  int i;
-  int c;
-  int numChange = 0;
-  char stmt[SQLLINESIZE];
-  sqlite3_stmt * sql_stmt;
-
-
-  /**
-   * 1 - Add tables tb_cpe_a_64, tb_cpe_h_64 and tb_cpe_o_64 if they don't exist yet
-   *
-   * If count(*) returns 0, then there are no tables in the database, so we can create.
-   */
-  for (c = 0; c < 3; c++) { // cpe part iterator
-    for (i = 64; i <= FIELDSIZE; i++) {
-      sprintf(stmt, "select count(*) from sqlite_master;");
-      rc = get_int_value(get_local_db(ws, partchar[c], i), stmt, ws);
-      if (rc == 0) {
-        fprintf(stderr, "I am missing the tables in %c%d (tb_cpe_%c_%d). This is to be expected if this is the first run of cvechecker since an upgrade.\nI will now create tb_cpe_%c_%d for you, no further actions are needed.\n", partchar[c], i, partchar[c], i, partchar[c], i);
-        zero_string(stmt, SQLLINESIZE);
-        sprintf(stmt, "CREATE TABLE tb_cpe_%c_%d (cpeid integer primary key, cpepart char(1), cpevendor char(%d), cpeproduct char(%d), cpeversion char(%d), cpeupdate char(%d), cpeedition char(%d), cpelanguage char(%d));", partchar[c], i, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE);
-        rc = run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
-	if (rc) {
-          fprintf(stderr, "Failed to execute the SQL statement, bailing out...\n");
-	  errState = 1;
-	  break;
-	};
-	numChange++;
-      };
-      rc = 0;
-    };
-    if (errState)
-      break;
-  };
-
-  if (errState) {
-    return 1;
-  };
-
-  /**
-   * 2 - Add indexes, performance
-   */
-  sprintf(stmt, "select count(rowid) from sqlite_master where name = 'binmatchidx';");
-  rc = get_int_value(ws->localdb[0], stmt, ws);
-  if (rc == 0) {
-          fprintf(stderr, "I am missing the index binmatchidx. This is to be expected if this is the first run of cvechecker since an upgrade.\nI will now create binmatchidx for you, no further actions are needed.\n");
-          zero_string(stmt, SQLLINESIZE);
-          sprintf(stmt, "CREATE INDEX binmatchidx on tb_binmatch (cpe, cpepart, cpevendorlength);");
-          rc = run_statement(ws, ws->localdb[0], stmt);
-	  if (rc) {
-            fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
-	    errState = 1;
-	  };
-	  numChange++;
-  };
-
-  if (errState)
-    return 1;
-
-  sprintf(stmt, "select count(rowid) from sqlite_master where name = 'cveidx2';");
-  rc = get_int_value(ws->localdb[0], stmt, ws);
-  if (rc == 0) {
-    fprintf(stderr, "I am missing the index cveidx2. This is to be expected if this is the first run of cvechecker since an upgrade.\nI will now create cveidx2 for you, no further actions are needed.\n");
-    zero_string(stmt, SQLLINESIZE);
-    sprintf(stmt, "CREATE INDEX cveidx2 on tb_cve (cpe, cpepart, cpevendorlength);");
-    rc = run_statement(ws, ws->localdb[0], stmt);
-    if (rc) {
-      fprintf(stderr, "Failed to execute SQL statement; bailing out...\n");
-      errState = 1;
-    };
-    numChange++;
-  };
-
-  if (errState)
-    return 1;
-
-  for (i = 1; i <= FIELDSIZE; i++) {
-    for (c = 0; c < 3; c++) {
-      sprintf(stmt, "select count(rowid) from sqlite_master where name = 'cpe_%c_%d_idx';", partchar[c], i);
-      rc = get_int_value(get_local_db(ws, partchar[c], i), stmt, ws);
-      if (rc == 0) {
-        fprintf(stderr, "I am missing the index cpe_%c_%d_idx. This is to be expected if this is the first run of cvechecker since an upgrade.\nI will now create cpe_%c_%d_idx for you, no further actions are needed.\n", partchar[c], i, partchar[c], i);
-        zero_string(stmt, SQLLINESIZE);
-        sprintf(stmt, "CREATE INDEX cpe_%c_%d_idx on tb_cpe_%c_%d (cpevendor, cpeproduct, cpeversion, cpeid, cpeedition, cpeupdate, cpelanguage);", partchar[c], i, partchar[c], i);
-        rc = run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
-	if (rc) {
-          fprintf(stderr, "Failing to execute the SQL statement, bailing out...\n");
-	  errState = 1;
-	  break;
-	};
-	numChange++;
-      };
-    };
-    if (errState)
-      break;
-  };
-
-  if (errState)
-    return 1;
-
-  /**
-   * 3 - Add tb_cpe_version tables and populate 
-   */
-  for (i = 1; i <= FIELDSIZE; i++) {
-    for (c = 0; c < 3; c++) {
-      int count1Value = 0;
-      int count2Value = 0;
-
-      sprintf(stmt, "select count(rowid) from sqlite_master where name = 'tb_cpe_versions';");
-      rc = get_int_value(get_local_db(ws, partchar[c], i), stmt, ws);
-      if (rc == 0) {
-        fprintf(stderr, "I am missing the tb_cpe_versions table for the database containing tb_cpe_%c_%d. Creating and populating. This is to be expected if you upgraded cvechecker from 1.0 or lower. This action will take a (long) while, be patient.\n", partchar[c], i);
-        zero_string(stmt, SQLLINESIZE);
-
-        sprintf(stmt, "CREATE TABLE tb_cpe_versions (cpeversion char(%d) primary key, f1 integer, f2 integer, f3 integer, f4 integer, f5 integer, f6 integer, f7 integer, f8 integer, f9 integer, f10 integer, f11 integer, f12 integer, f13 integer, f14 integer, f15 integer); CREATE INDEX cpe_versions_idx on tb_cpe_versions (cpeversion); CREATE INDEX cpe_versions_2_idx on tb_cpe_versions (f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15);", FIELDSIZE);
-        rc = run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
-	if (rc) {
-          fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
-	  errState = 1;
-	  break;
-	};
-
-        rc = feed_cpe_versions_table(ws, partchar[c], i);
-        if (rc) {
-          fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
-          errState = 1;
-          break;
-        };
-	numChange++;
-      };
-      // Check if all versions are persent in tb_cpe_versions
-      sprintf(stmt, "select count(distinct cpeversion) from tb_cpe_%c_%d;", partchar[c], i);
-      count1Value = get_int_value(get_local_db(ws, partchar[c], i), stmt, ws);
-      sprintf(stmt, "select count(distinct cpeversion) from tb_cpe_versions;");
-      count2Value = get_int_value(get_local_db(ws, partchar[c], i), stmt, ws);
-      if (count1Value != count2Value) {
-        // Not all versions are mentioned in tb_cpe_versions, this would break
-	// the ability of cvechecker to report on higher versions (bug #7).
-	//
-	// First purge the table
-	sprintf(stmt, "DELETE FROM tb_cpe_versions;");
-	rc = run_statement(ws, get_local_db(ws, partchar[c], i), stmt);
-	if (rc) {
-          fprintf(stderr, "Failed to purge tb_cpe_versions table.\n");
-	  errState = 1;
-	  break;
-	};
-        // Now feed it back in
-	rc = feed_cpe_versions_table(ws, partchar[c], i);
-	if (rc) {
-          fprintf(stderr, "Failed to feed the versioning table for %c%d.db.\n", partchar[c], i);
-	  errState = 1;
-	  break;
-	};
-      };
-    };
-    if (errState)
-      break;
-  };
-
-  if (errState)
-    return 1;
-
-  /**
-   * 4 - For SQLite, we don't need to increate VARCHAR sizes - it automatically allows growing of sizes.
-   */
-
-  /**
-   * 5 - Add CVSS scoring in CVE detail
-   */
-  sprintf(stmt, "SELECT sql FROM sqlite_master WHERE tbl_name = 'tb_cve' AND type = 'table';");
-  PREPARE_SQLITE(rc, ws->localdb[0], stmt, sql_stmt)
-  while ((rc = sqlite3_step(sql_stmt)) == SQLITE_ROW) {
-    const unsigned char * sqltext;
-
-    sqltext = sqlite3_column_text(sql_stmt, 0);
-    // Casting sqltext from unsigned char to char because text should not
-    // contain UTF-8 special characters so should be safe
-    if (strstr((char *) sqltext, "cvss int") == NULL) {
-      fprintf(stderr, "I am missing the cvss column in the tb_cve table. This is to be expected if you upgraded cvechecker from 3.1 or lower.\n");
-      sprintf(stmt, "ALTER TABLE tb_cve ADD COLUMN cvss int DEFAULT -1;");
-      rc = run_statement(ws, ws->localdb[0], stmt);
-      if (rc) {
-        fprintf(stderr, "Failed to execute SQL statement, bailing out...\n");
-	errState = 1;
-	break;
-      };
-      numChange++;
-    };
-  };
-  ASSERT_FINALIZE(rc, stmt, sql_stmt)
-
-  if (errState)
-    return -errState;
-
-  /**
-   * 6 - Fieldsize of column contentmatch should be LARGEFIELDSIZE, not
-   * FIELDSIZE.
-   *
-   * For SQLite, that doesn't matter, as the size in varchar(###) is ignored.
-   */
-
-
-  return numChange;
 };
 
 /**
@@ -585,14 +389,6 @@ int sqlite_dbimpl_load_databases(struct workstate * ws) {
     return rc;
   };
 
-  if (! ws->arg->initdatabases) {
-    rc = run_upgrade_fixes(ws);
-    if (rc) {
-      fprintf(stderr, "Some updates have occurred which might affect the database initialization.\n");
-      fprintf(stderr, "Please restart the command.\n");
-    };
-  };
-
   return rc;
 };
 
@@ -604,12 +400,12 @@ int add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
 
         // Full match
 
-        sprintf(stmt, "select count(*) from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+        sprintf(stmt, "select count(*) from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\" and cpeswedition = \"%s\" and cpetargetsw = \"%s\" and cpetargethw = \"%s\" and cpeother = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
 
         count = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
 
         if (count == 0) {
-                sprintf(stmt, "insert into tb_cpe_%c_%zu (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+                sprintf(stmt, "insert into tb_cpe_%c_%zu (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
                 rc = run_statement(ws, get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt);
 		if (rc) {
 			fprintf(stderr, "Failed to execute statement, bailing out...\n");
@@ -634,11 +430,11 @@ int add_to_sqlite_database(struct workstate * ws, struct cpe_data cpe) {
 			};
                 };
 
-                sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+                sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\" and cpeswedition = \"%s\" and cpetargetsw = \"%s\" and cpetargethw = \"%s\" and cpeother = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
         
                 cpeid = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
         } else {
-                sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+                sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\" and cpeswedition = \"%s\" and cpetargetsw = \"%s\" and cpetargethw = \"%s\" and cpeother = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
                 cpeid = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
         };
 
@@ -745,6 +541,22 @@ int get_version_and_store(void * cbobj, int argc, char **argv, char **azColName)
                         strncpy(cpe_data.language, argv[i], 64);
                         continue;
                 };
+                if (strcmp(azColName[i], "cpeswedition") == 0) {
+                        strncpy(cpe_data.swedition, argv[i], 64);
+                        continue;
+                };
+                if (strcmp(azColName[i], "cpetargetsw") == 0) {
+                        strncpy(cpe_data.targetsw, argv[i], 64);
+                        continue;
+                };
+                if (strcmp(azColName[i], "cpetargethw") == 0) {
+                        strncpy(cpe_data.targethw, argv[i], 64);
+                        continue;
+                };
+                if (strcmp(azColName[i], "cpeother") == 0) {
+                        strncpy(cpe_data.other, argv[i], 64);
+                        continue;
+                };
                 if (strcmp(azColName[i], "filetype") == 0) {
                         filetype = atoi(argv[i]);
                         continue;
@@ -836,7 +648,7 @@ int sqlite_dbimpl_process_binary(struct workstate * ws) {
          * Query: find match in master database for the file. If match found,
          * extract the version and store it in the local database.
          */
-        strcpy(buffer, "select v.filename as filename, v.filetype as filetype, v.filematch as filematch, v.contentmatch as contentmatch, c.cpepart as cpepart, c.cpevendor as cpevendor, c.cpeproduct as cpeproduct, c.cpeversion as cpeversion, c.cpeupdate as cpeupdate, c.cpeedition as cpeedition, c.cpelanguage as cpelanguage from tb_versionmatch v, tb_cpe c where v.cpe = c.cpeid and \"");
+        strcpy(buffer, "select v.filename as filename, v.filetype as filetype, v.filematch as filematch, v.contentmatch as contentmatch, c.cpepart as cpepart, c.cpevendor as cpevendor, c.cpeproduct as cpeproduct, c.cpeversion as cpeversion, c.cpeupdate as cpeupdate, c.cpeedition as cpeedition, c.cpelanguage as cpelanguage, c.cpeswedition as cpeswedition, c.cpetargetsw as cpetargetsw, c.cpetargethw as cpetargethw, c.cpeother as cpeother from tb_versionmatch v, tb_cpe c where v.cpe = c.cpeid and \"");
         strcat(buffer, ws->currentfile);
         strcat(buffer,"\" between filename and filename || \"z\";");
 
@@ -884,7 +696,7 @@ void find_cve_for_cpe(struct workstate * ws, char part, int length, int cpeid, c
     sprintf(fullfilename, "%s/%s", basedir, filename);
 
     zero_string(stmt, SQLLINESIZE);
-    sprintf(stmt, "select cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage from tb_cpe_%c_%d where cpeid = %d;", part, length, cpeid);
+    sprintf(stmt, "select cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother from tb_cpe_%c_%d where cpeid = %d;", part, length, cpeid);
     i = get_cpe_data(get_local_db(ws, part, length), stmt, ws);
     if (i != 0) {
       fprintf(stderr, "Request for CPE information that is not known to cvechecker!\n");
@@ -953,6 +765,34 @@ void find_cpe_for_software(struct workstate * ws, char cpepart, int cpevendorlen
         "(a.cpelanguage != \"\") and "
 	"(b.cpelanguage = \"\" )"
       ")"
+    ") and "
+    "( "
+      "(a.cpeswedition = b.cpeswedition) or "
+      "( "
+        "(a.cpeswedition != \"\") and "
+	"(b.cpeswedition = \"\" )"
+      ")"
+    ") and "
+    "( "
+      "(a.cpetargetsw = b.cpetargetsw) or "
+      "( "
+        "(a.cpetargetsw != \"\") and "
+	"(b.cpetargetsw = \"\" )"
+      ")"
+    ") and "
+    "( "
+      "(a.cpetargethw = b.cpetargethw) or "
+      "( "
+        "(a.cpetargethw != \"\") and "
+	"(b.cpetargethw = \"\" )"
+      ") "
+    ") and "
+    "( "
+      "(a.cpeother = b.cpeother) or "
+      "( "
+        "(a.cpeother != \"\") and "
+	"(b.cpeother = \"\" )"
+      ") "
     ");", cpepart, cpevendorlength, cpepart, cpevendorlength, cpe);
   } else {
     sprintf(stmt, "select a.cpeid as cpeid, b.cpeid as parentcpeid from tb_cpe_%c_%d a, tb_cpe_%c_%d b, tb_cpe_versions c, tb_cpe_versions d where "
@@ -1150,6 +990,34 @@ void find_cpe_for_software(struct workstate * ws, char cpepart, int cpevendorlen
     "    (a.cpelanguage != \"\") and "
     "    (b.cpelanguage = \"\" ) "
     "  ) "
+    ") and "
+    "( "
+      "(a.cpeswedition = b.cpeswedition) or "
+      "( "
+        "(a.cpeswedition != \"\") and "
+	"(b.cpeswedition = \"\" )"
+      ")"
+    ") and "
+    "( "
+      "(a.cpetargetsw = b.cpetargetsw) or "
+      "( "
+        "(a.cpetargetsw != \"\") and "
+	"(b.cpetargetsw = \"\" )"
+      ")"
+    ") and "
+    "( "
+      "(a.cpetargethw = b.cpetargethw) or "
+      "( "
+        "(a.cpetargethw != \"\") and "
+	"(b.cpetargethw = \"\" )"
+      ") "
+    ") and "
+    "( "
+      "(a.cpeother = b.cpeother) or "
+      "( "
+        "(a.cpeother != \"\") and "
+	"(b.cpeother = \"\" )"
+      ") "
     ");", cpepart, cpevendorlength, cpepart, cpevendorlength, cpe);
   }
   PREPARE_SQLITE(rc, get_local_db(ws, cpepart, cpevendorlength), stmt, cpe_stmt)
@@ -1220,12 +1088,12 @@ int check_cvecpe_in_sqlite_db(struct workstate * ws, int year, int sequence, str
         int rc = 0;
         char stmt[SQLLINESIZE];
 
-        sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+        sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\" and cpeswedition = \"%s\" and cpetargetsw = \"%s\" and cpetargethw = \"%s\" and cpeother = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
 
         rc = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
 
         if (rc == 0) {
-                sprintf(stmt, "insert into tb_cpe_%c_%zu (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+                sprintf(stmt, "insert into tb_cpe_%c_%zu (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
                 rc = run_statement(ws, get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt);
 		if (rc) {
 			fprintf(stderr, "Failed to execute statement, bailing out...\n");
@@ -1247,7 +1115,7 @@ int check_cvecpe_in_sqlite_db(struct workstate * ws, int year, int sequence, str
                 };
 
 
-                sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+                sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\" and cpeswedition = \"%s\" and cpetargetsw = \"%s\" and cpetargethw = \"%s\" and cpeother = \"%s\";", cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
                 rc = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
         };
 
@@ -1280,7 +1148,7 @@ int sqlite_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cp
                 return 1;
         };
 
-        sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";",  cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+        sprintf(stmt, "select cpeid from tb_cpe_%c_%zu where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\" and cpeswedition = \"%s\" and cpetargetsw = \"%s\" and cpetargethw = \"%s\" and cpeother = \"%s\";",  cpe.part, strlen(cpe.vendor), cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
         rc = get_int_value(get_local_db(ws, cpe.part, strlen(cpe.vendor)), stmt, ws);
 
         sprintf(stmt, "insert into tb_cve values (%d, %d, '%c', %zu, %d, %d);", year, sequence, cpe.part, strlen(cpe.vendor), rc, cvssScore);
@@ -1299,13 +1167,13 @@ int sqlite_dbimpl_add_versiongather(struct workstate * ws, struct versiongather_
         int cpid = 0;
 	int rc;
 
-        sprintf(stmt, "select cpeid from tb_cpe where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+        sprintf(stmt, "select cpeid from tb_cpe where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\" and cpeswedition = \"%s\" and cpetargetsw = \"%s\" and cpetargethw = \"%s\" and cpeother = \"%s\";", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
 
         cpid = get_int_value(ws->matchdb, stmt, ws);
 
         if (cpid == 0) {
                 zero_string(stmt2, SQLLINESIZE);
-                sprintf(stmt2, "insert into tb_cpe (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+                sprintf(stmt2, "insert into tb_cpe (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
                 rc = run_statement(ws, ws->matchdb, stmt2);
 		if (rc) {
 			fprintf(stderr, "Failed to execute statements, bailing out...\n");
@@ -1337,7 +1205,7 @@ int sqlite_dbimpl_initialize_databases(struct workstate * ws) {
   int rc = 0;
 
   // Setup of global
-  sprintf(stmt, "PRAGMA foreign_keys=OFF; BEGIN TRANSACTION; DROP TABLE IF EXISTS tb_versionmatch; DROP TABLE IF EXISTS tb_cpe; CREATE TABLE tb_versionmatch (filename varchar(%d), filetype smallint, filematch varchar(%d), contentmatch varchar(%d), cpe int); CREATE INDEX vmidx ON tb_versionmatch (filename); CREATE TABLE tb_cpe (cpeid integer primary key, cpepart char(1), cpevendor varchar(%d), cpeproduct varchar(%d), cpeversion varchar(%d), cpeupdate varchar(%d), cpeedition varchar(%d), cpelanguage varchar(%d)); COMMIT;", FILENAMESIZE, FILENAMESIZE, LARGEFIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE);
+  sprintf(stmt, "PRAGMA foreign_keys=OFF; BEGIN TRANSACTION; DROP TABLE IF EXISTS tb_versionmatch; DROP TABLE IF EXISTS tb_cpe; CREATE TABLE tb_versionmatch (filename varchar(%d), filetype smallint, filematch varchar(%d), contentmatch varchar(%d), cpe int); CREATE INDEX vmidx ON tb_versionmatch (filename); CREATE TABLE tb_cpe (cpeid integer primary key, cpepart char(1), cpevendor varchar(%d), cpeproduct varchar(%d), cpeversion varchar(%d), cpeupdate varchar(%d), cpeedition varchar(%d), cpelanguage varchar(%d), cpeswedition varchar(%d), cpetargetsw varchar(%d), cpetargethw varchar(%d), cpeother varchar(%d)); COMMIT;", FILENAMESIZE, FILENAMESIZE, LARGEFIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE);
   rc = run_statement(ws, ws->matchdb, stmt);
   if (rc)
     return rc;
@@ -1352,7 +1220,7 @@ int sqlite_dbimpl_initialize_databases(struct workstate * ws) {
   for (size = 1; size <= FIELDSIZE; size++) {
     for (c = 0; c < 3; c++) {
       zero_string(stmt, SQLLINESIZE);
-      sprintf(stmt, "DROP TABLE IF EXISTS tb_cpe_%c_%d; CREATE TABLE tb_cpe_%c_%d (cpeid integer primary key, cpepart char(1), cpevendor char(%d), cpeproduct char(%d), cpeversion char(%d), cpeupdate char(%d), cpeedition char(%d), cpelanguage char(%d)); CREATE INDEX cpe_%c_%d_idx on tb_cpe_%c_%d (cpevendor, cpeproduct, cpeversion, cpeid, cpeedition, cpeupdate, cpelanguage);", partchar[c], size, partchar[c], size, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, partchar[c], size, partchar[c], size);
+      sprintf(stmt, "DROP TABLE IF EXISTS tb_cpe_%c_%d; CREATE TABLE tb_cpe_%c_%d (cpeid integer primary key, cpepart char(1), cpevendor char(%d), cpeproduct char(%d), cpeversion char(%d), cpeupdate char(%d), cpeedition char(%d), cpelanguage char(%d), cpeswedition char(%d), cpetargetsw char(%d), cpetargethw char(%d), cpeother char(%d)); CREATE INDEX cpe_%c_%d_idx on tb_cpe_%c_%d (cpevendor, cpeproduct, cpeversion, cpeid, cpeedition, cpeupdate, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother);", partchar[c], size, partchar[c], size, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, partchar[c], size, partchar[c], size);
       rc = run_statement(ws, get_local_db(ws, partchar[c], size), stmt);
       if (rc)
         return rc;

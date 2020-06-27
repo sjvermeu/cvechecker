@@ -1,7 +1,7 @@
 #include "mysql_impl.h"
 
 /*
- * Copyright 2011 Sven Vermeulen.
+ * Copyright 2011-2020 Sven Vermeulen.
  * Subject to the GNU Public License, version 3.
  */
  
@@ -27,68 +27,6 @@ int mysql_dbimpl_clear_versiondatabase(struct workstate * ws) {
 int mysql_dbimpl_clear_versiondata(struct workstate * ws) {
   MYSQL_QUERY(ws->conn, "delete from tb_versionmatch")
   return 0;
-};
-
-/**
- * Run updates on the database (due to cvechecker upgrades or 
- * fixes)
- */
-int mysql_run_upgrade_fixes(struct workstate * ws) {
-  char stmt[SQLLINESIZE];
-  MYSQL_RES * result;
-  MYSQL_ROW row;
-  int intValue;
-  int numChange = 0;
-
-
-  /*
-   * 5 - Add CVSS score in CVE detail
-   */
-  sprintf(stmt, "SELECT COUNT(*) FROM information_schema.columns WHERE table_name = 'tb_cve' AND COLUMN_NAME = 'cvss';");
-  MYSQL_QUERY(ws->conn, stmt)
-  result = mysql_store_result(ws->conn);
-  row = mysql_fetch_row(result);
-  if (row != NULL) {
-    intValue = atoi(row[0]);
-    mysql_free_result(result);
-    if (intValue == 0) {
-      // Column doesn't exist, create it
-      fprintf(stderr, "Could not find a CVSS column in tb_cve. This is to be expected if you are upgrading from cvechecker 4.0 or lower.\n");
-      sprintf(stmt, "ALTER TABLE tb_cve ADD COLUMN cvss INT AFTER cpe;");
-      MYSQL_QUERY(ws->conn, stmt)
-      numChange++;
-    };
-  } else {
-    // ERROR OUT, NO VALUE?
-    fprintf(stderr, "Could not get a value from a simple count()?\n");
-    return 1;
-  };
-
-
-  /*
-   * 6 - Make contentmatch field in tb_versionmatch size LARGEFIELDSIZE
-   */
-  sprintf(stmt, "SELECT CHARACTER_MAXIMUM_LENGTH FROM information_schema.columns WHERE table_name = 'tb_versionmatch' AND COLUMN_NAME = 'contentmatch';");
-  MYSQL_QUERY(ws->conn, stmt)
-  result = mysql_store_result(ws->conn);
-  row = mysql_fetch_row(result);
-  if (row != NULL) {
-    intValue = atoi(row[0]);
-    mysql_free_result(result);
-    if (intValue == 128) {
-      // Change length to 512
-      fprintf(stderr, "Length of contentmatch column does not match expected value of 512. This is to be expected if you are upgrading from cvechecker 4.0 or lower.\n");
-      sprintf(stmt, "ALTER TABLE tb_versionmatch MODIFY COLUMN contentmatch VARCHAR(512);");
-      MYSQL_QUERY(ws->conn, stmt)
-      numChange++;
-    };
-  } else {
-    // ERROR OUT, NO VALUE?
-    fprintf(stderr, "Could not get a value for CHARACTER_MAXIMUM_LENGTH of tb_versionmatch.contentmatch ?\n");
-    return 1;
-  };
-
-  return numChange;
 };
 
 /**
@@ -162,14 +100,6 @@ int mysql_dbimpl_load_databases(struct workstate * ws) {
     fprintf(stderr, "Error %u: %s\n", mysql_errno(ws->conn), mysql_error(ws->conn));
     return 1;
   } else {
-    if (! ws->arg->initdatabases) {
-      rc = mysql_run_upgrade_fixes(ws);
-      if (rc) {
-        fprintf(stderr, "Some updates have occurred which might affect the database initialization.\n");
-        fprintf(stderr, "Please restart the command.\n");
-	return 1;
-      };
-    };
     return 0;
   };
 };
@@ -218,6 +148,10 @@ int add_to_mysql_database(struct workstate * ws, struct cpe_data cpe) {
   char cpeupdate[FIELDSIZE];
   char cpeedition[FIELDSIZE];
   char cpelanguage[FIELDSIZE];
+  char cpeswedition[FIELDSIZE];
+  char cpetargetsw[FIELDSIZE];
+  char cpetargethw[FIELDSIZE];
+  char cpeother[FIELDSIZE];
   MYSQL_RES * result;
   MYSQL_ROW row;
 
@@ -225,12 +159,16 @@ int add_to_mysql_database(struct workstate * ws, struct cpe_data cpe) {
   mysql_real_escape_string(ws->conn, cpeupdate, cpe.update, swstrlen(cpe.update));
   mysql_real_escape_string(ws->conn, cpeedition, cpe.edition, swstrlen(cpe.edition));
   mysql_real_escape_string(ws->conn, cpelanguage, cpe.language, swstrlen(cpe.language));
+  mysql_real_escape_string(ws->conn, cpeswedition, cpe.swedition, swstrlen(cpe.swedition));
+  mysql_real_escape_string(ws->conn, cpetargetsw, cpe.targetsw, swstrlen(cpe.targetsw));
+  mysql_real_escape_string(ws->conn, cpetargethw, cpe.targethw, swstrlen(cpe.targethw));
+  mysql_real_escape_string(ws->conn, cpeother, cpe.other, swstrlen(cpe.other));
 
   /*
    * First, we check if we already have an entry in tb_cpe for this CPE. If we do, then we can just return
    * this ID and do not have to do anything else.
    */
-  sprintf(stmt, "select cpeid from tb_cpe where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, cpe.vendor, cpe.product, cpeversion, cpeupdate, cpeedition, cpelanguage);
+  sprintf(stmt, "select cpeid from tb_cpe where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\" and cpeswedition = \"%s\" and cpetargetsw = \"%s\" and cpetargethw = \"%s\" and cpeother = \"%s\";", cpe.part, cpe.vendor, cpe.product, cpeversion, cpeupdate, cpeedition, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother);
   MYSQL_QUERY(ws->conn, stmt)
   result = mysql_store_result(ws->conn);
   row = mysql_fetch_row(result);
@@ -246,7 +184,7 @@ int add_to_mysql_database(struct workstate * ws, struct cpe_data cpe) {
    * information (like "2.0.34-rc3") is known in the tb_cpe_versions table. If not, then
    * the version is decomposed into its individual version fields and inserted too.
    */
-  sprintf(stmt, "insert into tb_cpe (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, cpe.vendor, cpe.product, cpeversion, cpeupdate, cpeedition, cpelanguage);
+  sprintf(stmt, "insert into tb_cpe (cpepart, cpevendor, cpeproduct, cpeversion, cpeupdate, cpeedition, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother) values (\"%c\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\");", cpe.part, cpe.vendor, cpe.product, cpeversion, cpeupdate, cpeedition, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother);
   MYSQL_QUERY(ws->conn, stmt)
 
   zero_string(stmt, SQLLINESIZE);
@@ -272,13 +210,13 @@ int add_to_mysql_database(struct workstate * ws, struct cpe_data cpe) {
    * we now need this information to update the tb_cpe_parents table (but also return the value to the
    * caller).
    */
-  sprintf(stmt, "select cpeid from tb_cpe where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";", cpe.part, cpe.vendor, cpe.product, cpeversion, cpeupdate, cpeedition, cpelanguage);
+  sprintf(stmt, "select cpeid from tb_cpe where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\" and cpeswedition = \"%s\" and cpetargetsw = \"%s\" and cpetargethw = \"%s\" and cpeother = \"%s\";", cpe.part, cpe.vendor, cpe.product, cpeversion, cpeupdate, cpeedition, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother);
   MYSQL_QUERY(ws->conn, stmt)
   result = mysql_store_result(ws->conn);
   row = mysql_fetch_row(result);
   if (row == NULL) {
     mysql_free_result(result);
-    fprintf(stderr, "Could not find cpeid for cpe:/%c:%s:%s:%s:%s:%s:%s\n", cpe.part, cpe.vendor, cpe.product, cpeversion, cpeupdate, cpeedition, cpelanguage);
+    fprintf(stderr, "Could not find cpeid for cpe:2.3:%c:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s\n", cpe.part, cpe.vendor, cpe.product, cpeversion, cpeupdate, cpeedition, cpelanguage, cpeswedition, cpetargetsw, cpetargethw, cpeother);
     return 1;
   };
   mysql_free_result(result);
@@ -287,7 +225,7 @@ int add_to_mysql_database(struct workstate * ws, struct cpe_data cpe) {
   /*
    * Only if the newly added CPE has a update/edition/language set, then we need to generate its master CPE information too.
    */
-  if ((swstrlen(cpeupdate) > 0) || (swstrlen(cpeedition) > 0) || (swstrlen(cpelanguage) > 0)) {
+  if ((swstrlen(cpeupdate) > 0) || (swstrlen(cpeedition) > 0) || (swstrlen(cpelanguage) > 0) || (swstrlen(cpeswedition) > 0) || (swstrlen(cpetargetsw) > 0) || (swstrlen(cpetargethw) > 0) || (swstrlen(cpeother) > 0)) {
     // Add (if necessary) the master CPE information to the database.
     struct cpe_data parentcpe; 
     int parent = 0;
@@ -337,7 +275,7 @@ int mysql_dbimpl_process_binary(struct workstate * ws) {
   MYSQL_ROW row;
   int num_fields;
 
-  strcpy(buffer, "select v.filename as filename, v.filetype as filetype, v.filematch as filematch, v.contentmatch as contentmatch, c.cpepart as cpepart, c.cpevendor as cpevendor, c.cpeproduct as cpeproduct, c.cpeversion as cpeversion, c.cpeupdate as cpeupdate, c.cpeedition as cpeedition, c.cpelanguage as cpelanguage from tb_versionmatch v, tb_cpe c where v.cpe = c.cpeid and \"");
+  strcpy(buffer, "select v.filename as filename, v.filetype as filetype, v.filematch as filematch, v.contentmatch as contentmatch, c.cpepart as cpepart, c.cpevendor as cpevendor, c.cpeproduct as cpeproduct, c.cpeversion as cpeversion, c.cpeupdate as cpeupdate, c.cpeedition as cpeedition, c.cpelanguage as cpelanguage c.cpeswedition as cpeswedition, c.cpetargetsw as cpetargetsw, c.cpetargethw as cpetargethw, c.cpeother as cpeother from tb_versionmatch v, tb_cpe c where v.cpe = c.cpeid and \"");
   strcat(buffer, ws->currentfile);
   strcat(buffer,"\" between filename and filename || \"z\";");
 
@@ -404,7 +342,7 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
   MYSQL_ROW row;
 
   // First run a full-match test
-  sprintf(stmt, "SELECT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, b.cvss AS cvss, c.cpepart AS cpepart, c.cpevendor AS cpevendor, c.cpeproduct AS cpeproduct, c.cpeversion AS cpeversion, c.cpeupdate AS cpeupdate, c.cpeedition AS cpeedition, c.cpelanguage AS cpelanguage FROM tb_binmatch a, tb_cve b, tb_cpe c WHERE (a.cpe = b.cpe) AND (a.cpe = c.cpeid) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\")", ws->hostname, ws->userdefkey);
+  sprintf(stmt, "SELECT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, b.cvss AS cvss, c.cpepart AS cpepart, c.cpevendor AS cpevendor, c.cpeproduct AS cpeproduct, c.cpeversion AS cpeversion, c.cpeupdate AS cpeupdate, c.cpeedition AS cpeedition, c.cpelanguage AS cpelanguage, c.cpeswedition AS cpeswedition, c.cpetargetsw AS cpetargetsw, c.cpetargethw AS cpetargethw, c.cpeother AS cpeother FROM tb_binmatch a, tb_cve b, tb_cpe c WHERE (a.cpe = b.cpe) AND (a.cpe = c.cpeid) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\")", ws->hostname, ws->userdefkey);
   MYSQL_QUERY(ws->conn, stmt)
   result = mysql_store_result(ws->conn);
   while (row = mysql_fetch_row(result)) {
@@ -425,12 +363,16 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
     strncpy(cpedata.update, row[9], FIELDSIZE);
     strncpy(cpedata.edition, row[10], FIELDSIZE);
     strncpy(cpedata.language, row[11], FIELDSIZE);
+    strncpy(cpedata.swedition, row[12], FIELDSIZE);
+    strncpy(cpedata.targetsw, row[13], FIELDSIZE);
+    strncpy(cpedata.targethw, row[14], FIELDSIZE);
+    strncpy(cpedata.other, row[15], FIELDSIZE);
   
     show_potential_vulnerabilities(ws, year, sequence, cvssScore, filename, cpedata, 0);
   }
   mysql_free_result(result);
   // Now, we do the same test, but for those hits where update/edition/language isn't set/detected
-  sprintf(stmt, "SELECT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, b.cvss AS cvss, c.cpepart AS cpepart, c.cpevendor AS cpevendor, c.cpeproduct AS cpeproduct, c.cpeversion AS cpeversion, c.cpeupdate AS cpeupdate, c.cpeedition AS cpeedition, c.cpelanguage AS cpelanguage FROM tb_binmatch a, tb_cve b, tb_cpe c, tb_cpe_parents d WHERE (a.cpe = d.childcpe) AND (b.cpe = d.childcpe) AND (c.cpeid = d.mastercpe) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\")", ws->hostname, ws->userdefkey);
+  sprintf(stmt, "SELECT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, b.cvss AS cvss, c.cpepart AS cpepart, c.cpevendor AS cpevendor, c.cpeproduct AS cpeproduct, c.cpeversion AS cpeversion, c.cpeupdate AS cpeupdate, c.cpeedition AS cpeedition, c.cpelanguage AS cpelanguage, c.cpeswedition AS cpeswedition, c.cpetargetsw AS cpetargetsw, c.cpetargethw AS cpetargethw, c.cpeother AS cpeother FROM tb_binmatch a, tb_cve b, tb_cpe c, tb_cpe_parents d WHERE (a.cpe = d.childcpe) AND (b.cpe = d.childcpe) AND (c.cpeid = d.mastercpe) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\")", ws->hostname, ws->userdefkey);
   MYSQL_QUERY(ws->conn, stmt)
   result = mysql_store_result(ws->conn);
   while (row = mysql_fetch_row(result)) {
@@ -451,13 +393,17 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
     strncpy(cpedata.update, row[9], FIELDSIZE);
     strncpy(cpedata.edition, row[10], FIELDSIZE);
     strncpy(cpedata.language, row[11], FIELDSIZE);
+    strncpy(cpedata.swedition, row[12], FIELDSIZE);
+    strncpy(cpedata.targetsw, row[13], FIELDSIZE);
+    strncpy(cpedata.targethw, row[14], FIELDSIZE);
+    strncpy(cpedata.other, row[15], FIELDSIZE);
   
     show_potential_vulnerabilities(ws, year, sequence, cvssScore, filename, cpedata, 1);
   }
   mysql_free_result(result);
 
   if (ws->arg->reporthigher != 0) {
-    sprintf(stmt, "SELECT DISTINCT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, b.cvss AS cvss, c2.cpepart AS cpepart, c2.cpevendor AS cpevendor, c2.cpeproduct AS cpeproduct, c2.cpeversion AS cpeversion, c2.cpeupdate AS cpeupdate, c2.cpeedition AS cpeedition, c2.cpelanguage AS cpelanguage FROM tb_binmatch a, tb_cve b, tb_cpe c, tb_cpe c2, tb_cpe_versions e, tb_cpe_versions e2 WHERE (a.cpe = c2.cpeid) AND (c2.cpeversion = e2.cpeversion) AND (b.cpe = c.cpeid) AND (c.cpeversion = e.cpeversion) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\") AND "
+    sprintf(stmt, "SELECT DISTINCT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, b.cvss AS cvss, c2.cpepart AS cpepart, c2.cpevendor AS cpevendor, c2.cpeproduct AS cpeproduct, c2.cpeversion AS cpeversion, c2.cpeupdate AS cpeupdate, c2.cpeedition AS cpeedition, c2.cpelanguage AS cpelanguage, c2.cpeswedition AS cpeswedition, c2.cpetargetsw AS cpetargetsw, c2.cpetargethw AS cpetargethw, c2.cpeother AS cpeother FROM tb_binmatch a, tb_cve b, tb_cpe c, tb_cpe c2, tb_cpe_versions e, tb_cpe_versions e2 WHERE (a.cpe = c2.cpeid) AND (c2.cpeversion = e2.cpeversion) AND (b.cpe = c.cpeid) AND (c.cpeversion = e.cpeversion) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\") AND "
     "(c.cpevendor = c2.cpevendor) and "
     "(c.cpeproduct = c2.cpeproduct) and "
     "("
@@ -654,6 +600,34 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
     "    (c.cpelanguage <> 0) and "
     "    (c2.cpelanguage = 0 ) "
     "  ) "
+    ") and "
+    "( "
+    "  (c.cpeswedition = c2.cpeswedition) or "
+    "  ( "
+    "    (c.cpeswedition <> 0 ) and "
+    "    (c2.cpeswedition = 0 ) "
+    "  ) "
+    ") and "
+    "( "
+    "  (c.cpetargetsw = c2.cpetargetsw) or "
+    "  ( "
+    "    (c.cpetargetsw <> 0) and "
+    "    (c2.cpetargetsw = 0 ) "
+    "  ) "
+    ") and "
+    "( "
+    "  (c.cpetargethw = c2.cpetargethw) or "
+    "  ( "
+    "    (c.cpetargethw <> 0) and "
+    "    (c2.cpetargethw = 0 ) "
+    "  ) "
+    ") and "
+    "( "
+    "  (c.cpeother = c2.cpeother) or "
+    "  ( "
+    "    (c.cpeother <> 0) and "
+    "    (c2.cpeother = 0 ) "
+    "  ) "
     ")", ws->hostname, ws->userdefkey);
     MYSQL_QUERY(ws->conn, stmt)
     result = mysql_store_result(ws->conn);
@@ -675,6 +649,10 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
       strncpy(cpedata.update, row[9], FIELDSIZE);
       strncpy(cpedata.edition, row[10], FIELDSIZE);
       strncpy(cpedata.language, row[11], FIELDSIZE);
+      strncpy(cpedata.swedition, row[12], FIELDSIZE);
+      strncpy(cpedata.targetsw, row[13], FIELDSIZE);
+      strncpy(cpedata.targethw, row[14], FIELDSIZE);
+      strncpy(cpedata.other, row[15], FIELDSIZE);
    
       show_potential_vulnerabilities(ws, year, sequence, cvssScore, filename, cpedata, 2);
     }
@@ -744,7 +722,7 @@ int mysql_dbimpl_initialize_databases(struct workstate * ws) {
   MYSQL_QUERY(ws->conn, "DROP TABLE IF EXISTS tb_cpe_parents")
   MYSQL_QUERY(ws->conn, "DROP TABLE IF EXISTS tb_versionmatch")
   MYSQL_QUERY(ws->conn, "DROP TABLE IF EXISTS tb_cpe")
-  sprintf(buffer, "CREATE TABLE tb_cpe (cpeid INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT, cpepart CHAR(1), cpevendor VARCHAR(%d), cpeproduct VARCHAR(%d), cpeversion VARCHAR(%d), cpeupdate VARCHAR(%d), cpeedition VARCHAR(%d), cpelanguage VARCHAR(%d)) ENGINE=InnoDB", FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE);
+  sprintf(buffer, "CREATE TABLE tb_cpe (cpeid INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT, cpepart CHAR(1), cpevendor VARCHAR(%d), cpeproduct VARCHAR(%d), cpeversion VARCHAR(%d), cpeupdate VARCHAR(%d), cpeedition VARCHAR(%d), cpelanguage VARCHAR(%d), cpeswedition VARCHAR(%d), cpetargetsw VARCHAR(%d), cpetargethw VARCHAR(%d), cpeother VARCHAR(%d)) ENGINE=InnoDB", FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE, FIELDSIZE);
   MYSQL_QUERY(ws->conn, buffer)
   MYSQL_QUERY(ws->conn, "CREATE INDEX cpeidx ON tb_cpe (cpevendor, cpeproduct)")
 
@@ -777,7 +755,7 @@ int mysql_dbimpl_report_installed(struct workstate * ws, int showfiles) {
   MYSQL_RES * result;
   MYSQL_ROW row;
 
-  sprintf(stmt, "SELECT DISTINCT a.cpe AS cpe, b.cpepart AS cpepart, b.cpevendor AS cpevendor, b.cpeproduct AS cpeproduct, b.cpeversion AS cpeversion, b.cpeupdate AS cpeupdate, b.cpeedition AS cpeedition, b.cpelanguage AS cpelanguage FROM tb_binmatch a, tb_cpe b WHERE b.cpeid = a.cpe AND a.hostname = \"%s\" AND a.userdefkey = \"%s\"", ws->hostname, ws->userdefkey);
+  sprintf(stmt, "SELECT DISTINCT a.cpe AS cpe, b.cpepart AS cpepart, b.cpevendor AS cpevendor, b.cpeproduct AS cpeproduct, b.cpeversion AS cpeversion, b.cpeupdate AS cpeupdate, b.cpeedition AS cpeedition, b.cpelanguage AS cpelanguage, b.cpeswedition AS cpeswedition, b.cpetargetsw AS cpetargetsw, b.cpetargethw AS cpetargethw, b.cpeother AS cpeother FROM tb_binmatch a, tb_cpe b WHERE b.cpeid = a.cpe AND a.hostname = \"%s\" AND a.userdefkey = \"%s\"", ws->hostname, ws->userdefkey);
   MYSQL_QUERY(ws->conn, stmt)
   result = mysql_store_result(ws->conn);
   row = mysql_fetch_row(result);
@@ -793,6 +771,10 @@ int mysql_dbimpl_report_installed(struct workstate * ws, int showfiles) {
     strncpy(cpedata.update, row[5], FIELDSIZE);
     strncpy(cpedata.edition, row[6], FIELDSIZE);
     strncpy(cpedata.language, row[7], FIELDSIZE);
+    strncpy(cpedata.swedition, row[8], FIELDSIZE);
+    strncpy(cpedata.targetsw, row[9], FIELDSIZE);
+    strncpy(cpedata.targethw, row[10], FIELDSIZE);
+    strncpy(cpedata.other, row[11], FIELDSIZE);
 
     if (showfiles) {
       MYSQL_RES * result2;
@@ -824,11 +806,11 @@ int mysql_dbimpl_report_installed(struct workstate * ws, int showfiles) {
 	row2 = mysql_fetch_row(result2);
       };
       mysql_free_result(result2);
-      show_installed_software(ws, cpedata.vendor, cpedata.product, cpedata.version, cpedata.update, cpedata.edition, cpedata.language, ws->numresults, (const char **) ws->resultlist);
+      show_installed_software(ws, cpedata.vendor, cpedata.product, cpedata.version, cpedata.update, cpedata.edition, cpedata.language, cpedata.swedition, cpedata.targetsw, cpedata.targethw, cpedata.other, ws->numresults, (const char **) ws->resultlist);
       clear_resultlist(ws);
       free(ws->resultlist);
     } else {
-      show_installed_software(ws, cpedata.vendor, cpedata.product, cpedata.version, cpedata.update, cpedata.edition, cpedata.language, ws->numresults, (const char **) ws->resultlist);
+      show_installed_software(ws, cpedata.vendor, cpedata.product, cpedata.version, cpedata.update, cpedata.edition, cpedata.language, cpedata.swedition, cpedata.targetsw, cpedata.targethw, cpedata.other, ws->numresults, (const char **) ws->resultlist);
     };
     row = mysql_fetch_row(result);
   };
@@ -893,7 +875,7 @@ int mysql_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cpe
   cvssScore = atoi(cvssNum);
   cvssScore = cvssScore * 10 + atoi(strchr(cvssNum, '.')+1);
 
-  sprintf(stmt, "select cpeid from tb_cpe where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\";",  cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language);
+  sprintf(stmt, "select cpeid from tb_cpe where cpepart = \"%c\" and cpevendor = \"%s\" and cpeproduct = \"%s\" and cpeversion = \"%s\" and cpeupdate = \"%s\" and cpeedition = \"%s\" and cpelanguage = \"%s\" and cpeswedition = \"%s\" and cpetargetsw = \"%s\" and cpetargethw = \"%s\" and cpeother = \"%s\";",  cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
   MYSQL_QUERY(ws->conn, stmt)
   result = mysql_store_result(ws->conn);
   row = mysql_fetch_row(result);
