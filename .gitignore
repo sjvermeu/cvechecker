@@ -10,3 +10,4 @@ config.*
 compile
 configure
 src/tags
+TESTING
