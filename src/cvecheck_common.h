@@ -112,6 +112,9 @@ void cpe_to_string(char * buffer, int buffsize, struct cpe_data cpe);
 // string_to_cpe - Convert the selected cpe string (buffer) to a structure
 void string_to_cpe(struct cpe_data * cpe, char * buffer);
 
+// lower_cpe_version - Generate a version that is just below the current one
+void lower_cpe_version(char * reducedVersion, const char * currentVersion);
+
 // cve_to_vars - Convert the cve identifier (string) to a year/sequence combination
 int cve_to_vars(int * year, int * sequence, char * cveId);
 

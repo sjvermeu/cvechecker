@@ -114,7 +114,7 @@ do
     # attempts to find all referenced CPEs. This is not always correct sadly,
     # and we might want to have a more intelligent parser for the JSON
     # information later.
-    jq -r '.CVE_Items[] as $entry | $entry.configurations | .. | .cpe23Uri? as $cpe | [$entry.cve.CVE_data_meta.ID, $entry.impact.baseMetricV2.cvssV2.baseScore?, $entry.impact.baseMetricV3.cvssV3.baseScore?] + [$cpe] | @csv' ${CVECACHE}/nvdcve-1.1-20${YEAR}.json | awk -F',' '{print $1":"$2$3":"$4}' > ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv
+    jq -r '.CVE_Items[] as $entry | $entry.configurations | .. | .cpe23Uri? as $cpe | .versionEndExcluding? as $cpeFixVersion | [$entry.cve.CVE_data_meta.ID, $entry.impact.baseMetricV2.cvssV2.baseScore?, $entry.impact.baseMetricV3.cvssV3.baseScore?] + [$cpe] + [$cpeFixVersion] | @csv' ${CVECACHE}/nvdcve-1.1-20${YEAR}.json > ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv
     # Remove quotes if present as current cvechecker code does not deal with it properly
     sed -i -e 's:"::g' ${CVECACHE}/nvdcve-1.1-20${YEAR}.csv 
     printf "ok\nLoading in nvdcve-1.1-20${YEAR}.csv in cvechecker.\n"
@@ -150,7 +150,7 @@ then
     touch ${CVECACHE}/nvdcve-1.1-modified.csv.old
   fi
   zcat nvdcve-1.1-Modified.json.gz > ${CVECACHE}/nvdcve-1.1-Modified.json
-  jq -r '.CVE_Items[] as $entry | $entry.configurations | .. | .cpe23Uri? as $cpe | [$entry.cve.CVE_data_meta.ID, $entry.impact.baseMetricV2.cvssV2.baseScore?, $entry.impact.baseMetricV3.cvssV3.baseScore?] + [$cpe] | @csv' ${CVECACHE}/nvdcve-1.1-Modified.json | awk -F',' '{print $1":"$2$3":"$4}' > ${CVECACHE}/nvdcve-1.1-modified.csv
+  jq -r '.CVE_Items[] as $entry | $entry.configurations | .. | .cpe23Uri? as $cpe | .versionEndExcluding? as $cpeFixVersion | [$entry.cve.CVE_data_meta.ID, $entry.impact.baseMetricV2.cvssV2.baseScore?, $entry.impact.baseMetricV3.cvssV3.baseScore?] + [$cpe] + [$cpeFixVersion] | @csv' ${CVECACHE}/nvdcve-1.1-Modified.json > ${CVECACHE}/nvdcve-1.1-modified.csv
   # Remove quotes if present as current cvechecker code does not deal with it properly
   sed -i -e 's:"::g' ${CVECACHE}/nvdcve-1.1-modified.csv
   

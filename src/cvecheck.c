@@ -16,6 +16,24 @@ void cpe_to_string(char * buffer, int buffsize, struct cpe_data cpe) {
 
 	zero_string(buffer, buffsize);
 
+	// Format for CPE 2.3 - the database will have empty fields but we want to express this correctly (with stars)
+	if (swstrlen(cpe.version) == 0)
+		snprintf(cpe.version, 2, "*");
+	if (swstrlen(cpe.update) == 0)
+		snprintf(cpe.update, 2, "*");
+	if (swstrlen(cpe.edition) == 0)
+		snprintf(cpe.edition, 2, "*");
+	if (swstrlen(cpe.language) == 0)
+		snprintf(cpe.language, 2, "*");
+	if (swstrlen(cpe.swedition) == 0)
+		snprintf(cpe.swedition, 2, "*");
+	if (swstrlen(cpe.targetsw) == 0)
+		snprintf(cpe.targetsw, 2, "*");
+	if (swstrlen(cpe.targethw) == 0)
+		snprintf(cpe.targethw, 2, "*");
+	if (swstrlen(cpe.other) == 0)
+		snprintf(cpe.other, 2, "*");
+
 	rc = snprintf(buffer, buffsize, "cpe:2.3:%c:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
 	if ((rc == 0) || (rc == buffsize)) {
 		/* 
@@ -73,14 +91,15 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		if (fieldwidth > FIELDSIZE)
 			fieldwidth = FIELDSIZE;
 		strlcpy(cpe->product, cpos, fieldwidth);
-		cpe->version[0] = '\0';
-		cpe->update[0] = '\0';
-		cpe->edition[0] = '\0';
-		cpe->language[0] = '\0';
-		cpe->swedition[0] = '\0';
-		cpe->targetsw[0] = '\0';
-		cpe->targethw[0] = '\0';
-		cpe->other[0] = '\0';
+		snprintf(cpe->version, 2, "*");
+		snprintf(cpe->version, 2, "*");
+		snprintf(cpe->update, 2, "*");
+		snprintf(cpe->edition, 2, "*");
+		snprintf(cpe->language, 2, "*");
+		snprintf(cpe->swedition, 2, "*");
+		snprintf(cpe->targetsw, 2, "*");
+		snprintf(cpe->targethw, 2, "*");
+		snprintf(cpe->other, 2, "*");
 
 		return;
 
@@ -99,13 +118,13 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		if (fieldwidth > FIELDSIZE)
 			fieldwidth = FIELDSIZE;
 		strlcpy(cpe->version, cpos, fieldwidth);
-		cpe->update[0] = '\0';
-		cpe->edition[0] = '\0';
-		cpe->language[0] = '\0';
-		cpe->swedition[0] = '\0';
-		cpe->targetsw[0] = '\0';
-		cpe->targethw[0] = '\0';
-		cpe->other[0] = '\0';
+		snprintf(cpe->update, 2, "*");
+		snprintf(cpe->edition, 2, "*");
+		snprintf(cpe->language, 2, "*");
+		snprintf(cpe->swedition, 2, "*");
+		snprintf(cpe->targetsw, 2, "*");
+		snprintf(cpe->targethw, 2, "*");
+		snprintf(cpe->other, 2, "*");
 
 		return;
 	}
@@ -123,12 +142,12 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		if (fieldwidth > FIELDSIZE)
 			fieldwidth = FIELDSIZE;
 		strlcpy(cpe->update, cpos, fieldwidth);
-		cpe->edition[0] = '\0';
-		cpe->language[0] = '\0';
-		cpe->swedition[0] = '\0';
-		cpe->targetsw[0] = '\0';
-		cpe->targethw[0] = '\0';
-		cpe->other[0] = '\0';
+		snprintf(cpe->edition, 2, "*");
+		snprintf(cpe->language, 2, "*");
+		snprintf(cpe->swedition, 2, "*");
+		snprintf(cpe->targetsw, 2, "*");
+		snprintf(cpe->targethw, 2, "*");
+		snprintf(cpe->other, 2, "*");
 
 		return;
 	}
@@ -146,11 +165,11 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		if (fieldwidth > FIELDSIZE)
 			fieldwidth = FIELDSIZE;
 		strlcpy(cpe->edition, cpos, fieldwidth);
-		cpe->language[0] = '\0';
-		cpe->swedition[0] = '\0';
-		cpe->targetsw[0] = '\0';
-		cpe->targethw[0] = '\0';
-		cpe->other[0] = '\0';
+		snprintf(cpe->language, 2, "*");
+		snprintf(cpe->swedition, 2, "*");
+		snprintf(cpe->targetsw, 2, "*");
+		snprintf(cpe->targethw, 2, "*");
+		snprintf(cpe->other, 2, "*");
 		
 		return;
 	}
@@ -168,10 +187,10 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		if (fieldwidth > FIELDSIZE)
 			fieldwidth = FIELDSIZE;
 		strlcpy(cpe->language, cpos, fieldwidth);
-		cpe->swedition[0] = '\0';
-		cpe->targetsw[0] = '\0';
-		cpe->targethw[0] = '\0';
-		cpe->other[0] = '\0';
+		snprintf(cpe->swedition, 2, "*");
+		snprintf(cpe->targetsw, 2, "*");
+		snprintf(cpe->targethw, 2, "*");
+		snprintf(cpe->other, 2, "*");
 		
 		return;
 	}
@@ -189,9 +208,9 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		if (fieldwidth > FIELDSIZE)
 			fieldwidth = FIELDSIZE;
 		strlcpy(cpe->swedition, cpos, fieldwidth);
-		cpe->targetsw[0] = '\0';
-		cpe->targethw[0] = '\0';
-		cpe->other[0] = '\0';
+		snprintf(cpe->targetsw, 2, "*");
+		snprintf(cpe->targethw, 2, "*");
+		snprintf(cpe->other, 2, "*");
 		
 		return;
 	}
@@ -209,8 +228,8 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		if (fieldwidth > FIELDSIZE)
 			fieldwidth = FIELDSIZE;
 		strlcpy(cpe->targetsw, cpos, fieldwidth);
-		cpe->targethw[0] = '\0';
-		cpe->other[0] = '\0';
+		snprintf(cpe->targethw, 2, "*");
+		snprintf(cpe->other, 2, "*");
 		
 		return;
 	}
@@ -228,7 +247,7 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		if (fieldwidth > FIELDSIZE)
 			fieldwidth = FIELDSIZE;
 		strlcpy(cpe->targethw, cpos, fieldwidth);
-		cpe->other[0] = '\0';
+		snprintf(cpe->other, 2, "*");
 		
 		return;
 	}
@@ -243,13 +262,36 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		strlcpy(cpe->other, cpos, fieldwidth);
 	} else {
 		fieldwidth = swstrlen(cpos);
-		if (fieldwidth > FIELDSIZE)
-			fieldwidth = FIELDSIZE;
-		strlcpy(cpe->other, cpos, fieldwidth);
+		if (fieldwidth == 0) {
+			snprintf(cpe->other, 2, "*");
+		} else {
+			if (fieldwidth > FIELDSIZE)
+				fieldwidth = FIELDSIZE;
+			strlcpy(cpe->other, cpos, fieldwidth);
+		}
 		
 		return;
 	}
 };
+
+/**
+ * lower_cpe_version - Generate a version string that is just less than current version
+ *
+ * The lower_cpe_version will generate a slightly lower version so that we
+ * can use that as the 'latest' vulnerable version.
+ */
+void lower_cpe_version(char * reducedVersion, const char * currentVersion) {
+	int ptr = swstrlen(currentVersion);
+	char lastChar;
+
+	lastChar = currentVersion[ptr-1];
+	if (lastChar == '0') {
+		snprintf(reducedVersion, FIELDSIZE, "%s_alpha", currentVersion);
+	} else {
+		strlcpy(reducedVersion, currentVersion, FIELDSIZE);
+		reducedVersion[ptr-1] = lastChar - 1;
+	}
+}
 
 /**
  * Copy bare information for a CPE
@@ -1455,23 +1497,16 @@ int load_cve(struct workstate * ws) {
 	char cpeId[CPELINESIZE];
 	char cvssNum[6];
 	char * bufferptr;
+	char * nextbufferptr;
 	long int ctr = 0;
 	long int dup = 0;
 	int linenum  = 1;
 	struct arguments * arg = ws->arg;
 	char field[BUFFERSIZE];
 	int fieldCounter = 0;
-	char tmpCpeId[3];
-	char tmpCpeVendor[FIELDSIZE];
-	char tmpCpeProduct[FIELDSIZE];
+	int fieldLength = 0;
 	char tmpCpeVersion[FIELDSIZE];
-	char tmpCpeUpdate[FIELDSIZE];
-	char tmpCpeEdition[FIELDSIZE];
-	char tmpCpeLanguage[FIELDSIZE];
-	char tmpCpeSwEdition[FIELDSIZE];
-	char tmpCpeTargetSw[FIELDSIZE];
-	char tmpCpeTargetHw[FIELDSIZE];
-	char tmpCpeOther[FIELDSIZE];
+	struct cpe_data tmpCpe;
 
 	fprintf(stdout, "Loading CVE data from %s into database\n", arg->cvedata);
 
@@ -1492,17 +1527,10 @@ int load_cve(struct workstate * ws) {
 	zero_string(buffer, BUFFERSIZE);
 	// buffer will contain a single line from the CSV file
 	while (fgets(buffer, BUFFERSIZE, cvelist) != 0) {
-		zero_string(tmpCpeId, 3);
-		zero_string(tmpCpeVendor, FIELDSIZE);
-		zero_string(tmpCpeProduct, FIELDSIZE);
 		zero_string(tmpCpeVersion, FIELDSIZE);
-		zero_string(tmpCpeUpdate, FIELDSIZE);
-		zero_string(tmpCpeEdition, FIELDSIZE);
-		zero_string(tmpCpeLanguage, FIELDSIZE);
-		zero_string(tmpCpeSwEdition, FIELDSIZE);
-		zero_string(tmpCpeTargetSw, FIELDSIZE);
-		zero_string(tmpCpeTargetHw, FIELDSIZE);
-		zero_string(tmpCpeOther, FIELDSIZE);
+		zero_string(cpeId, FIELDSIZE);
+		zero_string(cvssNum, 6);
+		zero_string(cveId, CVELINESIZE);
 
 		// Overflow?
 		if (buffer[BUFFERSIZE-1] != '\0') {
@@ -1522,11 +1550,20 @@ int load_cve(struct workstate * ws) {
 		bufferptr = buffer;
 		fieldCounter = 0;
 
-		// Split based on ':' character
+		// Split based on ',' character, cannot use strtok though as we have empty fields as well
 		int invalid_line = 0;
-		while (sscanf(bufferptr, "%[^:]s", field) == 1) {
-			int fieldLength = swstrlen(field);	// Capture field length up front as strtok_r modifies the string
-			if (fieldCounter == 0) {
+		nextbufferptr = strchr(bufferptr, ',');
+		if (nextbufferptr == NULL)
+			nextbufferptr = strchr(bufferptr, '\0'); // Point to ending of the line
+		while (bufferptr[0] != '\0') {
+			// Have the field array contain the field data
+			strlcpy(field, bufferptr, nextbufferptr - bufferptr + 1);
+			fieldLength = swstrlen(field);	// Capture field length up front as strtok_r modifies the string
+
+			if (fieldLength == 0) {
+				// Empty field
+
+			} else if (fieldCounter == 0) {
 				// Should be "CVE-####-####+" (CVE identifier)
 				char * sCVE;
 				char * token;
@@ -1562,10 +1599,12 @@ int load_cve(struct workstate * ws) {
 				iID = atoi(substring);
 
 				// Rewrite the string (now we know for sure it is correct format)
-				snprintf(cveId, CVELINESIZE, "CVE-%d-%d", iYear, iID);
+				snprintf(cveId, CVELINESIZE, "CVE-%d-%04d", iYear, iID);
 
 			} else if (fieldCounter == 1) {
-				// Should be [0-9]+.[0-9]+ or (due to jq interpretation) [0-9]+ (score) 
+				// Should be [0-9]+.[0-9]+ or (due to jq interpretation) [0-9]+ (Base CVSS v2 Impact Score) 
+				//
+				// Note that we will store the value in cvssNum, but if v3 base score is also provided it will take precedence!
 				unsigned int iPre;
 				unsigned int iPost;
 				if (sscanf(field, "%u.%u", &iPre, &iPost) != 2) {
@@ -1579,75 +1618,60 @@ int load_cve(struct workstate * ws) {
 				} else {
 					snprintf(cvssNum, 6, "%u.%u", iPre, iPost);
 				}
-
 			} else if (fieldCounter == 2) {
-				// Should be "cpe"
+				// Should be [0-9]+.[0-9]+ or (due to jq interpretation) [0-9]+ (Base CVSS v3 Impact Score) 
+				//
+				// Note that cvssNum might already have the v2 version. In that case, we will overwrite the value.
+				unsigned int iPre;
+				unsigned int iPost;
+				if (sscanf(field, "%u.%u", &iPre, &iPost) != 2) {
+					if (sscanf(field, "%u", &iPre) != 1) {
+						// Not both fields were correctly assigned
+						fprintf(stderr, " ! Error while reading in CVE entries: CVSS score in line %d did not match expected format\n", linenum);
+						return 1;
+					} else {
+						snprintf(cvssNum, 6, "%u.0", iPre);
+					}
+				} else {
+					snprintf(cvssNum, 6, "%u.%u", iPre, iPost);
+				}
+			} else if (fieldCounter == 3) {
+				// Should be the full CPE identifier
+				char * token;
+				char * cpePtr;
+
 				if (strncmp(field, "cpe", 3) != 0) {
 					fprintf(stderr, " ! Error while reading in CVE entries: expected 'cpe' string did not occur in line %d\n", linenum);
 					return 1;
 				}
-		    } else if (fieldCounter == 3) {
-			    // Should be "2.3" (CPE version)
-				if (strncmp(field, "2.3", 3) != 0) {
-				    fprintf(stderr, " ! Error while reading in CVE entries: CPE meta-version in line %d is not 2.3!", linenum);
-					invalid_line = 1;
-					break;
-				}
+
+				cpePtr = strtok_r(field, ",", &token);
+				strlcpy(cpeId, cpePtr, fieldLength+1);
 			} else if (fieldCounter == 4) {
-				// Should be "a", "o" or "h" (app, operating system or hardware)
-				if (
-					(strncmp(field, "a", 1) != 0) &&
-					(strncmp(field, "o", 1) != 0) &&
-					(strncmp(field, "h", 1) != 0) ) {
-					fprintf(stderr, " ! Error while reading in CVE entries: CPE type in line %d is not one of a/o/h\n", linenum);
-					invalid_line = 1;
-					break;
-				}
-				snprintf(tmpCpeId, 2, "%s", field);
+				// Should be the maximum CPU version (optional). This is the first version
+				// that is no longer vulnerable. Hence, we need to transform this into a 
+				// slightly lower version that would still be vulnerable (as cvechecker currently
+				// uses vulnerable version information rather than fixed information).
 
-			} else if (fieldCounter >= 5) {
-				// Should be a string (vendor, software title, version, edition, language, sw_edition, target_sw, target_hw or other)
-				int ptr = 0;
-				while(field[ptr] != 0) {
-					if (! isgraph(field[ptr]) ) {
-						fprintf(stderr, " ! Error while reading in CVE entries: information in the CPE of line %d is not readable\n", linenum);
-						return 1;
-					}
-					ptr++;
-				}
-				if (fieldCounter == 5)
-					snprintf(tmpCpeVendor, FIELDSIZE, "%s", field);
-				if (fieldCounter == 6)
-					snprintf(tmpCpeProduct, FIELDSIZE, "%s", field);
-				if (fieldCounter == 7)
-					snprintf(tmpCpeVersion, FIELDSIZE, "%s", field);
-				if (fieldCounter == 8)
-					snprintf(tmpCpeUpdate, FIELDSIZE, "%s", field);
-				if (fieldCounter == 9)
-					snprintf(tmpCpeEdition, FIELDSIZE, "%s", field);
-				if (fieldCounter == 10)
-					snprintf(tmpCpeLanguage, FIELDSIZE, "%s", field);
-				if (fieldCounter == 11)
-					snprintf(tmpCpeSwEdition, FIELDSIZE, "%s", field);
-				if (fieldCounter == 12)
-					snprintf(tmpCpeTargetSw, FIELDSIZE, "%s", field);
-				if (fieldCounter == 13)
-					snprintf(tmpCpeTargetHw, FIELDSIZE, "%s", field);
-				if (fieldCounter == 14)
-					snprintf(tmpCpeOther, FIELDSIZE, "%s", field);
-
+				lower_cpe_version(tmpCpeVersion, field);
+				string_to_cpe(&tmpCpe, cpeId);
+				strlcpy(tmpCpe.version, tmpCpeVersion, FIELDSIZE);
+				cpe_to_string(cpeId, FIELDSIZE, tmpCpe);
 			}
 
-			bufferptr = bufferptr + fieldLength + 1;
-			++fieldCounter;
+			
+			bufferptr = nextbufferptr + 1;
+			nextbufferptr = strchr(bufferptr, ',');
+			if (nextbufferptr == NULL)
+				nextbufferptr = strchr(bufferptr, '\0'); // Point to ending of the line
+			fieldCounter++;
 		}
+
 		if (invalid_line)
 			continue;
-		if ((swstrlen(tmpCpeVendor) == 0) || (swstrlen(tmpCpeProduct) == 0) || (swstrlen(tmpCpeVersion) == 0))
-			continue;
 
-		// Build the CPE up
-		snprintf(cpeId, CPELINESIZE, "cpe:2.3:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s", tmpCpeId, tmpCpeVendor, tmpCpeProduct, tmpCpeVersion, tmpCpeUpdate, tmpCpeEdition, tmpCpeLanguage, tmpCpeSwEdition, tmpCpeTargetSw, tmpCpeTargetHw, tmpCpeOther);
+		if (swstrlen(cpeId) == 0)
+			continue;
 
 		// Now load in the data in the database
 		if (ws->dbtype == sqlite)
