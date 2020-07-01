@@ -229,7 +229,7 @@ int add_to_mysql_database(struct workstate * ws, struct cpe_data cpe) {
     // Add (if necessary) the master CPE information to the database.
     struct cpe_data parentcpe; 
     int parent = 0;
-    copy_cpe(&parentcpe, &cpe);
+    copy_cpe_bare(&parentcpe, &cpe);
     parent = add_to_mysql_database(ws, parentcpe);
 
     // Now insert the current CPE to tb_cpe_parents with the new parent information.

@@ -251,7 +251,12 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 	}
 };
 
-int copy_cpe(struct cpe_data * target, struct cpe_data * source) {
+/**
+ * Copy bare information for a CPE
+ *
+ * Copy the vendor, product and version to the target, while emptying the other fields.
+ */
+int copy_cpe_bare(struct cpe_data * target, struct cpe_data * source) {
   struct cpe_data * ptr;
 
   target->part = source->part;
