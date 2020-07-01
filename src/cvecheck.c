@@ -1655,7 +1655,7 @@ int load_cve(struct workstate * ws) {
 		else if (ws->dbtype == mysql)
 			dup += mysql_dbimpl_store_cve_in_db(ws, cveId, cpeId, cvssNum);
 		ctr++;
-		if ((ctr % 100) == 0) {
+		if ((ctr % 1000) == 0) {
 			fprintf(stdout, " %ld records processed (%ld already in db)...\n", ctr, dup);
 			if (ws->dbtype == sqlite)
 				sqlite_dbimpl_store_cve_in_db_checkpoint(ws);
