@@ -72,7 +72,7 @@
 </ul>
 <h2>Installation</h2>
 <p>If your distribution already offers cvechecker through its package management system, I strongly advise that you use that. The installation instructions in this section assume that you do the installation manually (and should reflect the steps that the distribution package management system does for you).</p>
-<p>First, download the latest cvechecker package from <a href="#">http://cvechecker.sourceforge.net</a> (or <a href="#">http://sourceforge.net/projects/cvechecker/files/</a>), then extract it into a temporary directory:</p>
+<p>First, download the latest cvechecker package from <a href="#">https://github.com/sjvermeu/cvechecker/wiki/Download</a> (or <a href="#">https://github.com/sjvermeu/cvechecker/releases</a>), then extract it into a temporary directory:</p>
 <pre><code>~$ tar xvzf cvechecker-1.O.tar.gz</code></pre>
 <p>You need to select the database you want to use. cvechecker currently supports mysql and sqlite, and this support is enabled through the <code>./configure --enable-sqlite3</code> or <code>./configure --enable-mysql</code> options. You can select both too (they are not mutually exclusive) but you need to select at least one of them.</p>
 <p>Inside the extracted folder, first run <code>./configure</code> with the proper <code>--enable-&lt;database&gt;</code> options, followed by <code>make</code> and <code>make install</code>. If you use the default settings, it will install the files inside <code>/usr/local</code>, so you might need root privileges to perform the <code>make install</code> step.</p>

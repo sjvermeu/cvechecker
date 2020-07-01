@@ -10,7 +10,7 @@
       <email>sven.vermeulen@siphos.be</email>
     </author>
 
-    <pubdate>2017/03/01</pubdate>
+    <pubdate>2022/07/01</pubdate>
   </info>
 
   <section>
@@ -89,9 +89,9 @@
       management system does for you).</para>
 
       <para>First, download the latest cvechecker package from <link
-      xl:href="http://cvechecker.sourceforge.net">http://cvechecker.sourceforge.net</link>
+      xl:href="https://github.com/sjvermeu/cvechecker/wiki/Download">https://github.com/sjvermeu/cvechecker/wiki/Download</link>
       (or <link
-      xl:href="http://sourceforge.net/projects/cvechecker/files/">http://sourceforge.net/projects/cvechecker/files/</link>),
+      xl:href="https://github.com/sjvermeu/cvechecker/releases">https://github.com/sjvermeu/cvechecker/releases</link>),
       then extract it into a temporary directory:</para>
 
       <programlisting>~$ <command>tar xvzf cvechecker-1.O.tar.gz</command></programlisting>
