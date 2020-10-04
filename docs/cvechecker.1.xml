@@ -91,7 +91,7 @@
 
       <programlisting>find / -path /mnt -prune -o -path /media -prune -o -type f -perm -o+x &gt; scanlist.txt 
 echo "/proc/version" &gt;&gt; scanlist.txt
-cvechecker -b filelist.txt</programlisting>
+cvechecker -b scanlist.txt</programlisting>
 
       <para>It is possible to only update a part of the file database when you
       add the -d (--deltaonly) option. This is useful when you integrate
@@ -111,7 +111,7 @@ cvechecker -b filelist.txt</programlisting>
       detected software). As such, it is recommended to use the watchlist at
       the same time with your binary file listing, like so:pr</para>
 
-      <programlisting>cvechecker -b filelist.txt -w watchlist.txt</programlisting>
+      <programlisting>cvechecker -b scanlist.txt -w watchlist.txt</programlisting>
 
       <para>In the reports, watchlist-provided software will have a filename
       starting with "&lt;&lt;provided&gt;&gt;" and named after the CPE they
