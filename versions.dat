@@ -648,3 +648,4 @@
 ,mod_scgi.so,1,mod_scgi.so,lighttpd/([0-9][0-9]*(\.[0-9]+)+),a,lighttpd,lighttpd,\1,,,,,,,
 ,mod_fastcgi.so,1,mod_fastcgi.so,lighttpd/([0-9][0-9]*(\.[0-9]+)+),a,lighttpd,lighttpd,\1,,,,,,,
 ,mod_ssi.so,1,mod_ssi.so,lighttpd/([0-9][0-9]*(\.[0-9]+)+),a,lighttpd,lighttpd,\1,,,,,,,
+,firefox,1,firefox,https://crash-reports.*&version=([0-9]*(\.[0-9]*)),a,mozilla,firefox,\1,,,,,,,
