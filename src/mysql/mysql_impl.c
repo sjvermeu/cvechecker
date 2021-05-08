@@ -273,7 +273,6 @@ int mysql_dbimpl_process_binary(struct workstate * ws) {
   char buffer[SQLLINESIZE];
   MYSQL_RES * result;
   MYSQL_ROW row;
-  int num_fields;
 
   strcpy(buffer, "select v.filename as filename, v.filetype as filetype, v.filematch as filematch, v.contentmatch as contentmatch, c.cpepart as cpepart, c.cpevendor as cpevendor, c.cpeproduct as cpeproduct, c.cpeversion as cpeversion, c.cpeupdate as cpeupdate, c.cpeedition as cpeedition, c.cpelanguage as cpelanguage c.cpeswedition as cpeswedition, c.cpetargetsw as cpetargetsw, c.cpetargethw as cpetargethw, c.cpeother as cpeother from tb_versionmatch v, tb_cpe c where v.cpe = c.cpeid and \"");
   strcat(buffer, ws->currentfile);
@@ -281,7 +280,6 @@ int mysql_dbimpl_process_binary(struct workstate * ws) {
 
   MYSQL_QUERY(ws->conn, buffer)
   result = mysql_store_result(ws->conn);
-  num_fields = mysql_num_fields(result);
   
   while ((row = mysql_fetch_row(result))) {
     int rc;
@@ -326,7 +324,7 @@ int mysql_dbimpl_process_binary(struct workstate * ws) {
       if (ret == 0) {
         ret = add_to_mysql_database(ws, cpe_data);
         cpe_to_string(buffer, BUFFERSIZE, cpe_data);
-	update_binmatch_files(ws, ret);
+        update_binmatch_files(ws, ret);
         fprintf(stdout, " - Found match for %s/%s:\t%s\n", ws->currentdir, ws->currentfile, buffer);
       };
     } else {
@@ -345,7 +343,7 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
   sprintf(stmt, "SELECT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, b.cvss AS cvss, c.cpepart AS cpepart, c.cpevendor AS cpevendor, c.cpeproduct AS cpeproduct, c.cpeversion AS cpeversion, c.cpeupdate AS cpeupdate, c.cpeedition AS cpeedition, c.cpelanguage AS cpelanguage, c.cpeswedition AS cpeswedition, c.cpetargetsw AS cpetargetsw, c.cpetargethw AS cpetargethw, c.cpeother AS cpeother FROM tb_binmatch a, tb_cve b, tb_cpe c WHERE (a.cpe = b.cpe) AND (a.cpe = c.cpeid) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\")", ws->hostname, ws->userdefkey);
   MYSQL_QUERY(ws->conn, stmt)
   result = mysql_store_result(ws->conn);
-  while (row = mysql_fetch_row(result)) {
+  while ( (row = mysql_fetch_row(result)) ) {
     struct cpe_data cpedata;
     char filename[FILENAMESIZE*2+1];
     int year = 0;
@@ -375,7 +373,7 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
   sprintf(stmt, "SELECT a.basedir AS basedir, a.filename AS filename, b.year AS year, b.sequence AS sequence, b.cvss AS cvss, c.cpepart AS cpepart, c.cpevendor AS cpevendor, c.cpeproduct AS cpeproduct, c.cpeversion AS cpeversion, c.cpeupdate AS cpeupdate, c.cpeedition AS cpeedition, c.cpelanguage AS cpelanguage, c.cpeswedition AS cpeswedition, c.cpetargetsw AS cpetargetsw, c.cpetargethw AS cpetargethw, c.cpeother AS cpeother FROM tb_binmatch a, tb_cve b, tb_cpe c, tb_cpe_parents d WHERE (a.cpe = d.childcpe) AND (b.cpe = d.childcpe) AND (c.cpeid = d.mastercpe) AND (a.hostname = \"%s\") AND (a.userdefkey = \"%s\")", ws->hostname, ws->userdefkey);
   MYSQL_QUERY(ws->conn, stmt)
   result = mysql_store_result(ws->conn);
-  while (row = mysql_fetch_row(result)) {
+  while ( (row = mysql_fetch_row(result)) ) {
     struct cpe_data cpedata;
     char filename[FILENAMESIZE*2+1];
     int year = 0;
@@ -631,7 +629,7 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
     ")", ws->hostname, ws->userdefkey);
     MYSQL_QUERY(ws->conn, stmt)
     result = mysql_store_result(ws->conn);
-    while (row = mysql_fetch_row(result)) {
+    while ( (row = mysql_fetch_row(result)) ) {
       struct cpe_data cpedata;
       char filename[FILENAMESIZE*2+1];
       int year = 0;
@@ -799,11 +797,11 @@ int mysql_dbimpl_report_installed(struct workstate * ws, int showfiles) {
       i = 0;
       while (row2) {
         char * fullfilename = (char *) calloc(FIELDSIZE*2+1, sizeof(char));
-	sprintf(fullfilename, "%s/%s", row2[0], row2[1]);
-	ws->resultlist[i] = fullfilename;
+        sprintf(fullfilename, "%s/%s", row2[0], row2[1]);
+        ws->resultlist[i] = fullfilename;
 
-	i++;
-	row2 = mysql_fetch_row(result2);
+        i++;
+        row2 = mysql_fetch_row(result2);
       };
       mysql_free_result(result2);
       show_installed_software(ws, cpedata.vendor, cpedata.product, cpedata.version, cpedata.update, cpedata.edition, cpedata.language, cpedata.swedition, cpedata.targetsw, cpedata.targethw, cpedata.other, ws->numresults, (const char **) ws->resultlist);
@@ -917,12 +915,12 @@ int mysql_dbimpl_store_cve_in_db_checkpoint(struct workstate * ws) {
  * Initialize arguments structure with database-specific fields
  */
 int mysql_dbimpl_initialize_arguments(struct arguments * arg) {
-	return 0;
+  return 0;
 };
 
 /**
  * Check if mysql support is built in
  */
 int mysql_dbimpl_supported() {
-	return 1;
+  return 1;
 };
