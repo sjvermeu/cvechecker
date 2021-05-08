@@ -49,6 +49,7 @@ LIBS="$LIBS $CONFIG_LIBS $BSD_LIBS"
 # mysql
 AC_ARG_ENABLE(mysql, [  --enable-mysql	Enable MySQL support])
 if test "$enable_mysql" == "yes"; then
+  PKG_CHECK_MODULES([MYSQL], [mysqlclient]);
   MYSQL_LIBS=$(mysql_config --libs)
   LIBS="$LIBS $MYSQL_LIBS";
 fi
