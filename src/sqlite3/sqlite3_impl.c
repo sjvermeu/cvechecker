@@ -37,43 +37,43 @@ int get_cpe_dataresult(void * cbobj, int argc, char **argv, char **azColName) {
                         continue;
                 }
                 if (strcmp(azColName[i], "cpevendor") == 0) {
-                        strncpy(ws->cpebuffer.vendor, argv[i], FIELDSIZE);
+                        strncpy(ws->cpebuffer.vendor, argv[i], FIELDSIZE-1);
                         continue;
                 }
                 if (strcmp(azColName[i], "cpeproduct") == 0) {
-                        strncpy(ws->cpebuffer.product, argv[i], FIELDSIZE);
+                        strncpy(ws->cpebuffer.product, argv[i], FIELDSIZE-1);
                         continue;
                 }
                 if (strcmp(azColName[i], "cpeversion") == 0) {
-                        strncpy(ws->cpebuffer.version, argv[i], FIELDSIZE);
+                        strncpy(ws->cpebuffer.version, argv[i], FIELDSIZE-1);
                         continue;
                 }
                 if (strcmp(azColName[i], "cpeupdate") == 0) {
-                        strncpy(ws->cpebuffer.update, argv[i], FIELDSIZE);
+                        strncpy(ws->cpebuffer.update, argv[i], FIELDSIZE-1);
                         continue;
                 }
                 if (strcmp(azColName[i], "cpeedition") == 0) {
-                        strncpy(ws->cpebuffer.edition, argv[i], FIELDSIZE);
+                        strncpy(ws->cpebuffer.edition, argv[i], FIELDSIZE-1);
                         continue;
                 }
                 if (strcmp(azColName[i], "cpelanguage") == 0) {
-                        strncpy(ws->cpebuffer.language, argv[i], FIELDSIZE);
+                        strncpy(ws->cpebuffer.language, argv[i], FIELDSIZE-1);
                         continue;
                 };
                 if (strcmp(azColName[i], "cpeswedition") == 0) {
-                        strncpy(ws->cpebuffer.swedition, argv[i], FIELDSIZE);
+                        strncpy(ws->cpebuffer.swedition, argv[i], FIELDSIZE-1);
                         continue;
                 };
                 if (strcmp(azColName[i], "cpetargetsw") == 0) {
-                        strncpy(ws->cpebuffer.targetsw, argv[i], FIELDSIZE);
+                        strncpy(ws->cpebuffer.targetsw, argv[i], FIELDSIZE-1);
                         continue;
                 };
                 if (strcmp(azColName[i], "cpetargethw") == 0) {
-                        strncpy(ws->cpebuffer.targethw, argv[i], FIELDSIZE);
+                        strncpy(ws->cpebuffer.targethw, argv[i], FIELDSIZE-1);
                         continue;
                 };
                 if (strcmp(azColName[i], "cpeother") == 0) {
-                        strncpy(ws->cpebuffer.other, argv[i], FIELDSIZE);
+                        strncpy(ws->cpebuffer.other, argv[i], FIELDSIZE-1);
                         continue;
                 };
         };
@@ -92,11 +92,11 @@ int get_filelist(void * cbobj, int argc, char **argv, char **azColName) {
 
         for (i = 0; i < argc; i++) {
                 if (strcmp(azColName[i], "basedir") == 0) {
-                        strncpy(basedir, argv[i], FILENAMESIZE);
+                        strncpy(basedir, argv[i], FILENAMESIZE-1);
                         continue;
                 }
                 if (strcmp(azColName[i], "filename") == 0) {
-                        strncpy(filename, argv[i], FILENAMESIZE);
+                        strncpy(filename, argv[i], FILENAMESIZE-1);
                         continue;
                 };
         };
@@ -243,12 +243,12 @@ int feed_cpe_versions_table(struct workstate * ws, char type, int length) {
     for (d = 0; d < 15; d++)
       f[d] = get_version_field((char *) cpeversion, d); // get the next version part (from the string)
 
-      // ... add the expanded version into the tb_cpe_versions table
-      zero_string(stmt, SQLLINESIZE);
-      sprintf(stmt, "INSERT OR REPLACE INTO tb_cpe_versions (cpeversion, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15) values (\"%s\", %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);", cpeversion, f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13], f[14]);
-      rc = run_statement(ws, get_local_db(ws, type, length), stmt);
-      if (rc)
-        break;
+    // ... add the expanded version into the tb_cpe_versions table
+    zero_string(stmt, SQLLINESIZE);
+    sprintf(stmt, "INSERT OR REPLACE INTO tb_cpe_versions (cpeversion, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15) values (\"%s\", %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d);", cpeversion, f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13], f[14]);
+    rc = run_statement(ws, get_local_db(ws, type, length), stmt);
+    if (rc)
+      break;
   };
   ASSERT_FINALIZE(rc, stmt, versstmt)
 
@@ -1028,10 +1028,10 @@ void find_cpe_for_software(struct workstate * ws, char cpepart, int cpevendorlen
     int cpeid;
 
     cpeid = sqlite3_column_int(cpe_stmt, 0);
-    sprintf(inset2, "%s%d,", inset1, cpeid);
+    snprintf(inset2, SQLLINESIZE, "%s%d,", inset1, cpeid);
     strcpy(inset1, inset2);
   };
-  sprintf(inset2, "%s0)", inset1);
+  snprintf(inset2, SQLLINESIZE, "%s0)", inset1);
   ASSERT_FINALIZE(rc, stmt, cpe_stmt)
 
   find_cve_for_cpe(ws, cpepart, cpevendorlength, cpe, inset2);
