@@ -260,6 +260,8 @@ int update_binmatch_files(struct workstate * ws, int cpeid) {
   MYSQL_QUERY(ws->conn, stmt)
   sprintf(stmt, "insert into tb_binmatch (basedir, filename, cpe, fullmatch, hostname, userdefkey) values (\"%s\", \"%s\", %d, 1, \"%s\", \"%s\")", ws->currentdir, ws->currentfile, cpeid, ws->hostname, ws->userdefkey);
   MYSQL_QUERY(ws->conn, stmt)
+
+  return 0;
 };
 
 
@@ -332,6 +334,8 @@ int mysql_dbimpl_process_binary(struct workstate * ws) {
     };
     return 0;
   };
+
+  return 0;
 };
 
 int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
@@ -656,6 +660,8 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
     }
     mysql_free_result(result);
   }
+
+  return 0;
 };
 
 int mysql_dbimpl_initialize_workstate(struct workstate * ws) {
@@ -743,6 +749,8 @@ int mysql_dbimpl_initialize_databases(struct workstate * ws) {
   MYSQL_QUERY(ws->conn, "CREATE INDEX cpe_versions_2_idx on tb_cpe_versions (f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15)")
   
   MYSQL_QUERY(ws->conn, "CREATE TABLE tb_cpe_parents (mastercpe int, childcpe int, FOREIGN KEY (mastercpe) REFERENCES tb_cpe(cpeid) ON DELETE CASCADE, FOREIGN KEY (childcpe) REFERENCES tb_cpe(cpeid) ON DELETE CASCADE) ENGINE=InnoDB")
+
+  return 0;
 };
 
 /**
