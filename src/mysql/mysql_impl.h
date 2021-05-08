@@ -20,6 +20,9 @@
     return 1; \
   };
 
+// add_to_mysql_database - Add the selected CPE to the database
+int add_to_mysql_database(struct workstate * ws, struct cpe_data cpe);
+
 // mysql_dbimpl_initialize_workstate - Initialize the workstate variable
 int mysql_dbimpl_initialize_workstate(struct workstate * ws);
 
@@ -70,5 +73,8 @@ int mysql_dbimpl_add_cpe_to_database(struct workstate * ws, struct cpe_data cpe)
 
 // mysql_dbimpl_supported - Check if mysql support is built in
 int mysql_dbimpl_supported();
+
+// update_binmatch_files - Update the tb_binmatch table with (new) cpeids
+int update_binmatch_files(struct workstate * ws, int cpeid);
 
 #endif

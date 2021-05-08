@@ -115,6 +115,9 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer);
 // lower_cpe_version - Generate a version that is just below the current one
 void lower_cpe_version(char * reducedVersion, const char * currentVersion);
 
+// copy_cpe_bare - Copy bare information for a CPE
+int copy_cpe_bare(struct cpe_data * target, struct cpe_data * source);
+
 // cve_to_vars - Convert the cve identifier (string) to a year/sequence combination
 int cve_to_vars(int * year, int * sequence, char * cveId);
 
