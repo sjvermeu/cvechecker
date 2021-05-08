@@ -359,16 +359,16 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
     sequence = atoi(row[3]);
     cvssScore = atoi(row[4]);
     cpedata.part = row[5][0];
-    strncpy(cpedata.vendor, row[6], FIELDSIZE);
-    strncpy(cpedata.product, row[7], FIELDSIZE);
-    strncpy(cpedata.version, row[8], FIELDSIZE);
-    strncpy(cpedata.update, row[9], FIELDSIZE);
-    strncpy(cpedata.edition, row[10], FIELDSIZE);
-    strncpy(cpedata.language, row[11], FIELDSIZE);
-    strncpy(cpedata.swedition, row[12], FIELDSIZE);
-    strncpy(cpedata.targetsw, row[13], FIELDSIZE);
-    strncpy(cpedata.targethw, row[14], FIELDSIZE);
-    strncpy(cpedata.other, row[15], FIELDSIZE);
+    strncpy(cpedata.vendor, row[6], FIELDSIZE-1);
+    strncpy(cpedata.product, row[7], FIELDSIZE-1);
+    strncpy(cpedata.version, row[8], FIELDSIZE-1);
+    strncpy(cpedata.update, row[9], FIELDSIZE-1);
+    strncpy(cpedata.edition, row[10], FIELDSIZE-1);
+    strncpy(cpedata.language, row[11], FIELDSIZE-1);
+    strncpy(cpedata.swedition, row[12], FIELDSIZE-1);
+    strncpy(cpedata.targetsw, row[13], FIELDSIZE-1);
+    strncpy(cpedata.targethw, row[14], FIELDSIZE-1);
+    strncpy(cpedata.other, row[15], FIELDSIZE-1);
   
     show_potential_vulnerabilities(ws, year, sequence, cvssScore, filename, cpedata, 0);
   }
@@ -389,16 +389,16 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
     sequence = atoi(row[3]);
     cvssScore = atoi(row[4]);
     cpedata.part = row[6][0];
-    strncpy(cpedata.vendor, row[6], FIELDSIZE);
-    strncpy(cpedata.product, row[7], FIELDSIZE);
-    strncpy(cpedata.version, row[8], FIELDSIZE);
-    strncpy(cpedata.update, row[9], FIELDSIZE);
-    strncpy(cpedata.edition, row[10], FIELDSIZE);
-    strncpy(cpedata.language, row[11], FIELDSIZE);
-    strncpy(cpedata.swedition, row[12], FIELDSIZE);
-    strncpy(cpedata.targetsw, row[13], FIELDSIZE);
-    strncpy(cpedata.targethw, row[14], FIELDSIZE);
-    strncpy(cpedata.other, row[15], FIELDSIZE);
+    strncpy(cpedata.vendor, row[6], FIELDSIZE-1);
+    strncpy(cpedata.product, row[7], FIELDSIZE-1);
+    strncpy(cpedata.version, row[8], FIELDSIZE-1);
+    strncpy(cpedata.update, row[9], FIELDSIZE-1);
+    strncpy(cpedata.edition, row[10], FIELDSIZE-1);
+    strncpy(cpedata.language, row[11], FIELDSIZE-1);
+    strncpy(cpedata.swedition, row[12], FIELDSIZE-1);
+    strncpy(cpedata.targetsw, row[13], FIELDSIZE-1);
+    strncpy(cpedata.targethw, row[14], FIELDSIZE-1);
+    strncpy(cpedata.other, row[15], FIELDSIZE-1);
   
     show_potential_vulnerabilities(ws, year, sequence, cvssScore, filename, cpedata, 1);
   }
@@ -645,16 +645,16 @@ int mysql_dbimpl_verify_installed_versus_cve(struct workstate * ws) {
       sequence = atoi(row[3]);
       cvssScore = atoi(row[4]);
       cpedata.part = row[5][0];
-      strncpy(cpedata.vendor, row[6], FIELDSIZE);
-      strncpy(cpedata.product, row[7], FIELDSIZE);
-      strncpy(cpedata.version, row[8], FIELDSIZE);
-      strncpy(cpedata.update, row[9], FIELDSIZE);
-      strncpy(cpedata.edition, row[10], FIELDSIZE);
-      strncpy(cpedata.language, row[11], FIELDSIZE);
-      strncpy(cpedata.swedition, row[12], FIELDSIZE);
-      strncpy(cpedata.targetsw, row[13], FIELDSIZE);
-      strncpy(cpedata.targethw, row[14], FIELDSIZE);
-      strncpy(cpedata.other, row[15], FIELDSIZE);
+      strncpy(cpedata.vendor, row[6], FIELDSIZE-1);
+      strncpy(cpedata.product, row[7], FIELDSIZE-1);
+      strncpy(cpedata.version, row[8], FIELDSIZE-1);
+      strncpy(cpedata.update, row[9], FIELDSIZE-1);
+      strncpy(cpedata.edition, row[10], FIELDSIZE-1);
+      strncpy(cpedata.language, row[11], FIELDSIZE-1);
+      strncpy(cpedata.swedition, row[12], FIELDSIZE-1);
+      strncpy(cpedata.targetsw, row[13], FIELDSIZE-1);
+      strncpy(cpedata.targethw, row[14], FIELDSIZE-1);
+      strncpy(cpedata.other, row[15], FIELDSIZE-1);
    
       show_potential_vulnerabilities(ws, year, sequence, cvssScore, filename, cpedata, 2);
     }
@@ -771,16 +771,16 @@ int mysql_dbimpl_report_installed(struct workstate * ws, int showfiles) {
 
     cpe = atoi(row[0]);
     cpedata.part = row[1][0];
-    strncpy(cpedata.vendor, row[2], FIELDSIZE);
-    strncpy(cpedata.product, row[3], FIELDSIZE);
-    strncpy(cpedata.version, row[4], FIELDSIZE);
-    strncpy(cpedata.update, row[5], FIELDSIZE);
-    strncpy(cpedata.edition, row[6], FIELDSIZE);
-    strncpy(cpedata.language, row[7], FIELDSIZE);
-    strncpy(cpedata.swedition, row[8], FIELDSIZE);
-    strncpy(cpedata.targetsw, row[9], FIELDSIZE);
-    strncpy(cpedata.targethw, row[10], FIELDSIZE);
-    strncpy(cpedata.other, row[11], FIELDSIZE);
+    strncpy(cpedata.vendor, row[2], FIELDSIZE-1);
+    strncpy(cpedata.product, row[3], FIELDSIZE-1);
+    strncpy(cpedata.version, row[4], FIELDSIZE-1);
+    strncpy(cpedata.update, row[5], FIELDSIZE-1);
+    strncpy(cpedata.edition, row[6], FIELDSIZE-1);
+    strncpy(cpedata.language, row[7], FIELDSIZE-1);
+    strncpy(cpedata.swedition, row[8], FIELDSIZE-1);
+    strncpy(cpedata.targetsw, row[9], FIELDSIZE-1);
+    strncpy(cpedata.targethw, row[10], FIELDSIZE-1);
+    strncpy(cpedata.other, row[11], FIELDSIZE-1);
 
     if (showfiles) {
       MYSQL_RES * result2;
