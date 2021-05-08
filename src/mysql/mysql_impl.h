@@ -2,6 +2,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <regex.h>
+#include <mysql/mysql.h>
 #include "../swstring.h"
 #include "../output/stringscmd.h"
 #include "../cvecheck_common.h"
