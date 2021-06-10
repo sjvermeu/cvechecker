@@ -38,7 +38,7 @@ static error_t parse_opt (int key, char * arg, struct argp_state *state);
 #endif
 
 const char * argp_program_version     = PACKAGE_STRING;
-const char * argp_program_bug_address = "<sven.vermeulen@siphos.be>";
+const char * argp_program_bug_address = PACKAGE_BUGREPORT;
 
 static char doc[]      = "cvechecker -- Verify the state of the system against a CVE database";
 static char args_doc[] = "";
