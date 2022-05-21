@@ -508,7 +508,7 @@ int initialize_configfile(struct workstate * ws) {
 
 	//Check for configuration file in /usr/local/etc
 	zero_string(configfile, FILENAMESIZE);
-	strcpy(configfile, "/usr/local/etc/cvechecker.conf");
+	strcpy(configfile, SYSCONFDIR "/cvechecker.conf");
 	if (initialize_configuration(ws, configfile) == 0) {
 		free(configfile);
 		return 0;
@@ -523,7 +523,7 @@ int initialize_configfile(struct workstate * ws) {
 		return 0;
 	};
 
-	fprintf(stderr, "Could not locate a configuration file. Environment variable \"%s\" was not set. No \".cvechecker.rc\" file was located in the users home directory and no \"cvechecker.conf\" file was located in either of the \"/usr/local/etc\" or \"/etc\" directories.", ENV_VARIABLE);
+	fprintf(stderr, "Could not locate a configuration file. Environment variable \"%s\" was not set. No \".cvechecker.rc\" file was located in the users home directory and no \"cvechecker.conf\" file was located in either of the \"" SYSCONFDIR "\" or \"/etc\" directories.", ENV_VARIABLE);
 	exit(EXIT_FAILURE);
 
 };

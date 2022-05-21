@@ -24,9 +24,9 @@ then
 elif [ -f ~/.cvechecker.rc ]
 then
   CONFFILE=~/.cvechecker.rc
-elif [ -f /usr/local/etc/cvechecker.conf ]
+elif [ -f SYSCONFDIR/cvechecker.conf ]
 then
-  CONFFILE=/usr/local/etc/cvechecker.conf
+  CONFFILE=SYSCONFDIR/cvechecker.conf
 elif [ -f /etc/cvechecker.conf ]
 then
   CONFFILE=/etc/cvechecker.conf
