@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <libconfig.h>
 #include <string.h>
-#include <bsd/string.h>
 
 #ifdef _USE_SQLITE3
 #include <sqlite3.h>
@@ -15,7 +14,7 @@
  * Copyright 2010-2020 Sven Vermeulen.
  * Subject to the GNU Public License, version 3.
  */
- 
+
 #ifndef _CVETYPES
 #define _CVETYPES
 
@@ -23,7 +22,7 @@
 #define LARGEFIELDSIZE 512
 #define FILENAMESIZE 256
 #define BUFFERSIZE 256
-#define CVELINESIZE 24 
+#define CVELINESIZE 24
 #define CPELINESIZE (7 + FIELDSIZE*11 + 5)
 #define VERSIONLINESIZE (FILENAMESIZE*2 + 5 + CPELINESIZE)
 // Normally, around 1800 ought to be enough (largest SELECT statement with assumption of largest values)

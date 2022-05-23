@@ -4,24 +4,6 @@ AM_INIT_AUTOMAKE([subdir-objects foreign])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
 
-AC_MSG_CHECKING([Determining host operating system])
-OSNAME=`uname -s`
-AC_MSG_RESULT($OSNAME)
-case "$OSNAME" in
-  FreeBSD*)
-    # Include the packages - needed for argp_standalone
-    export CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-    export LDFLAGS="$LDFLAGS -L /usr/local/lib"
-    AC_MSG_RESULT([FreeBSD: adding /usr/local])
-    ;;
-  NetBSD*)
-    # Include the packages - needed for argp
-    export CPPFLAGS="$CPPFLAGS -I/usr/pkg/include"
-    export LDFLAGS="$LDFLAGS -L /usr/pkg/lib"
-    AC_MSG_RESULT([NetBSD: adding /usr/pkg])
-    ;;
-esac
-
 # Checks for programs.
 AC_PROG_CC
 AC_GNU_SOURCE
@@ -30,21 +12,39 @@ AC_GNU_SOURCE
 AC_CHECK_HEADERS([stdlib.h],,[AC_MSG_ERROR([stdlib.h header missing])])
 AC_CHECK_HEADERS([string.h],,[AC_MSG_ERROR([string.h header missing])])
 AC_CHECK_HEADERS([unistd.h],,[AC_MSG_ERROR([unistd.h header missing])])
-AC_CHECK_HEADERS([argp.h],,[AC_MSG_ERROR([argp.h header missing (part of GNU coreutils)])])
-AC_CHECK_HEADERS([string.h],,[AC_MSG_ERROR([string.h header missing])])
 
 # Checks for library functions.
-AC_CHECK_FUNCS([gethostname memset regcomp strchr strrchr strstr strlcpy],,
-  [PKG_CHECK_MODULES([BSD], [libbsd])])
+AC_CHECK_FUNCS([gethostname memset regcomp strchr strrchr strstr])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 
+# Checks for dependencies.
 AC_MSG_WARN([Please make sure pkg-config is installed and autoreconf run])
-PKG_CHECK_MODULES([BSD], [libbsd])
+
+# libbsd is obligatory on systems where strlcpy is not in libc.
+# https://man.openbsd.org/strlcpy.3
+# https://libbsd.freedesktop.org/wiki/
+AC_CHECK_FUNC([strlcpy],, [LIBBSD_NEEDED=yes])
+AS_IF([test "x$LIBBSD_NEEDED" = "xyes"], [
+  PKG_CHECK_MODULES([LIBBSD], [libbsd-overlay])
+])
+
 PKG_CHECK_MODULES([CONFIG], [libconfig >= 1.3])
-CFLAGS="$CFLAGS $CONFIG_CFLAGS"
-LIBS="$LIBS $CONFIG_LIBS $BSD_LIBS"
+
+# The BSD systems don't have packages in the default include/library
+# paths. Let our pkg-config dependencies add those paths for us BEFORE we look
+# for argp.
+CFLAGS="$CFLAGS $CONFIG_CFLAGS $LIBBSD_CFLAGS"
+LIBS="$LIBS $CONFIG_LIBS $LIBBSD_LIBS"
+
+# argp-standalone is obligatory on systems where argp is not in libc.
+# https://www.gnu.org/software/libc/manual/html_node/Argp.html
+# https://github.com/argp-standalone/argp-standalone
+AC_SEARCH_LIBS([argp_parse], [argp],,
+  [AC_MSG_ERROR([argp-standalone dependency missing])]
+)
+
 ## --with configs
 # mysql
 AC_ARG_ENABLE(mysql, [  --enable-mysql	Enable MySQL support])
