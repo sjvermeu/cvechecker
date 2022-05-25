@@ -3,7 +3,7 @@
  * Copyright 2010-2020 Sven Vermeulen.
  * Subject to the GNU Public License, version 3.
  */
- 
+
 /***********************************************************************************************
  * Helper functions for the CPE and CVE structures
  ***********************************************************************************************/
@@ -36,7 +36,7 @@ void cpe_to_string(char * buffer, int buffsize, struct cpe_data cpe) {
 
 	rc = snprintf(buffer, buffsize, "cpe:2.3:%c:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s", cpe.part, cpe.vendor, cpe.product, cpe.version, cpe.update, cpe.edition, cpe.language, cpe.swedition, cpe.targetsw, cpe.targethw, cpe.other);
 	if ((rc == 0) || (rc == buffsize)) {
-		/* 
+		/*
 		 * No bytes written, or buffer full -> doesn't seem right.  Return null
 		 */
 		zero_string(buffer, buffsize);
@@ -170,7 +170,7 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		snprintf(cpe->targetsw, 2, "*");
 		snprintf(cpe->targethw, 2, "*");
 		snprintf(cpe->other, 2, "*");
-		
+
 		return;
 	}
 
@@ -191,7 +191,7 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		snprintf(cpe->targetsw, 2, "*");
 		snprintf(cpe->targethw, 2, "*");
 		snprintf(cpe->other, 2, "*");
-		
+
 		return;
 	}
 
@@ -211,7 +211,7 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		snprintf(cpe->targetsw, 2, "*");
 		snprintf(cpe->targethw, 2, "*");
 		snprintf(cpe->other, 2, "*");
-		
+
 		return;
 	}
 
@@ -230,7 +230,7 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 		strlcpy(cpe->targetsw, cpos, fieldwidth);
 		snprintf(cpe->targethw, 2, "*");
 		snprintf(cpe->other, 2, "*");
-		
+
 		return;
 	}
 
@@ -248,7 +248,7 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 			fieldwidth = FIELDSIZE;
 		strlcpy(cpe->targethw, cpos, fieldwidth);
 		snprintf(cpe->other, 2, "*");
-		
+
 		return;
 	}
 
@@ -269,7 +269,7 @@ void string_to_cpe(struct cpe_data * cpe, char * buffer) {
 				fieldwidth = FIELDSIZE;
 			strlcpy(cpe->other, cpos, fieldwidth);
 		}
-		
+
 		return;
 	}
 };
@@ -377,9 +377,9 @@ int cve_to_vars(int * year, int * sequence, char * cveId) {
  * an integer field (part of the version). If non-numbers are found, they
  * are usually seen as a field separator.
  *
- * However, if the first character of a non-number field is '.', '-' or '_' 
- * and the next character is part of a-z or A-Z, then this next character is 
- * seen as a /negative/ value. If the first character of a non-number field is 
+ * However, if the first character of a non-number field is '.', '-' or '_'
+ * and the next character is part of a-z or A-Z, then this next character is
+ * seen as a /negative/ value. If the first character of a non-number field is
  * part of a-z or A-Z, then it is seen as a positive number.
  *
  * Example:
@@ -405,7 +405,7 @@ int get_version_field(const char * version, int fieldnum) {
       // Not this field. Jump to next
       while (((version[charctr] >= '0') && (version[charctr] <= '9')) && (charctr < maxchar))
         charctr++;
-      fieldnum--;  
+      fieldnum--;
       // If next character is ., - or _, skip it first
       if ((version[charctr] == '.') || (version[charctr] == '-') || (version[charctr] == '_')) {
         usepositive = -1;
@@ -443,7 +443,7 @@ int initialize_configuration(struct workstate * ws, char * configfile) {
 	struct stat filestat;
 	if (stat(configfile, &filestat) > -1) {
 		if (config_read_file(ws->cfg, configfile) == CONFIG_FALSE) {
-			fprintf(stderr, "Could not process configuration file \"%s\" - %s at line %d", configfile, config_error_text(ws->cfg), config_error_line(ws->cfg));
+			fprintf(stderr, "Could not process configuration file \"%s\" - %s at line %d\n", configfile, config_error_text(ws->cfg), config_error_line(ws->cfg));
 			exit(EXIT_FAILURE);
 		} else {
 			return 0;
@@ -523,7 +523,7 @@ int initialize_configfile(struct workstate * ws) {
 		return 0;
 	};
 
-	fprintf(stderr, "Could not locate a configuration file. Environment variable \"%s\" was not set. No \".cvechecker.rc\" file was located in the users home directory and no \"cvechecker.conf\" file was located in either of the \"" SYSCONFDIR "\" or \"/etc\" directories.", ENV_VARIABLE);
+	fprintf(stderr, "Could not locate a configuration file. Environment variable \"%s\" was not set. No \".cvechecker.rc\" file was located in the users home directory and no \"cvechecker.conf\" file was located in either of the \"" SYSCONFDIR "\" or \"/etc\" directories.\n", ENV_VARIABLE);
 	exit(EXIT_FAILURE);
 
 };
@@ -604,7 +604,7 @@ int initialize_workstate(struct workstate * ws, struct arguments * arg) {
 			strlcpy(ws->userdefkey, config_setting_get_string(confkey), FIELDSIZE);
 		}
 	};
-	
+
 
 	if (ws->dbtype == sqlite) {
 		// Call argument check (this is not possible before as we did not
@@ -643,7 +643,7 @@ int load_databases(struct workstate * ws) {
 	else if (ws->dbtype == mysql) {
 		return mysql_dbimpl_load_databases(ws);
 	}
-	
+
 	return 1;
 };
 
@@ -705,7 +705,7 @@ void verify_installed_versus_cve(struct workstate * ws) {
 		fprintf(stdout, "Outputversion,File,CPE,CVE,CVSS,Matchtype,Hostname,Userkey\n");
 	if (ws->dbtype == sqlite)
 		sqlite_dbimpl_verify_installed_versus_cve(ws);
-	else if (ws->dbtype == mysql) 
+	else if (ws->dbtype == mysql)
 		mysql_dbimpl_verify_installed_versus_cve(ws);
 }
 
@@ -769,9 +769,9 @@ void show_potential_vulnerabilities(struct workstate * ws, int cveyear, int cven
 	  matchtype = 0;
 	else if (versiononly == 0)
 	  matchtype = 1;
-	else 
+	else
 	  matchtype = versiononly;
-		
+
 	zero_string(buffer, BUFFERSIZE);
 	cpe_to_string(buffer, BUFFERSIZE, cpe);
 	if (arg->docsvoutput) {
@@ -1221,7 +1221,7 @@ int add_cpe(char * line, struct workstate * ws) {
  * If a line contains a possible candidate (file is readable, etc.), call
  * match_binary against it.
  */
-int process_binfile(char * line, struct workstate * ws) { 
+int process_binfile(char * line, struct workstate * ws) {
 	struct stat filestat;
 	int rc = 0;
 
@@ -1234,7 +1234,7 @@ int process_binfile(char * line, struct workstate * ws) {
 
 	// Only follow readable files
 	if (filestat.st_mode & S_IROTH) {
-		rc = match_binary(line, ws);	
+		rc = match_binary(line, ws);
 	};
 
 
@@ -1247,7 +1247,7 @@ int process_binfile(char * line, struct workstate * ws) {
 void clear_versiondata(struct workstate * ws) {
 	if (ws->dbtype == sqlite)
 		sqlite_dbimpl_clear_versiondata(ws);
-	else if (ws->dbtype == mysql) 
+	else if (ws->dbtype == mysql)
 		mysql_dbimpl_clear_versiondata(ws);
 };
 
@@ -1314,7 +1314,7 @@ int load_version_data(struct workstate * ws) {
 /**
  * Load in the CPE data from the provided file
  *
- * The watchlist contains CPEs which should be assumed to be installed on the 
+ * The watchlist contains CPEs which should be assumed to be installed on the
  * system (or at least be watched for vulnerabilities of any kind).
  * This allows administrators to provide CPEs for software that cvechecker
  * cannot detect yet.
@@ -1330,7 +1330,7 @@ int load_watch_list(struct workstate * ws) {
 	rc = init_watchlist(ws);
 	if (rc)
 		return rc;
-	
+
 	if (!((ws->arg->deltaonly) || (ws->arg->deletedeltaonly)) && (ws->versionListCleared != 1)) {
 		rc = clear_versiondatabase(ws);
 		ws->versionListCleared = 1;
@@ -1396,7 +1396,7 @@ int get_installed_software(struct workstate * ws) {
 	zero_string(line, FILENAMESIZE);
 
 	rc = init_binlist(ws);
-	if (rc) 
+	if (rc)
 		return rc;
 
 	if (!((ws->arg->deltaonly) || (ws->arg->deletedeltaonly)) && (ws->versionListCleared != 1)) {
@@ -1587,7 +1587,7 @@ int load_cve(struct workstate * ws) {
 					fprintf(stderr, " ! Error while reading in CVE entries: CVE year in line %d failed to be parsed\n", linenum);
 					return 1;
 				};
-				iYear = atoi(substring);				
+				iYear = atoi(substring);
 
 				// Token 3 = CVE sequence (integer)
 				substring = strtok_r(NULL, "-", &token);
@@ -1602,7 +1602,7 @@ int load_cve(struct workstate * ws) {
 				snprintf(cveId, CVELINESIZE, "CVE-%d-%04d", iYear, iID);
 
 			} else if (fieldCounter == 1) {
-				// Should be [0-9]+.[0-9]+ or (due to jq interpretation) [0-9]+ (Base CVSS v2 Impact Score) 
+				// Should be [0-9]+.[0-9]+ or (due to jq interpretation) [0-9]+ (Base CVSS v2 Impact Score)
 				//
 				// Note that we will store the value in cvssNum, but if v3 base score is also provided it will take precedence!
 				unsigned int iPre;
@@ -1619,7 +1619,7 @@ int load_cve(struct workstate * ws) {
 					snprintf(cvssNum, 6, "%u.%u", iPre, iPost);
 				}
 			} else if (fieldCounter == 2) {
-				// Should be [0-9]+.[0-9]+ or (due to jq interpretation) [0-9]+ (Base CVSS v3 Impact Score) 
+				// Should be [0-9]+.[0-9]+ or (due to jq interpretation) [0-9]+ (Base CVSS v3 Impact Score)
 				//
 				// Note that cvssNum might already have the v2 version. In that case, we will overwrite the value.
 				unsigned int iPre;
@@ -1649,7 +1649,7 @@ int load_cve(struct workstate * ws) {
 				strlcpy(cpeId, cpePtr, fieldLength+1);
 			} else if (fieldCounter == 4) {
 				// Should be the maximum CPU version (optional). This is the first version
-				// that is no longer vulnerable. Hence, we need to transform this into a 
+				// that is no longer vulnerable. Hence, we need to transform this into a
 				// slightly lower version that would still be vulnerable (as cvechecker currently
 				// uses vulnerable version information rather than fixed information).
 
@@ -1659,7 +1659,7 @@ int load_cve(struct workstate * ws) {
 				cpe_to_string(cpeId, FIELDSIZE, tmpCpe);
 			}
 
-			
+
 			bufferptr = nextbufferptr + 1;
 			nextbufferptr = strchr(bufferptr, ',');
 			if (nextbufferptr == NULL)
@@ -1700,7 +1700,7 @@ int load_cve(struct workstate * ws) {
 	fclose(cvelist);
 
 	return 0;
-		
+
 };
 
 /**
@@ -1761,7 +1761,7 @@ static error_t parse_opt (int key, char * arg, struct argp_state *state) {
 	return 0;
 };
 
-/** 
+/**
  * Main function of the cvechecker tool
  */
 int main(int argc, char ** argv) {
@@ -1787,7 +1787,7 @@ int main(int argc, char ** argv) {
 	}
 
 	rc = load_databases(&workstate);
-	if (rc) 
+	if (rc)
 		exit(EXIT_FAILURE);
 
 
@@ -1798,7 +1798,7 @@ int main(int argc, char ** argv) {
 	if (arguments.hasdatafile)
 		load_version_data(&workstate);
 	// Operational task
-	if (arguments.parsebin) 
+	if (arguments.parsebin)
 		get_installed_software(&workstate);
 	// Operational task
 	if (arguments.haswatchlist)
@@ -1810,7 +1810,7 @@ int main(int argc, char ** argv) {
 	// Administrative task
 	if (arguments.loadcve)
 		rc = load_cve(&workstate);
-	
+
 	if (rc)
 		exit(EXIT_FAILURE);
 
@@ -1818,7 +1818,7 @@ int main(int argc, char ** argv) {
 	if (arguments.hassinglefile)
 		match_binary(arguments.singlefile, &workstate);
 	// Reporting task
-	if (arguments.doshowinstalled || arguments.doshowinstalledfiles) 
+	if (arguments.doshowinstalled || arguments.doshowinstalledfiles)
 		report_installed(&workstate, arguments.doshowinstalledfiles);
 	// Reporting task
 	if (arguments.runcheck)
