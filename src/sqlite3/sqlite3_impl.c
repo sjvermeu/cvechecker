@@ -1145,7 +1145,11 @@ int sqlite_dbimpl_store_cve_in_db(struct workstate * ws, char * cveId, char * cp
         string_to_cpe(&cpe, cpeId);
 
 	cvssScore = atoi(cvssNum);
-	cvssScore = cvssScore * 10 + atoi(strchr(cvssNum, '.')+1);
+	if (strchr(cvssNum, '.') != NULL) {
+		cvssScore = cvssScore * 10 + atoi(strchr(cvssNum, '.')+1);
+	} else {
+	        cvssScore = cvssScore * 10;
+        }
 
         ws->rc = 0;
         rc = check_cvecpe_in_sqlite_db(ws, year, sequence, cpe);
